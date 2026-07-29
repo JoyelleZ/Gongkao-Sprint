@@ -1,0 +1,143 @@
+.gongkao-dashboard {
+  min-height: 100%;
+  padding: 24px;
+  background: var(--background-primary);
+  color: var(--text-normal);
+}
+
+.gongkao-dashboard__header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 20px;
+}
+
+.gongkao-dashboard__header h1 {
+  margin: 0;
+  font-size: 24px;
+  letter-spacing: 0;
+}
+
+.gongkao-dashboard__eyebrow {
+  margin: 0 0 6px;
+  color: var(--text-muted);
+}
+
+.gongkao-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 10px;
+}
+
+.gongkao-button {
+  min-height: 36px;
+  padding: 0 14px;
+  border: 1px solid var(--background-modifier-border);
+  border-radius: 8px;
+  background: var(--background-primary);
+  color: var(--text-normal);
+}
+
+.gongkao-button--primary {
+  background: var(--interactive-accent);
+  color: var(--text-on-accent);
+}
+
+.gongkao-hero {
+  display: flex;
+  min-height: 132px;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 20px;
+  border: 1px solid var(--background-modifier-border);
+  border-radius: 8px;
+  background: var(--background-secondary);
+  text-align: center;
+}
+
+.gongkao-hero__title {
+  font-size: 24px;
+  font-weight: 700;
+  letter-spacing: 0;
+}
+
+.gongkao-hero__subtitle {
+  margin: 8px 0 0;
+  color: var(--text-muted);
+}
+
+.gongkao-dashboard__grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 16px;
+}
+
+.gongkao-panel {
+  min-width: 0;
+  padding: 16px;
+  border: 1px solid var(--background-modifier-border);
+  border-radius: 8px;
+  background: var(--background-primary);
+}
+
+.gongkao-panel--wide {
+  margin-top: 16px;
+}
+
+.gongkao-panel h2 {
+  margin: 0 0 12px;
+  font-size: 16px;
+  letter-spacing: 0;
+}
+
+.gongkao-panel ul {
+  margin: 0;
+  padding-left: 18px;
+  color: var(--text-muted);
+}
+
+.gongkao-heatmap {
+  display: grid;
+  grid-template-columns: repeat(30, 1fr);
+  gap: 4px;
+}
+
+.gongkao-heatmap__cell {
+  aspect-ratio: 1;
+  min-width: 8px;
+  border-radius: 3px;
+  background: var(--background-modifier-border);
+}
+
+.gongkao-heatmap__cell--1 {
+  background: rgba(104, 139, 91, 0.28);
+}
+
+.gongkao-heatmap__cell--2 {
+  background: rgba(104, 139, 91, 0.44);
+}
+
+.gongkao-heatmap__cell--3 {
+  background: rgba(104, 139, 91, 0.62);
+}
+
+.gongkao-heatmap__cell--4 {
+  background: rgba(104, 139, 91, 0.82);
+}
+
+@media (max-width: 960px) {
+  .gongkao-dashboard__header {
+    flex-direction: column;
+  }
+
+  .gongkao-actions {
+    justify-content: flex-start;
+  }
+
+  .gongkao-dashboard__grid {
+    grid-template-columns: 1fr;
+  }
+}

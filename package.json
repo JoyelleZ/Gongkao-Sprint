@@ -1,0 +1,32 @@
+{
+  "name": "gongkao-sprint",
+  "version": "0.1.0",
+  "description": "A civil service exam study dashboard for practice collections, error cards, and spaced review.",
+  "main": "main.js",
+  "scripts": {
+    "dev": "node esbuild.config.mjs",
+    "build": "tsc -noEmit -skipLibCheck && node esbuild.config.mjs production",
+    "test": "vitest run",
+    "lint": "eslint src tests --ext .ts"
+  },
+  "keywords": [
+    "obsidian",
+    "gongkao",
+    "study",
+    "spaced-repetition"
+  ],
+  "author": "",
+  "license": "MIT",
+  "devDependencies": {
+    "@eslint/js": "^9.32.0",
+    "@types/node": "^24.1.0",
+    "builtin-modules": "^5.0.0",
+    "esbuild": "^0.25.8",
+    "eslint": "^9.32.0",
+    "obsidian": "^1.8.7",
+    "prettier": "^3.6.2",
+    "typescript": "^5.8.3",
+    "typescript-eslint": "^8.38.0",
+    "vitest": "^3.2.4"
+  }
+}
