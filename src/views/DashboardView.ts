@@ -4,11 +4,16 @@ import type { GongkaoSprintSettings } from "../settings";
 import type { DashboardCollectionSummary, DashboardModel, DashboardService } from "../services/DashboardService";
 import { daysBetween, todayString } from "../utils/date";
 
+interface DashboardActions {
+  createErrorCard: () => void;
+}
+
 export class DashboardView extends ItemView {
   constructor(
     leaf: WorkspaceLeaf,
     private readonly dashboardService: DashboardService,
     private readonly getSettings: () => GongkaoSprintSettings,
+    private readonly actions: DashboardActions,
   ) {
     super(leaf);
   }
@@ -52,6 +57,11 @@ export class DashboardView extends ItemView {
           cls: index === 5 ? "gongkao-button gongkao-button--primary" : "gongkao-button",
         });
         button.addEventListener("click", () => {
+          if (label === "新增错题") {
+            this.actions.createErrorCard();
+            return;
+          }
+
           new Notice(`${label} 功能将在后续步骤接入。`);
         });
       },
@@ -67,7 +77,7 @@ export class DashboardView extends ItemView {
       "今日任务：暂无计划",
       "完成率：0%",
     ]);
-    this.renderPanel(grid, "今日复习", ["到期错题：0 张", "逾期提醒：暂无", "最近新增错题：暂无"]);
+    this.renderReviewPanel(grid, model);
     this.renderCollectionPanel(grid, model.collections);
     this.renderWeekPanel(grid, model);
     this.renderPanel(grid, "最近复盘", ["暂无复盘记录", "记录技巧、惯性和下次纠偏动作。"]);
@@ -133,6 +143,16 @@ export class DashboardView extends ItemView {
     ]);
   }
 
+  private renderReviewPanel(parent: HTMLElement, model: DashboardModel): void {
+    const moduleLines = Object.entries(model.review.byModule).map(([module, count]) => `${module}：${count} 张`);
+    this.renderPanel(parent, "今日复习", [
+      `到期错题：${model.review.dueCount} 张`,
+      model.review.overdueCount > 0 ? `逾期提醒：${model.review.overdueCount} 张` : "逾期提醒：暂无",
+      `今日新增错题：${model.review.recentNewCount} 张`,
+      ...(moduleLines.length > 0 ? moduleLines : []),
+    ]);
+  }
+
   private renderWeaknessPanel(parent: HTMLElement, model: DashboardModel): void {
     const weakest = model.modules[0];
     if (!weakest) {
@@ -156,6 +176,11 @@ export class DashboardView extends ItemView {
     ["创建第一个刷题集合", "记录一次刷题", "新增错题卡", "新增复盘记录", "一键创建示例数据"].forEach((label) => {
       const button = actions.createEl("button", { text: label, cls: "gongkao-button" });
       button.addEventListener("click", () => {
+        if (label === "新增错题卡") {
+          this.actions.createErrorCard();
+          return;
+        }
+
         new Notice(`${label} 功能将在后续步骤接入。`);
       });
     });

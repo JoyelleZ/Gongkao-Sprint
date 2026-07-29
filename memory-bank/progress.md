@@ -26,3 +26,14 @@
   - Fixed week-start calculation to avoid timezone drift in Asia/Shanghai.
 - Added dashboard model tests for stable `collection_id` aggregation and Monday-to-today weekly summaries.
 - Re-verified `npm run build`, `npm test`, and `npm run lint` all pass with 15 tests across 6 test files.
+
+## 2026-07-30
+
+- Started Phase 6 error card implementation:
+  - Added `src/services/ErrorCardService.ts` for creating text-first error cards, optional collection binding, stable `error_card_id`, initial `next_review`, due-card querying, and fixed Markdown body sections.
+  - Added `src/modals/ErrorCardModal.ts` using Obsidian native Modal and Setting APIs. It supports 行测 module, question type, optional collection binding, source, range, round, answer, wrong reason, initial mastery, and text body.
+  - Added the `Create Error Card` command and connected the dashboard "新增错题" / empty-state "新增错题卡" actions to the modal.
+  - Dashboard review panel now reads active error cards and shows due count, overdue count, today's new error cards, and due-card module distribution.
+  - Image upload, clipboard paste, drag/drop, and rectangle masks are intentionally deferred to Phase 9.
+- Added tests for text error-card creation, unbound independent cards, all initial mastery schedules, and dashboard due-card summaries.
+- Re-verified `npm run build`, `npm test`, and `npm run lint` all pass with 19 tests across 7 test files.

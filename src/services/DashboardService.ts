@@ -1,8 +1,9 @@
 import type { TFile } from "obsidian";
-import type { PracticeCollection, PracticeLog, XingceModule } from "../types";
+import type { ErrorCard, PracticeCollection, PracticeLog, XingceModule } from "../types";
 import { todayString } from "../utils/date";
 import type { PracticeCollectionService } from "./PracticeCollectionService";
 import type { PracticeLogService } from "./PracticeLogService";
+import type { ErrorCardService } from "./ErrorCardService";
 
 export interface DashboardCollectionSummary {
   file: TFile;
@@ -29,26 +30,37 @@ export interface DashboardModel {
   collections: DashboardCollectionSummary[];
   week: DashboardWeekSummary;
   modules: DashboardModuleSummary[];
+  review: DashboardReviewSummary;
   hasAnyData: boolean;
+}
+
+export interface DashboardReviewSummary {
+  dueCount: number;
+  overdueCount: number;
+  recentNewCount: number;
+  byModule: Partial<Record<XingceModule, number>>;
 }
 
 export class DashboardService {
   constructor(
     private readonly collectionService: PracticeCollectionService,
     private readonly practiceLogService: PracticeLogService,
+    private readonly errorCardService: ErrorCardService,
   ) {}
 
   async loadModel(today = todayString()): Promise<DashboardModel> {
     const collections = await this.collectionService.listCollections();
     const logs = await this.practiceLogService.listLogs();
+    const cards = await this.errorCardService.listCards();
 
-    return buildDashboardModel(collections, logs.map((entry) => entry.data), today);
+    return buildDashboardModel(collections, logs.map((entry) => entry.data), cards.map((entry) => entry.data), today);
   }
 }
 
 export function buildDashboardModel(
   collections: Array<{ file: TFile; data: PracticeCollection }>,
   logs: PracticeLog[],
+  cards: ErrorCard[],
   today: string,
 ): DashboardModel {
   const collectionSummaries = collections.map(({ file, data }) => {
@@ -75,7 +87,25 @@ export function buildDashboardModel(
       recentLogs,
     },
     modules,
-    hasAnyData: collections.length > 0 || logs.length > 0,
+    review: buildReviewSummary(cards, today),
+    hasAnyData: collections.length > 0 || logs.length > 0 || cards.length > 0,
+  };
+}
+
+function buildReviewSummary(cards: ErrorCard[], today: string): DashboardReviewSummary {
+  const activeCards = cards.filter((card) => card.status === "active");
+  const dueCards = activeCards.filter((card) => card.next_review <= today);
+  const byModule: Partial<Record<XingceModule, number>> = {};
+
+  for (const card of dueCards) {
+    byModule[card.module] = (byModule[card.module] ?? 0) + 1;
+  }
+
+  return {
+    dueCount: dueCards.length,
+    overdueCount: dueCards.filter((card) => card.next_review < today).length,
+    recentNewCount: activeCards.filter((card) => card.created === today).length,
+    byModule,
   };
 }
 

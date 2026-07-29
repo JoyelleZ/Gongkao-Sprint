@@ -6,22 +6,32 @@ import { VaultStore } from "./services/VaultStore";
 import { PracticeCollectionService } from "./services/PracticeCollectionService";
 import { PracticeLogService } from "./services/PracticeLogService";
 import { DashboardService } from "./services/DashboardService";
+import { ErrorCardService } from "./services/ErrorCardService";
+import { ErrorCardModal } from "./modals/ErrorCardModal";
 
 export default class GongkaoSprintPlugin extends Plugin {
   settings: GongkaoSprintSettings = DEFAULT_SETTINGS;
   private vaultStore!: VaultStore;
   private dashboardService!: DashboardService;
+  private collectionService!: PracticeCollectionService;
+  private errorCardService!: ErrorCardService;
 
   async onload(): Promise<void> {
     await this.loadSettings();
     this.vaultStore = new VaultStore(this.app, () => this.settings);
-    const collectionService = new PracticeCollectionService(this.vaultStore);
+    this.collectionService = new PracticeCollectionService(this.vaultStore);
     const practiceLogService = new PracticeLogService(this.vaultStore);
-    this.dashboardService = new DashboardService(collectionService, practiceLogService);
+    this.errorCardService = new ErrorCardService(this.vaultStore);
+    this.dashboardService = new DashboardService(this.collectionService, practiceLogService, this.errorCardService);
 
     this.registerView(
       VIEW_TYPE_GONGKAO_DASHBOARD,
-      (leaf: WorkspaceLeaf) => new DashboardView(leaf, this.dashboardService, () => this.settings),
+      (leaf: WorkspaceLeaf) =>
+        new DashboardView(leaf, this.dashboardService, () => this.settings, {
+          createErrorCard: () => {
+            void this.openErrorCardModal();
+          },
+        }),
     );
 
     this.addRibbonIcon("sprout", "打开 Gongkao Sprint 工作台", () => {
@@ -41,6 +51,14 @@ export default class GongkaoSprintPlugin extends Plugin {
       name: "Initialize Gongkao Data Directories",
       callback: () => {
         void this.ensureDataDirectories();
+      },
+    });
+
+    this.addCommand({
+      id: "create-error-card",
+      name: "Create Error Card",
+      callback: () => {
+        void this.openErrorCardModal();
       },
     });
 
@@ -74,5 +92,25 @@ export default class GongkaoSprintPlugin extends Plugin {
   async ensureDataDirectories(): Promise<void> {
     await this.vaultStore.ensureDataDirectories();
     new Notice("Gongkao Sprint 数据目录已准备好。");
+  }
+
+  async openErrorCardModal(): Promise<void> {
+    await this.vaultStore.ensureDataDirectories();
+    new ErrorCardModal(
+      this.app,
+      {
+        errorCardService: this.errorCardService,
+        collectionService: this.collectionService,
+      },
+      async () => {
+        const leaves = this.app.workspace.getLeavesOfType(VIEW_TYPE_GONGKAO_DASHBOARD);
+        for (const leaf of leaves) {
+          const view = leaf.view;
+          if (view instanceof DashboardView) {
+            await view.render();
+          }
+        }
+      },
+    ).open();
   }
 }

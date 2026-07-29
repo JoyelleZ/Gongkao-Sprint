@@ -169,6 +169,21 @@
   gap: 10px;
 }
 
+.gongkao-modal .setting-item {
+  align-items: flex-start;
+}
+
+.gongkao-modal textarea {
+  min-height: 90px;
+}
+
+.gongkao-modal__actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 18px;
+}
+
 .gongkao-heatmap {
   display: grid;
   grid-template-columns: repeat(30, 1fr);

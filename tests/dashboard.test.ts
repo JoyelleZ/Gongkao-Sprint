@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { buildDashboardModel } from "../src/services/DashboardService";
-import type { PracticeCollection, PracticeLog } from "../src/types";
+import type { ErrorCard, PracticeCollection, PracticeLog } from "../src/types";
 
 describe("DashboardService", () => {
   const collection: PracticeCollection = {
@@ -55,8 +55,44 @@ describe("DashboardService", () => {
     },
   ];
 
+  const cards: ErrorCard[] = [
+    {
+      type: "gongkao-error-card",
+      error_card_id: "ec-1",
+      subject: "行测",
+      module: "判断推理",
+      mastery: 0,
+      review_count: 0,
+      created: "2026-07-29",
+      next_review: "2026-07-30",
+      status: "active",
+    },
+    {
+      type: "gongkao-error-card",
+      error_card_id: "ec-2",
+      subject: "行测",
+      module: "资料分析",
+      mastery: 1,
+      review_count: 0,
+      created: "2026-07-28",
+      next_review: "2026-07-29",
+      status: "active",
+    },
+    {
+      type: "gongkao-error-card",
+      error_card_id: "ec-3",
+      subject: "行测",
+      module: "言语理解",
+      mastery: 1,
+      review_count: 0,
+      created: "2026-07-29",
+      next_review: "2026-07-30",
+      status: "archived",
+    },
+  ];
+
   it("summarizes collections by stable collection id", () => {
-    const model = buildDashboardModel([{ file: { path: "collection.md" } as never, data: collection }], logs, "2026-07-29");
+    const model = buildDashboardModel([{ file: { path: "collection.md" } as never, data: collection }], logs, cards, "2026-07-29");
 
     expect(model.collections[0]?.total).toBe(50);
     expect(model.collections[0]?.wrong).toBe(10);
@@ -64,11 +100,21 @@ describe("DashboardService", () => {
   });
 
   it("summarizes the current week from Monday to today", () => {
-    const model = buildDashboardModel([{ file: { path: "collection.md" } as never, data: collection }], logs, "2026-07-29");
+    const model = buildDashboardModel([{ file: { path: "collection.md" } as never, data: collection }], logs, cards, "2026-07-29");
 
     expect(model.week.total).toBe(50);
     expect(model.week.wrong).toBe(10);
     expect(model.week.recentLogs).toHaveLength(3);
   });
-});
 
+  it("summarizes due active error cards for review", () => {
+    const model = buildDashboardModel([{ file: { path: "collection.md" } as never, data: collection }], logs, cards, "2026-07-30");
+
+    expect(model.review.dueCount).toBe(2);
+    expect(model.review.overdueCount).toBe(1);
+    expect(model.review.recentNewCount).toBe(0);
+    expect(model.review.byModule["判断推理"]).toBe(1);
+    expect(model.review.byModule["资料分析"]).toBe(1);
+    expect(model.review.byModule["言语理解"]).toBeUndefined();
+  });
+});

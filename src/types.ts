@@ -60,6 +60,7 @@ export interface ReviewHistoryEntry {
 
 export interface ErrorCard {
   type: "gongkao-error-card";
+  error_card_id: string;
   subject: "行测";
   module: XingceModule;
   question_type?: string;
@@ -77,6 +78,7 @@ export interface ErrorCard {
   last_reviewed?: string;
   next_review: string;
   status: "active" | "suspended" | "archived";
+  body?: string;
   image?: string;
   masks?: ImageMask[];
   review_history?: ReviewHistoryEntry[];
