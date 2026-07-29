@@ -3,18 +3,25 @@ import { GongkaoSprintSettingTab, DEFAULT_SETTINGS, GongkaoSprintSettings } from
 import { VIEW_TYPE_GONGKAO_DASHBOARD } from "./constants";
 import { DashboardView } from "./views/DashboardView";
 import { VaultStore } from "./services/VaultStore";
+import { PracticeCollectionService } from "./services/PracticeCollectionService";
+import { PracticeLogService } from "./services/PracticeLogService";
+import { DashboardService } from "./services/DashboardService";
 
 export default class GongkaoSprintPlugin extends Plugin {
   settings: GongkaoSprintSettings = DEFAULT_SETTINGS;
   private vaultStore!: VaultStore;
+  private dashboardService!: DashboardService;
 
   async onload(): Promise<void> {
     await this.loadSettings();
     this.vaultStore = new VaultStore(this.app, () => this.settings);
+    const collectionService = new PracticeCollectionService(this.vaultStore);
+    const practiceLogService = new PracticeLogService(this.vaultStore);
+    this.dashboardService = new DashboardService(collectionService, practiceLogService);
 
     this.registerView(
       VIEW_TYPE_GONGKAO_DASHBOARD,
-      (leaf: WorkspaceLeaf) => new DashboardView(leaf),
+      (leaf: WorkspaceLeaf) => new DashboardView(leaf, this.dashboardService, () => this.settings),
     );
 
     this.addRibbonIcon("sprout", "打开 Gongkao Sprint 工作台", () => {

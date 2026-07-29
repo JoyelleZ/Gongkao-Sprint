@@ -99,6 +99,76 @@
   color: var(--text-muted);
 }
 
+.gongkao-empty-text {
+  margin: 0;
+  color: var(--text-muted);
+}
+
+.gongkao-collection-list {
+  display: grid;
+  gap: 10px;
+}
+
+.gongkao-collection {
+  padding: 10px;
+  border: 1px solid var(--background-modifier-border);
+  border-radius: 8px;
+  background: var(--background-secondary);
+}
+
+.gongkao-collection--done {
+  opacity: 0.62;
+}
+
+.gongkao-collection__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.gongkao-collection__header strong {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.gongkao-collection__header span {
+  flex: 0 0 auto;
+  color: var(--text-muted);
+  font-size: 12px;
+}
+
+.gongkao-collection p {
+  margin: 6px 0 0;
+  color: var(--text-muted);
+  font-size: 13px;
+}
+
+.gongkao-empty-state {
+  margin-top: 16px;
+  padding: 16px;
+  border: 1px dashed var(--background-modifier-border);
+  border-radius: 8px;
+  background: var(--background-secondary);
+}
+
+.gongkao-empty-state h2 {
+  margin: 0 0 8px;
+  font-size: 16px;
+  letter-spacing: 0;
+}
+
+.gongkao-empty-state p {
+  margin: 0 0 12px;
+  color: var(--text-muted);
+}
+
+.gongkao-empty-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
 .gongkao-heatmap {
   display: grid;
   grid-template-columns: repeat(30, 1fr);

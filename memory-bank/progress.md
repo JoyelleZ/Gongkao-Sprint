@@ -19,3 +19,10 @@
   - Added `src/services/PracticeLogService.ts` for creating logs, listing logs, validating practice totals, and aggregating stats by `collection_id` and module.
 - Added tests for stable IDs, practice collection creation metadata, practice log aggregation, and invalid practice log input.
 - Re-verified `npm run build`, `npm test`, and `npm run lint` all pass with 13 tests across 5 test files.
+- Started Phase 5 dashboard data integration:
+  - Added `src/services/DashboardService.ts` to build a dashboard model from practice collections and practice logs.
+  - Dashboard now reads real collection/log data, shows collection totals, wrong counts, latest practice date, current round, first-round completed muted styling, weekly totals, recent 3 practice logs, and the highest wrong-rate module reminder.
+  - Added empty-state guidance for a new Vault. Buttons currently show placeholder notices until creation/review/reflection modals are implemented in later phases.
+  - Fixed week-start calculation to avoid timezone drift in Asia/Shanghai.
+- Added dashboard model tests for stable `collection_id` aggregation and Monday-to-today weekly summaries.
+- Re-verified `npm run build`, `npm test`, and `npm run lint` all pass with 15 tests across 6 test files.
