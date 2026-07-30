@@ -995,11 +995,36 @@
   line-height: 1.5;
 }
 
+/* ── Weakness + Time panel row ── */
+.gongkao-dashboard__time-row {
+  display: grid;
+  grid-template-columns: 320px minmax(0, 1fr);
+  gap: 24px;
+  align-items: stretch;
+  grid-column: 1 / -1;
+  width: 100%;
+}
+
+.gongkao-dashboard__time-row .gongkao-panel--weakness,
+.gongkao-dashboard__time-row .gongkao-panel--time {
+  grid-column: auto;
+}
+
+.gongkao-time-panel {
+  width: 100%;
+  min-width: 0;
+}
+
+/* Time panel fills its grid column, no shrink */
+.gongkao-dashboard__time-row .gongkao-panel--time {
+  overflow: hidden;
+}
+
+/* Calendar + Heatmap side by side */
 .gongkao-time-panel__body {
   display: grid;
-  grid-template-columns: minmax(220px, 35%) minmax(0, 65%);
-  gap: 24px;
-  align-items: start;
+  grid-template-columns: 280px minmax(0, 1fr);
+  gap: 32px;
 }
 
 .gongkao-time-panel__calendar,
@@ -1009,14 +1034,14 @@
   min-width: 0;
 }
 
-.gongkao-calendar-panel,
-.gongkao-heatmap-panel {
-  height: auto;
-}
-
 .gongkao-time-panel__heatmap {
   padding-left: 22px;
   border-left: 1px solid rgba(104, 139, 91, 0.12);
+}
+
+.gongkao-calendar-panel,
+.gongkao-heatmap-panel {
+  height: auto;
 }
 
 .gongkao-heatmap-detail {
@@ -1125,13 +1150,12 @@
   }
 
   .gongkao-panel--week,
-  .gongkao-panel--reflection,
-  .gongkao-panel--weakness {
+  .gongkao-panel--reflection {
     grid-column: span 2;
   }
 
-  .gongkao-panel--time {
-    grid-column: span 4;
+  .gongkao-dashboard__time-row {
+    grid-template-columns: 320px minmax(0, 1fr);
   }
 
   .gongkao-review-feedback {
@@ -1168,16 +1192,24 @@
 
   .gongkao-panel--week,
   .gongkao-panel--reflection,
-  .gongkao-panel--weakness,
   .gongkao-panel--plan,
   .gongkao-panel--review,
-  .gongkao-panel--collections,
-  .gongkao-panel--time {
+  .gongkao-panel--collections {
     grid-column: auto;
+  }
+
+  .gongkao-dashboard__time-row {
+    grid-template-columns: 1fr;
   }
 
   .gongkao-time-panel__body {
     grid-template-columns: 1fr;
+    height: auto;
+  }
+
+  .gongkao-time-panel__calendar,
+  .gongkao-time-panel__heatmap {
+    overflow: visible;
   }
 
   .gongkao-time-panel__heatmap {
