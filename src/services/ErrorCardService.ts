@@ -66,12 +66,12 @@ export class ErrorCardService {
     };
 
     const title = `${created}-${card.module}-${card.question_type ?? "错题"}`;
-    const path = await this.store.getAvailableMarkdownPath(this.store.getSubdirectoryPath("ErrorCards"), title);
+    const path = await this.store.getAvailableMarkdownPath(this.store.getSubdirectoryPath("03_错题库"), title);
     return this.store.createMarkdownFile(path, card, this.buildCardBody(card));
   }
 
   async listCards(query: ErrorCardQuery = {}): Promise<Array<{ file: TFile; data: ErrorCard }>> {
-    const folder = this.store.getFolder(this.store.getSubdirectoryPath("ErrorCards"));
+    const folder = this.store.getFolder(this.store.getSubdirectoryPath("03_错题库"));
     if (!folder) {
       return [];
     }

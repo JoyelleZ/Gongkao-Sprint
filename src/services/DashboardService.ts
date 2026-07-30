@@ -19,7 +19,7 @@ export interface DashboardCollectionSummary {
 export interface DashboardWeekSummary {
   total: number;
   wrong: number;
-  recentLogs: PracticeLog[];
+  recentLogs: Array<{ file?: TFile; log: PracticeLog }>;
 }
 
 export interface DashboardModuleSummary {
@@ -46,16 +46,18 @@ export interface DashboardReviewSummary {
   overdueCount: number;
   recentNewCount: number;
   byModule: Partial<Record<XingceModule, number>>;
+  dueCards: Array<{ file?: TFile; card: ErrorCard }>;
 }
 
 export interface DashboardReflectionSummary {
-  recent: ReflectionLog[];
+  recent: Array<{ file?: TFile; reflection: ReflectionLog }>;
 }
 
 export interface DashboardPlanSummary {
   tasks: string[];
   completionRate: number;
   exists: boolean;
+  file?: TFile;
 }
 
 export interface DashboardWeaknessSummary {
@@ -80,9 +82,9 @@ export class DashboardService {
 
     return buildDashboardModel(
       collections,
-      logs.map((entry) => entry.data),
-      cards.map((entry) => entry.data),
-      reflections.map((entry) => entry.data),
+      logs,
+      cards,
+      reflections,
       today,
       plan,
     );
@@ -91,14 +93,21 @@ export class DashboardService {
 
 export function buildDashboardModel(
   collections: Array<{ file: TFile; data: PracticeCollection }>,
-  logs: PracticeLog[],
-  cards: ErrorCard[],
-  reflections: ReflectionLog[],
+  logs: Array<{ file?: TFile; data: PracticeLog }> | PracticeLog[],
+  cards: Array<{ file?: TFile; data: ErrorCard }> | ErrorCard[],
+  reflections: Array<{ file?: TFile; data: ReflectionLog }> | ReflectionLog[],
   today: string,
   plan?: DailyPlanReadResult | null,
 ): DashboardModel {
+  const logEntries = normalizeEntries(logs);
+  const cardEntries = normalizeEntries(cards);
+  const reflectionEntries = normalizeEntries(reflections);
+  const logData = logEntries.map((entry) => entry.data);
+  const cardData = cardEntries.map((entry) => entry.data);
+  const reflectionData = reflectionEntries.map((entry) => entry.data);
+
   const collectionSummaries = collections.map(({ file, data }) => {
-    const relatedLogs = logs.filter((log) => log.collection_id === data.collection_id);
+    const relatedLogs = logData.filter((log) => log.collection_id === data.collection_id);
     return {
       file,
       collection: data,
@@ -109,30 +118,34 @@ export function buildDashboardModel(
   });
 
   const weekStart = getWeekStart(today);
-  const weekLogs = logs.filter((log) => log.date >= weekStart && log.date <= today);
-  const recentLogs = [...logs].sort((a, b) => b.date.localeCompare(a.date)).slice(0, 3);
-  const modules = buildModuleSummaries(logs);
+  const weekLogs = logData.filter((log) => log.date >= weekStart && log.date <= today);
+  const recentLogs = [...logEntries].sort((a, b) => b.data.date.localeCompare(a.data.date)).slice(0, 3);
+  const modules = buildModuleSummaries(logData);
 
   return {
     collections: collectionSummaries,
     week: {
       total: sum(weekLogs, "total"),
       wrong: sum(weekLogs, "wrong"),
-      recentLogs,
+      recentLogs: recentLogs.map((entry) => ({ file: entry.file, log: entry.data })),
     },
     modules,
-    review: buildReviewSummary(cards, today),
+    review: buildReviewSummary(cardEntries, today),
     reflections: {
-      recent: [...reflections].sort((a, b) => b.date.localeCompare(a.date)).slice(0, 3),
+      recent: [...reflectionEntries]
+        .sort((a, b) => b.data.date.localeCompare(a.data.date))
+        .slice(0, 3)
+        .map((entry) => ({ file: entry.file, reflection: entry.data })),
     },
-    heatmap: buildEffortHeatmap(logs, cards, reflections, today),
+    heatmap: buildEffortHeatmap(logData, cardData, reflectionData, today),
     plan: {
       exists: Boolean(plan),
       tasks: plan?.tasks.map((task) => `${task.completed ? "已完成" : "待完成"}：${task.text}`) ?? [],
       completionRate: plan?.completionRate ?? 0,
+      file: plan?.file,
     },
-    weakness: buildWeaknessSummary(logs, cards, reflections, today),
-    hasAnyData: collections.length > 0 || logs.length > 0 || cards.length > 0 || reflections.length > 0,
+    weakness: buildWeaknessSummary(logData, cardData, reflectionData, today),
+    hasAnyData: collections.length > 0 || logEntries.length > 0 || cardEntries.length > 0 || reflectionEntries.length > 0,
   };
 }
 
@@ -180,21 +193,32 @@ export function buildWeaknessSummary(
   return { lines: lines.length > 0 ? lines : ["暂无足够数据", "完成几次刷题和复盘后，这里会出现提醒。"] };
 }
 
-function buildReviewSummary(cards: ErrorCard[], today: string): DashboardReviewSummary {
-  const activeCards = cards.filter((card) => card.status === "active");
-  const dueCards = activeCards.filter((card) => card.next_review <= today);
+function buildReviewSummary(cards: Array<{ file?: TFile; data: ErrorCard }>, today: string): DashboardReviewSummary {
+  const activeCards = cards.filter((entry) => entry.data.status === "active");
+  const dueCards = activeCards.filter((entry) => entry.data.next_review <= today);
   const byModule: Partial<Record<XingceModule, number>> = {};
 
-  for (const card of dueCards) {
-    byModule[card.module] = (byModule[card.module] ?? 0) + 1;
+  for (const entry of dueCards) {
+    byModule[entry.data.module] = (byModule[entry.data.module] ?? 0) + 1;
   }
 
   return {
     dueCount: dueCards.length,
-    overdueCount: dueCards.filter((card) => card.next_review < today).length,
-    recentNewCount: activeCards.filter((card) => card.created === today).length,
+    overdueCount: dueCards.filter((entry) => entry.data.next_review < today).length,
+    recentNewCount: activeCards.filter((entry) => entry.data.created === today).length,
     byModule,
+    dueCards: dueCards.map((entry) => ({ file: entry.file, card: entry.data })),
   };
+}
+
+function normalizeEntries<T>(items: Array<{ file?: TFile; data: T }> | T[]): Array<{ file?: TFile; data: T }> {
+  return items.map((item) => {
+    if (typeof item === "object" && item !== null && "data" in item) {
+      return item as { file?: TFile; data: T };
+    }
+
+    return { data: item as T };
+  });
 }
 
 function buildModuleSummaries(logs: PracticeLog[]): DashboardModuleSummary[] {

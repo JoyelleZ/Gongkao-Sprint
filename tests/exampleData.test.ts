@@ -6,8 +6,8 @@ describe("ExampleDataService", () => {
     const createdPaths: string[] = [];
     const service = new ExampleDataService({
       ensureDataDirectories: async () => undefined,
-      getDataRoot: () => "Gongkao",
-      getSubdirectoryPath: (directory: string) => `Gongkao/${directory}`,
+      getDataRoot: () => "Gongkao Sprint",
+      getSubdirectoryPath: (directory: string) => `Gongkao Sprint/${directory}`,
       getFile: () => null,
       createMarkdownFile: async (path: string) => {
         createdPaths.push(path);
@@ -17,19 +17,19 @@ describe("ExampleDataService", () => {
 
     await service.createExampleData(new Date("2026-07-30T10:00:00"));
 
-    expect(createdPaths.some((path) => path.includes("Collections/示例-"))).toBe(true);
-    expect(createdPaths.some((path) => path.includes("PracticeLogs/示例-"))).toBe(true);
-    expect(createdPaths.some((path) => path.includes("ErrorCards/示例-"))).toBe(true);
-    expect(createdPaths.some((path) => path.includes("Reflections/示例-"))).toBe(true);
-    expect(createdPaths.some((path) => path.includes("Plans/2026-07-30-示例今日计划.md"))).toBe(true);
-    expect(createdPaths).toContain("Gongkao/示例数据说明.md");
+    expect(createdPaths.some((path) => path.includes("05_专题训练/示例-"))).toBe(true);
+    expect(createdPaths.some((path) => path.includes("02_刷题记录/示例-"))).toBe(true);
+    expect(createdPaths.some((path) => path.includes("03_错题库/示例-"))).toBe(true);
+    expect(createdPaths.some((path) => path.includes("06_复盘记录/示例-"))).toBe(true);
+    expect(createdPaths.some((path) => path.includes("01_今日计划/2026-07-30.md"))).toBe(true);
+    expect(createdPaths).toContain("Gongkao Sprint/示例数据说明.md");
   });
 
   it("does not create duplicate example data when marker exists", async () => {
     const service = new ExampleDataService({
       ensureDataDirectories: async () => undefined,
-      getDataRoot: () => "Gongkao",
-      getFile: () => ({ path: "Gongkao/示例数据说明.md" }),
+      getDataRoot: () => "Gongkao Sprint",
+      getFile: () => ({ path: "Gongkao Sprint/示例数据说明.md" }),
     } as never);
 
     await expect(service.createExampleData(new Date("2026-07-30T10:00:00"))).rejects.toThrow("示例数据已存在");

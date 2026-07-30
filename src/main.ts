@@ -1,4 +1,4 @@
-import { normalizePath, Notice, Plugin, WorkspaceLeaf } from "obsidian";
+import { normalizePath, Notice, Plugin, TFile, WorkspaceLeaf } from "obsidian";
 import { GongkaoSprintSettingTab, DEFAULT_SETTINGS, GongkaoSprintSettings } from "./settings";
 import { VIEW_TYPE_GONGKAO_DASHBOARD, VIEW_TYPE_GONGKAO_REVIEW } from "./constants";
 import { DashboardView } from "./views/DashboardView";
@@ -13,9 +13,11 @@ import { ReflectionLogModal } from "./modals/ReflectionLogModal";
 import { ReviewSessionView } from "./views/ReviewSessionView";
 import { DailyPlanService } from "./services/DailyPlanService";
 import { ExampleDataService } from "./services/ExampleDataService";
+import { todayString } from "./utils/date";
 
 export default class GongkaoSprintPlugin extends Plugin {
   settings: GongkaoSprintSettings = DEFAULT_SETTINGS;
+  private coverImageSrc = "";
   private vaultStore!: VaultStore;
   private dashboardService!: DashboardService;
   private collectionService!: PracticeCollectionService;
@@ -26,6 +28,7 @@ export default class GongkaoSprintPlugin extends Plugin {
 
   async onload(): Promise<void> {
     await this.loadSettings();
+    this.coverImageSrc = await this.resolveCoverImageSrc();
     this.vaultStore = new VaultStore(this.app, () => this.settings);
     this.collectionService = new PracticeCollectionService(this.vaultStore);
     const practiceLogService = new PracticeLogService(this.vaultStore);
@@ -44,12 +47,15 @@ export default class GongkaoSprintPlugin extends Plugin {
     this.registerView(
       VIEW_TYPE_GONGKAO_DASHBOARD,
       (leaf: WorkspaceLeaf) =>
-        new DashboardView(leaf, this.dashboardService, () => this.settings, this.getCoverImageSrc(), {
+        new DashboardView(leaf, this.dashboardService, () => this.settings, this.coverImageSrc, {
           createErrorCard: () => {
             void this.openErrorCardModal();
           },
           createReflectionLog: () => {
             void this.openReflectionLogModal();
+          },
+          createPracticeLog: () => {
+            void this.createPracticeLogTemplate();
           },
           startReview: () => {
             void this.activateReview();
@@ -59,6 +65,9 @@ export default class GongkaoSprintPlugin extends Plugin {
           },
           createExampleData: () => {
             void this.createExampleData();
+          },
+          openFile: (file?: TFile) => {
+            void this.openMarkdownFile(file);
           },
         }),
     );
@@ -126,6 +135,14 @@ export default class GongkaoSprintPlugin extends Plugin {
     });
 
     this.addCommand({
+      id: "create-practice-log",
+      name: "Create Practice Log",
+      callback: () => {
+        void this.createPracticeLogTemplate();
+      },
+    });
+
+    this.addCommand({
       id: "create-example-data",
       name: "Create Example Data",
       callback: () => {
@@ -143,6 +160,22 @@ export default class GongkaoSprintPlugin extends Plugin {
 
   async loadSettings(): Promise<void> {
     this.settings = Object.assign({}, DEFAULT_SETTINGS, await this.loadData());
+    let migrated = false;
+    if (this.settings.dataRoot === "Gongkao") {
+      this.settings.dataRoot = DEFAULT_SETTINGS.dataRoot;
+      migrated = true;
+    }
+    if (this.settings.attachmentsDir === "Gongkao/Attachments") {
+      this.settings.attachmentsDir = DEFAULT_SETTINGS.attachmentsDir;
+      migrated = true;
+    }
+    if (this.settings.attachmentsDir === "Gongkao Sprint/08_资料资源/Attachments") {
+      this.settings.attachmentsDir = DEFAULT_SETTINGS.attachmentsDir;
+      migrated = true;
+    }
+    if (migrated) {
+      await this.saveSettings();
+    }
   }
 
   async saveSettings(): Promise<void> {
@@ -240,6 +273,67 @@ export default class GongkaoSprintPlugin extends Plugin {
     }
   }
 
+  async createPracticeLogTemplate(): Promise<void> {
+    try {
+      await this.vaultStore.ensureDataDirectories();
+      const date = todayString();
+      const path = await this.vaultStore.getAvailableMarkdownPath(
+        this.vaultStore.getSubdirectoryPath("02_刷题记录"),
+        `${date}-刷题记录`,
+      );
+
+      const file = await this.vaultStore.createMarkdownFile(
+        path,
+        {
+          type: "gongkao-practice-log",
+          date,
+          module: "资料分析",
+          total: 0,
+          wrong: 0,
+          round: 1,
+          created: date,
+        },
+        [
+          `# ${date} 刷题记录`,
+          "",
+          "## 本次范围",
+          "",
+          "- 刷题集合：未绑定",
+          "- 模块：资料分析",
+          "- 范围：",
+          "- 轮次：第 1 轮",
+          "",
+          "## 数据",
+          "",
+          "- 刷题数：0",
+          "- 错题数：0",
+          "- 时长：未填写",
+          "",
+          "## 备注",
+          "",
+          "完成练习后，请同步更新上方 frontmatter 中的 module、total、wrong 和 round，工作台会读取这些字段生成统计。",
+        ].join("\n"),
+      );
+
+      new Notice("刷题记录 Markdown 已创建。");
+      await this.openMarkdownFile(file);
+      await this.refreshDashboards();
+    } catch (error) {
+      new Notice(error instanceof Error ? error.message : "刷题记录创建失败。");
+    }
+  }
+
+  private async openMarkdownFile(file?: TFile): Promise<void> {
+    if (!file) {
+      new Notice("没有找到对应的 Markdown 文件。");
+      return;
+    }
+
+    const leaf = this.app.workspace.getLeaf("tab");
+    await leaf.openFile(file);
+    this.app.workspace.revealLeaf(leaf);
+  }
+
   private async refreshDashboards(): Promise<void> {
     const leaves = this.app.workspace.getLeavesOfType(VIEW_TYPE_GONGKAO_DASHBOARD);
     for (const leaf of leaves) {
@@ -256,8 +350,14 @@ export default class GongkaoSprintPlugin extends Plugin {
     return date.toISOString().slice(0, 10);
   }
 
-  private getCoverImageSrc(): string {
+  private async resolveCoverImageSrc(): Promise<string> {
     const pluginDir = this.manifest.dir ?? "";
-    return this.app.vault.adapter.getResourcePath(normalizePath(`${pluginDir}/frontcover.png`));
+    const bannerPath = normalizePath(`${pluginDir}/assets/frontcover.png`);
+    const exists = await this.app.vault.adapter.exists(bannerPath);
+    const resourcePath = this.app.vault.adapter.getResourcePath(bannerPath);
+    console.info("Banner resource:", resourcePath);
+    console.info("Banner path:", bannerPath);
+    console.info("exists:", exists);
+    return resourcePath;
   }
 }

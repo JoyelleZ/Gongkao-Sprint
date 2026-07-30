@@ -9,12 +9,12 @@
 - 若文档之间存在冲突，以 `memory-bank/design-document.md` 为准，其次参考 `spec.md` 和 `memory-bank/tech-stack.md`。
 - 涉及界面、样式、交互或用户流程时，必须遵循 `memory-bank/frontend-design.md`。
 - 用户界面统一称为“刷题集合”，代码概念统一使用 `PracticeCollection`。
-- 刷题集合文件存放在 `Gongkao/Collections/`。
+- 刷题集合文件存放在 `Gongkao Sprint/05_专题训练/`。
 - 刷题集合、刷题记录和错题卡必须通过稳定 `collection_id` 关联，同时保留集合名称用于 Markdown 可读性。
 - 错题卡必须同时支持纯文本错题和带图片错题。
-- 复盘记录必须作为核心功能实现，代码概念使用 `ReflectionLog`，文件存放在 `Gongkao/Reflections/`。
+- 复盘记录必须作为核心功能实现，代码概念使用 `ReflectionLog`，文件存放在 `Gongkao Sprint/06_复盘记录/`。
 - 备考努力热力图必须在工作台展示，数据来自刷题、复习、复盘和计划完成率；MVP 不做导出分享图。
-- 今日计划必须生成 `Gongkao/Plans/YYYY-MM-DD.md`，工作台读取该文件展示。
+- 今日计划必须生成 `Gongkao Sprint/01_今日计划/YYYY-MM-DD.md`，工作台读取该文件展示。
 - 人工验收使用一个干净测试 Vault。建议在本机创建单独的临时 Obsidian vault，不要使用真实备考 vault。
 
 ## Phase 1: 项目初始化
@@ -73,7 +73,7 @@
 
 ### Step 6: 初始化 Vault 数据目录
 
-首次使用时，仅在用户触发相关操作时创建 `Gongkao` 数据目录及子目录，不自动创建示例数据。
+首次使用时，仅在用户触发相关操作时创建 `Gongkao Sprint` 数据目录及子目录，不自动创建示例数据。
 
 验证：
 
@@ -119,7 +119,7 @@
 
 ### Step 10: 实现刷题集合服务
 
-支持创建、读取、更新和查询刷题集合。集合类型支持专题、套卷和书籍。首版不要求用户输入总题数。文件存放在 `Gongkao/Collections/`，每个集合必须写入稳定 `collection_id`。
+支持创建、读取、更新和查询刷题集合。集合类型支持专题、套卷和书籍。首版不要求用户输入总题数。文件存放在 `Gongkao Sprint/05_专题训练/`，每个集合必须写入稳定 `collection_id`。
 
 验证：
 
@@ -223,7 +223,7 @@
 
 ### Step 19: 实现复盘记录服务
 
-支持创建、读取、更新和查询复盘记录。复盘记录存放在 `Gongkao/Reflections/`，必须包含稳定 `reflection_id`，并支持按日期、模块、复盘类型和关联范围查询。
+支持创建、读取、更新和查询复盘记录。复盘记录存放在 `Gongkao Sprint/06_复盘记录/`，必须包含稳定 `reflection_id`，并支持按日期、模块、复盘类型和关联范围查询。
 
 验证：
 
@@ -377,14 +377,14 @@
 
 ### Step 33: 实现今日计划生成
 
-根据今日到期错题、默认主刷题集合、最近 7 天薄弱与纠偏信号和今日是否已有刷题记录，生成 `Gongkao/Plans/YYYY-MM-DD.md` 每日计划 Markdown。
+根据今日到期错题、默认主刷题集合、最近 7 天薄弱与纠偏信号和今日是否已有刷题记录，生成 `Gongkao Sprint/01_今日计划/YYYY-MM-DD.md` 每日计划 Markdown。
 
 验证：
 
 - 有到期错题时计划包含复习任务。
 - 有主刷题集合时计划包含推进任务。
 - 最近存在“思维惯性”复盘时计划包含纠偏提醒。
-- 工作台能读取 `Gongkao/Plans/YYYY-MM-DD.md` 并展示计划。
+- 工作台能读取 `Gongkao Sprint/01_今日计划/YYYY-MM-DD.md` 并展示计划。
 - 今天已有计划时不会无提示覆盖。
 
 ### Step 34: 实现每日计划完成率

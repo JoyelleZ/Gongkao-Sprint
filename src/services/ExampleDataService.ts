@@ -34,7 +34,7 @@ export class ExampleDataService {
     };
 
     await this.store.createMarkdownFile(
-      `${this.store.getSubdirectoryPath("Collections")}/示例-资料分析高频 300 题.md`,
+      `${this.store.getSubdirectoryPath("05_专题训练")}/示例-资料分析高频 300 题.md`,
       collection,
       ["# 示例-资料分析高频 300 题", "", "## 刷题定位", "", "- 类型：专题", "- 模块：资料分析"].join("\n"),
     );
@@ -89,7 +89,7 @@ export class ExampleDataService {
     };
 
     await this.store.createMarkdownFile(
-      `${this.store.getSubdirectoryPath("ErrorCards")}/示例-${today}-资料分析-增长率.md`,
+      `${this.store.getSubdirectoryPath("03_错题库")}/示例-${today}-资料分析-增长率.md`,
       card,
       ["# 示例资料分析错题", "", "## 正面", "", card.body ?? "", "", "## 背面", "", "- 答案：B", `- 错因：${card.wrong_reason}`].join("\n"),
     );
@@ -112,7 +112,7 @@ export class ExampleDataService {
     };
 
     await this.store.createMarkdownFile(
-      `${this.store.getSubdirectoryPath("Reflections")}/示例-${today}-思维惯性-资料分析.md`,
+      `${this.store.getSubdirectoryPath("06_复盘记录")}/示例-${today}-思维惯性-资料分析.md`,
       reflection,
       [
         "# 示例复盘：资料分析思维惯性",
@@ -145,7 +145,7 @@ export class ExampleDataService {
     };
 
     await this.store.createMarkdownFile(
-      `${this.store.getSubdirectoryPath("Plans")}/${today}-示例今日计划.md`,
+      `${this.store.getSubdirectoryPath("01_今日计划")}/${today}.md`,
       plan,
       [
         `# ${today} 示例今日计划`,
@@ -165,7 +165,7 @@ export class ExampleDataService {
 
   private async createPracticeLog(log: PracticeLog): Promise<void> {
     await this.store.createMarkdownFile(
-      `${this.store.getSubdirectoryPath("PracticeLogs")}/示例-${log.date}-${log.module}-${log.range_label}.md`,
+      `${this.store.getSubdirectoryPath("02_刷题记录")}/示例-${log.date}-${log.module}-${log.range_label}.md`,
       log,
       [
         `# 示例 ${log.date} ${log.module}刷题记录`,

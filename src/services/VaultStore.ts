@@ -28,8 +28,9 @@ export class VaultStore {
       await this.ensureFolder(this.getSubdirectoryPath(directory));
     }
 
-    const attachmentsDir = normalizePath(this.getSettings().attachmentsDir || this.getSubdirectoryPath("Attachments"));
+    const attachmentsDir = normalizePath(this.getSettings().attachmentsDir || this.getSubdirectoryPath("08_资源库"));
     await this.ensureFolder(attachmentsDir);
+    await this.ensureDashboardFile();
   }
 
   async ensureFolder(path: string): Promise<void> {
@@ -105,7 +106,7 @@ export class VaultStore {
   }
 
   async copyAttachment(sourceFile: File, targetBaseName: string): Promise<string> {
-    const attachmentsDir = normalizePath(this.getSettings().attachmentsDir || this.getSubdirectoryPath("Attachments"));
+    const attachmentsDir = normalizePath(this.getSettings().attachmentsDir || this.getSubdirectoryPath("08_资源库"));
     await this.ensureFolder(attachmentsDir);
 
     const extension = sourceFile.name.split(".").pop() ?? "png";
@@ -129,5 +130,33 @@ export class VaultStore {
   buildMarkdown(frontmatter: Frontmatter, body: string): string {
     const yaml = stringifyYaml(frontmatter).trim();
     return `---\n${yaml}\n---\n\n${body.trim()}\n`;
+  }
+
+  private async ensureDashboardFile(): Promise<void> {
+    const dashboardPath = normalizePath(`${this.getDataRoot()}/Dashboard.md`);
+    if (this.app.vault.getAbstractFileByPath(dashboardPath)) {
+      return;
+    }
+
+    await this.createMarkdownFile(
+      dashboardPath,
+      { type: "gongkao-dashboard", created: new Date().toISOString().slice(0, 10) },
+      [
+        "# Gongkao Sprint Dashboard",
+        "",
+        "这是 Gongkao Sprint 的备考总览入口。插件工作台会读取同一 Vault 目录下的 Markdown 数据生成统计，不在插件内部维护第二套导航。",
+        "",
+        "## 数据目录",
+        "",
+        "- [[01_今日计划]]",
+        "- [[02_刷题记录]]",
+        "- [[03_错题库]]",
+        "- [[04_复习队列]]",
+        "- [[05_专题训练]]",
+        "- [[06_复盘记录]]",
+        "- [[07_学习模板]]",
+        "- [[08_资源库]]",
+      ].join("\n"),
+    );
   }
 }

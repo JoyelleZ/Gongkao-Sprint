@@ -4,16 +4,18 @@ export const PLUGIN_NAME = "Gongkao Sprint";
 export const VIEW_TYPE_GONGKAO_DASHBOARD = "gongkao-sprint-dashboard";
 export const VIEW_TYPE_GONGKAO_REVIEW = "gongkao-sprint-review";
 
-export const DEFAULT_DATA_ROOT = "Gongkao";
-export const DEFAULT_ATTACHMENTS_DIR = "Gongkao/Attachments";
+export const DEFAULT_DATA_ROOT = "Gongkao Sprint";
+export const DEFAULT_ATTACHMENTS_DIR = "Gongkao Sprint/08_资源库/Attachments";
 
 export const GONGKAO_SUBDIRECTORIES = [
-  "Plans",
-  "Collections",
-  "ErrorCards",
-  "Reflections",
-  "PracticeLogs",
-  "Attachments",
+  "01_今日计划",
+  "02_刷题记录",
+  "03_错题库",
+  "04_复习队列",
+  "05_专题训练",
+  "06_复盘记录",
+  "07_学习模板",
+  "08_资源库",
 ] as const;
 
 export const XINGCE_MODULES = [

@@ -7,8 +7,8 @@ describe("PracticeCollectionService", () => {
     let capturedFrontmatter: PracticeCollection | undefined;
 
     const service = new PracticeCollectionService({
-      getSubdirectoryPath: () => "Gongkao/Collections",
-      getAvailableMarkdownPath: async () => "Gongkao/Collections/判断推理 500 题.md",
+      getSubdirectoryPath: () => "Gongkao Sprint/05_专题训练",
+      getAvailableMarkdownPath: async () => "Gongkao Sprint/05_专题训练/判断推理 500 题.md",
       createMarkdownFile: async (_path: string, frontmatter: PracticeCollection, body: string) => {
         capturedFrontmatter = frontmatter;
         return { path: _path, body } as never;

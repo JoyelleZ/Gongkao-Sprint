@@ -149,6 +149,50 @@
   font-weight: 700;
 }
 
+/* Calendar panel inside the dashboard grid */
+.gongkao-panel--calendar .gongkao-mini-calendar__header {
+  margin-bottom: 14px;
+}
+
+.gongkao-panel--calendar .gongkao-mini-calendar__header strong {
+  font-size: 15px;
+  font-weight: 650;
+}
+
+.gongkao-panel--calendar .gongkao-mini-calendar__week {
+  margin-bottom: 8px;
+  color: var(--text-muted);
+  font-size: 12px;
+}
+
+.gongkao-panel--calendar .gongkao-mini-calendar__grid {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  gap: 6px;
+  text-align: center;
+}
+
+.gongkao-panel--calendar .gongkao-mini-calendar__day {
+  display: inline-flex;
+  aspect-ratio: 1;
+  align-items: center;
+  justify-content: center;
+  border-radius: 999px;
+  font-size: 13px;
+  color: var(--text-normal);
+}
+
+.gongkao-panel--calendar .gongkao-mini-calendar__day--muted {
+  color: var(--text-muted);
+  opacity: 0.4;
+}
+
+.gongkao-panel--calendar .gongkao-mini-calendar__day--today {
+  background: var(--gongkao-green, #6d925a);
+  color: white;
+  font-weight: 700;
+}
+
 .gongkao-sidebar-card {
   display: grid;
   grid-template-columns: 36px 1fr;
@@ -222,31 +266,15 @@
   letter-spacing: 0;
 }
 
-.gongkao-topbar__greeting svg,
-.gongkao-topbar__date svg {
-  width: 18px;
-  height: 18px;
-}
-
-.gongkao-topbar__sun {
-  position: relative;
-  width: 28px;
-  height: 28px;
-  border: 1px solid rgba(104, 139, 91, 0.48);
-  border-radius: 50%;
-}
-
-.gongkao-topbar__sun::before,
-.gongkao-topbar__sun::after {
-  content: "";
-  position: absolute;
-  inset: -7px 12px;
-  border-top: 5px solid rgba(104, 139, 91, 0.4);
-  border-bottom: 5px solid rgba(104, 139, 91, 0.4);
-}
-
-.gongkao-topbar__sun::after {
-  transform: rotate(90deg);
+.weather-icon {
+  display: inline-flex;
+  width: 22px;
+  height: 22px;
+  align-items: center;
+  justify-content: center;
+  color: rgba(109, 146, 90, 0.72);
+  font-size: 22px;
+  line-height: 1;
 }
 
 .gongkao-topbar__date {
@@ -305,170 +333,6 @@
   background: rgb(75, 121, 66);
 }
 
-.gongkao-hero {
-  position: relative;
-  min-height: 176px;
-  margin-bottom: 12px;
-  overflow: hidden;
-  border: 1px solid rgba(104, 139, 91, 0.14);
-  border-radius: 8px;
-  background:
-    radial-gradient(circle at 12% 24%, rgba(229, 190, 116, 0.14), transparent 110px),
-    radial-gradient(circle at 86% 34%, rgba(104, 139, 91, 0.09), transparent 120px),
-    color-mix(in srgb, var(--background-primary) 86%, rgb(252, 247, 236));
-  text-align: center;
-  box-shadow: 0 8px 28px rgba(31, 41, 30, 0.04);
-}
-
-.gongkao-hero__apple {
-  position: absolute;
-  left: 50%;
-  bottom: -52px;
-  display: flex;
-  width: 300px;
-  height: 236px;
-  align-items: center;
-  justify-content: center;
-  border-radius: 48% 48% 42% 42% / 42% 42% 52% 52%;
-  background: rgb(220, 63, 43);
-  color: white;
-  transform: translateX(-50%);
-  box-shadow:
-    inset 0 0 0 3px rgba(255, 255, 255, 0.08),
-    0 12px 28px rgba(188, 62, 42, 0.18);
-}
-
-.gongkao-hero__apple::before,
-.gongkao-hero__apple::after {
-  content: "";
-  position: absolute;
-  top: 12px;
-  width: 120px;
-  height: 150px;
-  border-radius: 50%;
-  background: rgba(255, 255, 255, 0.04);
-}
-
-.gongkao-hero__apple::before {
-  left: 32px;
-}
-
-.gongkao-hero__apple::after {
-  right: 32px;
-}
-
-.gongkao-hero__apple-stem {
-  position: absolute;
-  top: -32px;
-  left: 50%;
-  width: 20px;
-  height: 54px;
-  border-radius: 10px;
-  background: rgb(112, 71, 50);
-  transform: rotate(3deg);
-}
-
-.gongkao-hero__apple-leaf {
-  position: absolute;
-  top: -34px;
-  left: 52%;
-  width: 90px;
-  height: 44px;
-  border-radius: 80px 4px 80px 4px;
-  background: rgb(62, 128, 57);
-  transform: rotate(22deg);
-}
-
-.gongkao-hero__copy {
-  position: relative;
-  z-index: 1;
-  display: grid;
-  gap: 12px;
-  margin-top: 20px;
-}
-
-.gongkao-hero__copy strong {
-  font-size: 28px;
-  line-height: 1.15;
-  letter-spacing: 0;
-}
-
-.gongkao-hero__copy span {
-  font-size: 16px;
-  font-weight: 600;
-}
-
-.gongkao-hero__doodle {
-  position: absolute;
-  border-color: rgba(104, 139, 91, 0.75);
-  opacity: 0.9;
-}
-
-.gongkao-hero__leaf-a,
-.gongkao-hero__leaf-b,
-.gongkao-hero__leaf-c {
-  width: 58px;
-  height: 24px;
-  border: 2px solid rgba(104, 139, 91, 0.75);
-  border-radius: 56px 4px 56px 4px;
-}
-
-.gongkao-hero__leaf-a {
-  left: 16%;
-  top: 30px;
-  transform: rotate(-18deg);
-}
-
-.gongkao-hero__leaf-b {
-  left: 25%;
-  bottom: 28px;
-  transform: rotate(-28deg);
-}
-
-.gongkao-hero__leaf-c {
-  right: 15%;
-  bottom: 50px;
-  transform: rotate(22deg);
-}
-
-.gongkao-hero__apple-a,
-.gongkao-hero__apple-b {
-  width: 76px;
-  height: 80px;
-  border: 2px solid rgba(220, 91, 65, 0.86);
-  border-radius: 42% 42% 46% 46%;
-}
-
-.gongkao-hero__apple-a {
-  left: 10%;
-  bottom: 28px;
-}
-
-.gongkao-hero__apple-b {
-  right: 8%;
-  bottom: 38px;
-}
-
-.gongkao-hero__spark-a,
-.gongkao-hero__spark-b {
-  width: 16px;
-  height: 28px;
-  border-left: 2px solid rgba(220, 91, 65, 0.82);
-  border-right: 2px solid rgba(220, 91, 65, 0.82);
-  transform: skew(-16deg);
-}
-
-.gongkao-hero__spark-a {
-  left: 6%;
-  top: 104px;
-}
-
-.gongkao-hero__spark-b {
-  right: 33%;
-  top: 92px;
-  border-color: rgba(104, 139, 91, 0.75);
-}
-
 .gongkao-section-label {
   margin: 12px 0 10px;
   font-size: 13px;
@@ -499,10 +363,14 @@
 }
 
 .gongkao-panel--week,
-.gongkao-panel--reflection,
-.gongkao-panel--weakness,
-.gongkao-panel--heatmap {
+.gongkao-panel--reflection {
   grid-column: span 3;
+}
+
+.gongkao-panel--weakness,
+.gongkao-panel--heatmap,
+.gongkao-panel--calendar {
+  grid-column: span 2;
 }
 
 .gongkao-panel h2 {
@@ -1030,16 +898,17 @@
 }
 
 .gongkao-heatmap {
+  --heatmap-cell-size: 12px;
   display: grid;
-  grid-template-rows: repeat(7, 12px);
-  grid-auto-columns: 12px;
+  grid-template-rows: repeat(7, var(--heatmap-cell-size));
   grid-auto-flow: column;
   gap: 4px;
 }
 
 .gongkao-heatmap__cell {
-  width: 12px;
-  height: 12px;
+  width: var(--heatmap-cell-size);
+  height: var(--heatmap-cell-size);
+  aspect-ratio: 1 / 1;
   border-radius: 2px;
   background: rgba(104, 139, 91, 0.08);
 }
@@ -1069,13 +938,12 @@
   grid-template-columns: 20px minmax(0, 1fr);
   gap: 8px;
   align-items: end;
-  overflow-x: auto;
-  padding-bottom: 2px;
+  width: 100%;
 }
 
 .gongkao-heatmap-weekdays {
   display: grid;
-  grid-template-rows: repeat(7, 12px);
+  grid-template-rows: repeat(7, var(--heatmap-cell-size, 12px));
   gap: 4px;
   color: var(--text-muted);
   font-size: 11px;
@@ -1083,15 +951,20 @@
 }
 
 .gongkao-heatmap-content {
-  min-width: max-content;
+  overflow: hidden;
 }
 
 .gongkao-heatmap-months {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
+  gap: 4px;
   margin-bottom: 6px;
   color: var(--text-muted);
   font-size: 11px;
+  overflow: hidden;
+}
+
+.gongkao-heatmap-month {
+  white-space: nowrap;
 }
 
 .gongkao-heatmap-legend {
@@ -1108,6 +981,8 @@
 .gongkao-heatmap-legend .gongkao-heatmap__cell {
   width: 12px;
   min-width: 12px;
+  height: 12px;
+  aspect-ratio: auto;
 }
 
 .gongkao-heatmap-empty-text {
@@ -1128,12 +1003,12 @@
 }
 
 .gongkao-heatmap-detail::after {
-  content: "›";
-  margin-left: 6px;
+  content: "";
+  margin-left: 0;
 }
 
-.gongkao-heatmap-months {
-  grid-template-columns: repeat(3, 1fr);
+.gongkao-heatmap__cell--placeholder {
+  visibility: hidden;
 }
 
 .gongkao-review {
@@ -1225,7 +1100,8 @@
   .gongkao-panel--week,
   .gongkao-panel--reflection,
   .gongkao-panel--weakness,
-  .gongkao-panel--heatmap {
+  .gongkao-panel--heatmap,
+  .gongkao-panel--calendar {
     grid-column: span 2;
   }
 
@@ -1267,17 +1143,9 @@
   .gongkao-panel--plan,
   .gongkao-panel--review,
   .gongkao-panel--collections,
-  .gongkao-panel--heatmap {
+  .gongkao-panel--heatmap,
+  .gongkao-panel--calendar {
     grid-column: auto;
-  }
-
-  .gongkao-hero__apple {
-    width: 250px;
-    height: 205px;
-  }
-
-  .gongkao-hero__doodle {
-    opacity: 0.55;
   }
 
   .gongkao-weakness-list,
@@ -1308,24 +1176,6 @@
     font-size: 18px;
   }
 
-  .gongkao-hero {
-    min-height: 150px;
-  }
-
-  .gongkao-hero__apple {
-    bottom: -48px;
-    width: 220px;
-    height: 180px;
-  }
-
-  .gongkao-hero__copy strong {
-    font-size: 22px;
-  }
-
-  .gongkao-hero__copy span {
-    font-size: 13px;
-  }
-
   .gongkao-module-grid,
   .gongkao-metrics--split {
     grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -1341,7 +1191,7 @@
   --gongkao-green-dark: #557a45;
   --gongkao-green-soft: #e8f1df;
   --gongkao-orange: #e98355;
-  --gongkao-hero-bg: #fcf7ed;
+  --gongkao-banner-bg: #fcf7ed;
   --gongkao-shadow: 0 4px 20px rgba(0, 0, 0, 0.03);
   background: var(--gongkao-bg);
   color: #262622;
@@ -1494,52 +1344,6 @@
   background: var(--gongkao-green-dark);
 }
 
-.gongkao-hero {
-  height: 180px;
-  min-height: 180px;
-  margin-bottom: 16px;
-  border: 1px solid var(--gongkao-border);
-  border-radius: 18px;
-  background: var(--gongkao-hero-bg);
-  box-shadow: var(--gongkao-shadow);
-}
-
-.gongkao-hero__cover {
-  display: block;
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  object-position: center;
-}
-
-.gongkao-hero__apple {
-  background: #e95035;
-}
-
-.gongkao-hero__apple-stem {
-  background: #81523d;
-}
-
-.gongkao-hero__apple-leaf {
-  background: #4d8c45;
-}
-
-.gongkao-hero__leaf-a,
-.gongkao-hero__leaf-b,
-.gongkao-hero__leaf-c {
-  border-color: rgba(109, 146, 90, 0.72);
-}
-
-.gongkao-hero__apple-a,
-.gongkao-hero__apple-b,
-.gongkao-hero__spark-a {
-  border-color: rgba(233, 131, 85, 0.78);
-}
-
-.gongkao-hero__spark-b {
-  border-color: rgba(109, 146, 90, 0.7);
-}
-
 .gongkao-dashboard__grid {
   grid-template-columns: repeat(6, minmax(0, 1fr));
   gap: 16px;
@@ -1646,6 +1450,31 @@
   width: 100%;
 }
 
+/* Pin action buttons to the bottom of review & collection panels */
+.gongkao-panel--review,
+.gongkao-panel--collections {
+  display: flex;
+  flex-direction: column;
+}
+
+.gongkao-panel--review .gongkao-panel__actions,
+.gongkao-panel--collections .gongkao-panel__actions {
+  margin-top: auto;
+}
+
+.gongkao-panel--review .gongkao-card-empty,
+.gongkao-panel--collections .gongkao-card-empty {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.gongkao-panel--review .gongkao-card-empty__actions,
+.gongkao-panel--collections .gongkao-card-empty__actions {
+  margin-top: auto;
+}
+
 .gongkao-progress {
   background: var(--gongkao-green-soft);
 }
@@ -1684,8 +1513,9 @@
 }
 
 .gongkao-heatmap__cell {
-  width: 12px;
-  height: 12px;
+  width: var(--heatmap-cell-size, 12px);
+  height: var(--heatmap-cell-size, 12px);
+  aspect-ratio: 1 / 1;
   border-radius: 3px;
   background: #edf3e8;
 }
@@ -1746,4 +1576,234 @@
   .gongkao-actions {
     grid-template-columns: 1fr;
   }
+}
+
+/* Vault-native product architecture: Dashboard is a data layer, not a second app shell. */
+.gongkao-dashboard__shell,
+.gongkao-dashboard .gongkao-dashboard__shell {
+  display: block;
+  min-height: 100%;
+}
+
+.gongkao-dashboard__main,
+.gongkao-dashboard .gongkao-dashboard__main {
+  max-width: 1240px;
+  margin: 0 auto;
+  padding: 28px 30px 34px;
+}
+
+.gongkao-actions,
+.gongkao-dashboard .gongkao-actions {
+  grid-template-columns: repeat(5, minmax(132px, 1fr));
+}
+
+.gongkao-task,
+.gongkao-collection,
+.gongkao-activity,
+.gongkao-reflection,
+.gongkao-mini-file {
+  cursor: pointer;
+}
+
+.gongkao-task:hover,
+.gongkao-collection:hover,
+.gongkao-activity:hover,
+.gongkao-reflection:hover,
+.gongkao-mini-file:hover {
+  background: color-mix(in srgb, var(--background-primary) 88%, rgba(109, 146, 90, 0.1));
+}
+
+.gongkao-mini-file-list {
+  display: grid;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.gongkao-mini-file {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 10px;
+  align-items: center;
+  width: 100%;
+  min-height: 34px;
+  padding: 6px 10px;
+  border: 1px solid var(--gongkao-border, rgba(104, 139, 91, 0.14));
+  border-radius: 8px;
+  background: var(--background-primary);
+  box-shadow: none;
+  color: var(--text-normal);
+  font-size: 12px;
+  text-align: left;
+}
+
+.gongkao-mini-file span {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.gongkao-mini-file small {
+  color: var(--text-muted);
+}
+
+/* Obsidian native file explorer skin for the Gongkao Sprint vault folders. */
+.nav-folder-title[data-path="Gongkao Sprint"],
+.nav-folder-title[data-path="Gongkao Sprint/01_今日计划"],
+.nav-folder-title[data-path="Gongkao Sprint/02_刷题记录"],
+.nav-folder-title[data-path="Gongkao Sprint/03_错题库"],
+.nav-folder-title[data-path="Gongkao Sprint/04_复习队列"],
+.nav-folder-title[data-path="Gongkao Sprint/05_专题训练"],
+.nav-folder-title[data-path="Gongkao Sprint/06_复盘记录"],
+.nav-folder-title[data-path="Gongkao Sprint/07_学习模板"],
+.nav-folder-title[data-path="Gongkao Sprint/08_资源库"],
+.nav-file-title[data-path="Gongkao Sprint/Dashboard.md"] {
+  min-height: 32px;
+  margin: 2px 6px;
+  padding: 4px 10px;
+  border-radius: 8px;
+  color: var(--text-normal);
+  font-family: Inter, "SF Pro Text", "PingFang SC", "Microsoft YaHei", sans-serif;
+}
+
+.nav-folder-title[data-path="Gongkao Sprint"] {
+  margin-top: 8px;
+  background: color-mix(in srgb, var(--background-primary) 82%, rgba(109, 146, 90, 0.18));
+  color: rgb(77, 119, 63);
+  font-weight: 700;
+}
+
+.nav-folder-title[data-path="Gongkao Sprint"] .nav-folder-title-content::before {
+  content: "🍎 ";
+}
+
+.nav-folder-title[data-path="Gongkao Sprint/01_今日计划"] .nav-folder-title-content::before {
+  content: "📅 ";
+}
+
+.nav-folder-title[data-path="Gongkao Sprint/02_刷题记录"] .nav-folder-title-content::before {
+  content: "✏️ ";
+}
+
+.nav-folder-title[data-path="Gongkao Sprint/03_错题库"] .nav-folder-title-content::before {
+  content: "📚 ";
+}
+
+.nav-folder-title[data-path="Gongkao Sprint/04_复习队列"] .nav-folder-title-content::before {
+  content: "🔄 ";
+}
+
+.nav-folder-title[data-path="Gongkao Sprint/05_专题训练"] .nav-folder-title-content::before {
+  content: "🎯 ";
+}
+
+.nav-folder-title[data-path="Gongkao Sprint/06_复盘记录"] .nav-folder-title-content::before {
+  content: "📝 ";
+}
+
+.nav-folder-title[data-path="Gongkao Sprint/07_学习模板"] .nav-folder-title-content::before {
+  content: "📋 ";
+}
+
+.nav-folder-title[data-path="Gongkao Sprint/08_资源库"] .nav-folder-title-content::before {
+  content: "📦 ";
+}
+
+.nav-file-title[data-path="Gongkao Sprint/Dashboard.md"] .nav-file-title-content::before {
+  content: "📊 ";
+}
+
+.nav-folder-title[data-path^="Gongkao Sprint/"]:hover,
+.nav-file-title[data-path^="Gongkao Sprint/"]:hover {
+  background: color-mix(in srgb, var(--background-primary) 84%, rgba(109, 146, 90, 0.16));
+}
+
+.nav-folder-title.is-active[data-path^="Gongkao Sprint"],
+.nav-file-title.is-active[data-path^="Gongkao Sprint"] {
+  background: color-mix(in srgb, var(--interactive-accent) 14%, var(--background-primary));
+  color: rgb(65, 104, 52);
+  font-weight: 650;
+}
+
+/* Banner uses the provided PNG only: no CSS apple, no generated text overlay. */
+.gongkao-dashboard .gongkao-banner {
+  height: 180px;
+  margin-bottom: 16px;
+  overflow: hidden;
+  border: 1px solid var(--gongkao-border, #ece9e1);
+  border-radius: 18px;
+  background: var(--gongkao-banner-bg, #fcf7ed);
+  box-shadow: var(--gongkao-shadow, 0 4px 20px rgba(0, 0, 0, 0.03));
+}
+
+.gongkao-dashboard .banner-image {
+  position: static !important;
+  inset: auto !important;
+  z-index: auto !important;
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+}
+
+/* Gongkao Sprint file tree hierarchy spacing. Keep Obsidian's native collapse behavior, only separate the visual lanes. */
+.nav-folder-title[data-path="Gongkao Sprint"],
+.nav-folder-title[data-path^="Gongkao Sprint/"],
+.nav-file-title[data-path^="Gongkao Sprint/"] {
+  min-height: 34px;
+  padding-left: 8px;
+  padding-right: 10px;
+  font-size: 15px;
+}
+
+.nav-folder-title[data-path="Gongkao Sprint"] .nav-folder-collapse-indicator,
+.nav-folder-title[data-path^="Gongkao Sprint/"] .nav-folder-collapse-indicator {
+  flex: 0 0 18px;
+  margin-right: 8px;
+  transform: translateX(6px);
+  color: color-mix(in srgb, var(--text-muted) 78%, transparent);
+}
+
+.nav-folder-title[data-path="Gongkao Sprint"] .nav-folder-title-content,
+.nav-folder-title[data-path^="Gongkao Sprint/"] .nav-folder-title-content,
+.nav-file-title[data-path^="Gongkao Sprint/"] .nav-file-title-content {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  gap: 7px;
+}
+
+.nav-folder-title[data-path="Gongkao Sprint"] .nav-folder-title-content::before,
+.nav-folder-title[data-path^="Gongkao Sprint/"] .nav-folder-title-content::before,
+.nav-file-title[data-path^="Gongkao Sprint/"] .nav-file-title-content::before {
+  display: inline-flex;
+  width: 18px;
+  flex: 0 0 18px;
+  justify-content: center;
+  font-size: 0.92em;
+  line-height: 1;
+}
+
+.nav-folder-title[data-path="Gongkao Sprint"] + .nav-folder-children,
+.nav-folder-title[data-path^="Gongkao Sprint/"] + .nav-folder-children {
+  margin-left: 10px;
+  padding-left: 24px;
+}
+
+.nav-folder-title[data-path="Gongkao Sprint"] + .nav-folder-children,
+.nav-folder-title[data-path^="Gongkao Sprint/"] + .nav-folder-children,
+.tree-item-children {
+  border-left: 1px solid rgba(100, 100, 100, 0.15);
+}
+
+.nav-file-title[data-path="Gongkao Sprint/Dashboard.md"] {
+  margin-bottom: 8px;
+  background: rgba(232, 241, 223, 0.58);
+  color: rgb(77, 119, 63);
+  font-weight: 650;
+}
+
+.nav-file-title[data-path="Gongkao Sprint/Dashboard.md"] + .nav-folder-title[data-path^="Gongkao Sprint/"] {
+  margin-top: 10px;
 }

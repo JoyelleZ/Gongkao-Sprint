@@ -41,12 +41,12 @@ export class PracticeCollectionService {
       throw new Error("刷题集合名称不能为空。");
     }
 
-    const path = await this.store.getAvailableMarkdownPath(this.store.getSubdirectoryPath("Collections"), collection.name);
+    const path = await this.store.getAvailableMarkdownPath(this.store.getSubdirectoryPath("05_专题训练"), collection.name);
     return this.store.createMarkdownFile(path, collection, this.buildCollectionBody(collection));
   }
 
   async listCollections(): Promise<Array<{ file: TFile; data: PracticeCollection }>> {
-    const folder = this.store.getFolder(this.store.getSubdirectoryPath("Collections"));
+    const folder = this.store.getFolder(this.store.getSubdirectoryPath("05_专题训练"));
     if (!folder) {
       return [];
     }

@@ -8,8 +8,8 @@ describe("ReflectionLogService", () => {
     let capturedBody = "";
 
     const service = new ReflectionLogService({
-      getSubdirectoryPath: () => "Gongkao/Reflections",
-      getAvailableMarkdownPath: async () => "Gongkao/Reflections/2026-07-30-思维惯性-判断推理-001.md",
+      getSubdirectoryPath: () => "Gongkao Sprint/06_复盘记录",
+      getAvailableMarkdownPath: async () => "Gongkao Sprint/06_复盘记录/2026-07-30-思维惯性-判断推理-001.md",
       createMarkdownFile: async (_path: string, frontmatter: ReflectionLog, body: string) => {
         capturedLog = frontmatter;
         capturedBody = body;

@@ -1,5 +1,11 @@
 import { describe, expect, it } from "vitest";
-import { buildEffortHeatmap, calculateEffortScore, toHeatmapLevel } from "../src/services/EffortService";
+import {
+  buildEffortHeatmap,
+  buildHeatmapLayout,
+  calculateEffortScore,
+  generateLast90Days,
+  toHeatmapLevel,
+} from "../src/services/EffortService";
 import type { ErrorCard, PracticeLog, ReflectionLog } from "../src/types";
 
 describe("EffortService", () => {
@@ -64,5 +70,24 @@ describe("EffortService", () => {
   it("keeps plan completion as an additive contribution", () => {
     expect(calculateEffortScore(0, 0, 0, 1)).toBe(20);
   });
-});
 
+  it("generates exactly 90 chronological days ending today", () => {
+    const days = generateLast90Days("2026-07-30");
+
+    expect(days).toHaveLength(90);
+    expect(days[0]).toEqual({ date: "2026-05-02", count: 0 });
+    expect(days.at(-1)).toEqual({ date: "2026-07-30", count: 0 });
+  });
+
+  it("maps 90 real dates into weekday rows and fixed recent month labels", () => {
+    const heatmap = buildEffortHeatmap([], [], [], "2026-07-30");
+    const layout = buildHeatmapLayout(heatmap);
+
+    expect(layout.cells).toHaveLength(90);
+    expect(layout.cells[0]?.day.date).toBe("2026-05-02");
+    expect(layout.cells[0]?.row).toBe(6);
+    expect(layout.cells.at(-1)?.day.date).toBe("2026-07-30");
+    expect(layout.cells.at(-1)?.row).toBe(4);
+    expect(layout.months.map((month) => month.label)).toEqual(["5月", "6月", "7月"]);
+  });
+});

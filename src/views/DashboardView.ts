@@ -1,20 +1,25 @@
-import { ItemView, Notice, setIcon, WorkspaceLeaf } from "obsidian";
+import { ItemView, Notice, setIcon, TFile, WorkspaceLeaf } from "obsidian";
 import { VIEW_TYPE_GONGKAO_DASHBOARD } from "../constants";
 import type { GongkaoSprintSettings } from "../settings";
 import type { DashboardCollectionSummary, DashboardModel, DashboardService } from "../services/DashboardService";
+import { buildHeatmapLayout } from "../services/EffortService";
 import { daysBetween, todayString } from "../utils/date";
 
 interface DashboardActions {
   createErrorCard: () => void;
   createReflectionLog: () => void;
+  createPracticeLog: () => void;
   startReview: () => void;
   generateDailyPlan: () => void;
   createExampleData: () => void;
+  openFile: (file?: TFile) => void;
 }
 
 type MetricTone = "neutral" | "green" | "warn" | "danger";
 
 export class DashboardView extends ItemView {
+  private heatmapResizeObserver: ResizeObserver | null = null;
+
   constructor(
     leaf: WorkspaceLeaf,
     private readonly dashboardService: DashboardService,
@@ -52,8 +57,6 @@ export class DashboardView extends ItemView {
     const model = await this.dashboardService.loadModel();
 
     const shell = container.createDiv({ cls: "gongkao-dashboard__shell" });
-    this.renderSidebar(shell);
-
     const main = shell.createDiv({ cls: "gongkao-dashboard__main" });
     this.renderTopbar(main);
     this.renderActions(main);
@@ -67,123 +70,25 @@ export class DashboardView extends ItemView {
     this.renderReflectionPanel(grid, model);
     this.renderWeaknessPanel(grid, model);
     this.renderHeatmap(grid, model);
-
-  }
-
-  private renderSidebar(parent: HTMLElement): void {
-    const sidebar = parent.createDiv({ cls: "gongkao-sidebar" });
-    const brand = sidebar.createDiv({ cls: "gongkao-sidebar__brand" });
-    const brandText = brand.createDiv({ cls: "gongkao-sidebar__brand-text" });
-    brandText.createEl("strong", { text: "GONGKAO" });
-    brandText.createEl("span", { text: "Sprint" });
-    const chevron = brand.createSpan();
-    setIcon(chevron, "chevron-down");
-
-    const nav = sidebar.createDiv({ cls: "gongkao-sidebar__nav" });
-    const navItems: Array<[string, string, boolean]> = [
-      ["工作台", "home", true],
-      ["今日计划", "calendar-check", false],
-      ["复习队列", "refresh-cw", false],
-      ["刷题集合", "folder-check", false],
-      ["错题库", "book-open-check", false],
-      ["复盘记录", "notebook-pen", false],
-      ["专题库", "archive", false],
-      ["模板库", "file-check-2", false],
-      ["资源库", "route", false],
-    ];
-
-    for (const [label, icon, active] of navItems) {
-      const item = nav.createEl("button", {
-        cls: active ? "gongkao-sidebar__item gongkao-sidebar__item--active" : "gongkao-sidebar__item",
-        attr: { "aria-label": label },
-      });
-      const iconEl = item.createSpan();
-      setIcon(iconEl, icon);
-      item.createSpan({ text: label });
-      if (!active) {
-        item.addEventListener("click", () => new Notice(`${label} 视图将在后续步骤接入。`));
-      }
-    }
-
-    this.renderMiniCalendar(sidebar);
-
-    const encouragement = sidebar.createDiv({ cls: "gongkao-sidebar-card" });
-    const cup = encouragement.createSpan({ cls: "gongkao-sidebar-card__icon" });
-    setIcon(cup, "cup-soda");
-    encouragement.createEl("p", { text: "坚持的每一步都会让你更接近上岸！" });
-
-    const footer = sidebar.createDiv({ cls: "gongkao-sidebar__footer" });
-    footer.createEl("span", { text: "Gongkao Sprint v0.1.0" });
-    const help = footer.createSpan();
-    setIcon(help, "circle-help");
-    const settings = footer.createSpan();
-    setIcon(settings, "settings");
-  }
-
-  private renderMiniCalendar(parent: HTMLElement): void {
-    const today = new Date();
-    const month = today.getMonth();
-    const year = today.getFullYear();
-    const firstDay = new Date(year, month, 1).getDay();
-    const daysInMonth = new Date(year, month + 1, 0).getDate();
-    const previousDays = new Date(year, month, 0).getDate();
-
-    const calendar = parent.createDiv({ cls: "gongkao-mini-calendar" });
-    const header = calendar.createDiv({ cls: "gongkao-mini-calendar__header" });
-    header.createEl("strong", { text: `${year}.${`${month + 1}`.padStart(2, "0")}` });
-    const controls = header.createDiv();
-    const prev = controls.createSpan();
-    setIcon(prev, "chevron-left");
-    const next = controls.createSpan();
-    setIcon(next, "chevron-right");
-
-    const weekRow = calendar.createDiv({ cls: "gongkao-mini-calendar__week" });
-    for (const day of ["一", "二", "三", "四", "五", "六", "日"]) {
-      weekRow.createSpan({ text: day });
-    }
-
-    const grid = calendar.createDiv({ cls: "gongkao-mini-calendar__grid" });
-    const normalizedFirstDay = firstDay === 0 ? 6 : firstDay - 1;
-    for (let index = 0; index < 42; index += 1) {
-      const dayNumber = index - normalizedFirstDay + 1;
-      const isCurrentMonth = dayNumber >= 1 && dayNumber <= daysInMonth;
-      const shownDay = isCurrentMonth
-        ? dayNumber
-        : dayNumber < 1
-          ? previousDays + dayNumber
-          : dayNumber - daysInMonth;
-      const cls = [
-        "gongkao-mini-calendar__day",
-        isCurrentMonth ? "" : "gongkao-mini-calendar__day--muted",
-        isCurrentMonth && shownDay === today.getDate() ? "gongkao-mini-calendar__day--today" : "",
-      ]
-        .filter(Boolean)
-        .join(" ");
-      grid.createSpan({ text: String(shownDay), cls });
-    }
+    this.renderCalendar(grid, model);
   }
 
   private renderTopbar(parent: HTMLElement): void {
     const topbar = parent.createDiv({ cls: "gongkao-topbar" });
     const greeting = topbar.createDiv({ cls: "gongkao-topbar__greeting" });
-    const icon = greeting.createSpan();
-    setIcon(icon, "cloud-sun");
+    greeting.createDiv({ cls: "weather-icon", text: "☼" });
     greeting.createEl("h1", { text: this.getGreetingLine() });
-    greeting.createSpan({ cls: "gongkao-topbar__sun" });
 
     const date = topbar.createDiv({ cls: "gongkao-topbar__date" });
-    const dateIcon = date.createSpan();
-    setIcon(dateIcon, "calendar-days");
     date.createSpan({ text: this.getTodayLine() });
   }
 
   private renderActions(parent: HTMLElement): void {
     const actions = parent.createDiv({ cls: "gongkao-actions" });
     this.renderActionButton(actions, "新增错题", "x", () => this.actions.createErrorCard());
-    this.renderActionButton(actions, "新增复盘", "calendar-check", () => this.actions.createReflectionLog());
-    this.renderActionButton(actions, "记录刷题", "file-pen-line", () => new Notice("记录刷题功能将在后续步骤接入。"));
-    this.renderActionButton(actions, "新建专题/套卷", "clipboard-check", () => new Notice("新建专题/套卷功能将在后续步骤接入。"));
-    this.renderActionButton(actions, "生成今日计划", "calendar-plus", () => this.actions.generateDailyPlan());
+    this.renderActionButton(actions, "新建复盘", "calendar-check", () => this.actions.createReflectionLog());
+    this.renderActionButton(actions, "记录刷题", "file-pen-line", () => this.actions.createPracticeLog());
+    this.renderActionButton(actions, "创建今日计划", "calendar-plus", () => this.actions.generateDailyPlan());
     this.renderActionButton(actions, "开始复习", "play", () => this.actions.startReview(), true);
   }
 
@@ -205,12 +110,12 @@ export class DashboardView extends ItemView {
   }
 
   private renderHero(parent: HTMLElement): void {
-    const hero = parent.createDiv({ cls: "gongkao-hero" });
-    hero.createEl("img", {
-      cls: "gongkao-hero__cover",
+    const banner = parent.createDiv({ cls: "gongkao-banner" });
+    banner.createEl("img", {
+      cls: "banner-image",
       attr: {
         src: this.coverImageSrc,
-        alt: "专注当下，稳步冲刺",
+        alt: "Gongkao Sprint Banner",
       },
     });
   }
@@ -223,9 +128,6 @@ export class DashboardView extends ItemView {
     titleEl.createSpan({ text: title });
     if (meta) {
       header.createEl("span", { text: meta, cls: "gongkao-panel__meta" });
-    } else {
-      const more = header.createSpan({ cls: "gongkao-panel__more" });
-      setIcon(more, "ellipsis");
     }
   }
 
@@ -237,14 +139,14 @@ export class DashboardView extends ItemView {
 
   private renderPlanPanel(parent: HTMLElement, model: DashboardModel): void {
     const panel = parent.createDiv({ cls: "gongkao-panel gongkao-panel--plan" });
-    this.renderPanelTitle(panel, "今日计划", "sprout");
+    this.renderPanelTitle(panel, "今日任务概览", "sprout");
 
     if (!model.plan.exists || model.plan.tasks.length === 0) {
       this.renderEmptyBlock(
         panel,
         "暂无学习计划",
         "创建今日计划后，这里会显示你的刷题、复习和纠偏任务。",
-        "生成今日计划",
+        "创建今日计划",
         "calendar-plus",
         () => this.actions.generateDailyPlan(),
       );
@@ -277,6 +179,7 @@ export class DashboardView extends ItemView {
         setIcon(check, done ? "check-circle-2" : "circle");
         row.createSpan({ text: task.replace(/^已完成：|^待完成：/, "") });
         row.createEl("small", { text: done ? "已完成" : "待完成" });
+        row.addEventListener("click", () => this.actions.openFile(model.plan.file));
       }
     }
 
@@ -285,7 +188,7 @@ export class DashboardView extends ItemView {
 
   private renderReviewPanel(parent: HTMLElement, model: DashboardModel): void {
     const panel = parent.createDiv({ cls: "gongkao-panel gongkao-panel--review" });
-    this.renderPanelTitle(panel, "今日复习", "calendar-clock");
+    this.renderPanelTitle(panel, "复习提醒", "calendar-clock");
 
     if (model.review.dueCount === 0 && model.review.recentNewCount === 0 && Object.keys(model.review.byModule).length === 0) {
       this.renderEmptyBlock(
@@ -309,6 +212,14 @@ export class DashboardView extends ItemView {
       cls: "gongkao-link-button",
     });
     overdue.addEventListener("click", () => this.actions.startReview());
+
+    const dueList = panel.createDiv({ cls: "gongkao-mini-file-list" });
+    for (const entry of model.review.dueCards.slice(0, 3)) {
+      const button = dueList.createEl("button", { cls: "gongkao-mini-file" });
+      button.createSpan({ text: `${entry.card.module} · ${entry.card.question_type ?? entry.card.wrong_reason ?? "错题"}` });
+      button.createEl("small", { text: entry.file?.basename ?? entry.card.next_review });
+      button.addEventListener("click", () => this.actions.openFile(entry.file));
+    }
 
     panel.createEl("p", { text: "模块分布", cls: "gongkao-section-label" });
     const moduleGrid = panel.createDiv({ cls: "gongkao-module-grid" });
@@ -335,7 +246,7 @@ export class DashboardView extends ItemView {
 
   private renderCollectionPanel(parent: HTMLElement, collections: DashboardCollectionSummary[]): void {
     const panel = parent.createDiv({ cls: "gongkao-panel gongkao-panel--collections" });
-    this.renderPanelTitle(panel, "当前刷题集合", "folder-check", "全部集合 >");
+    this.renderPanelTitle(panel, "专题进度", "folder-check");
 
     if (collections.length === 0) {
       this.renderEmptyBlock(
@@ -362,6 +273,7 @@ export class DashboardView extends ItemView {
       const bottom = item.createDiv({ cls: "gongkao-collection__bottom" });
       bottom.createSpan({ text: `最近刷题：${summary.lastPracticeDate ?? "暂无记录"}` });
       bottom.createSpan({ text: done ? "首刷完成 ✓" : "刷题中", cls: done ? "gongkao-success" : "gongkao-muted" });
+      item.addEventListener("click", () => this.actions.openFile(summary.file));
     }
   }
 
@@ -379,10 +291,12 @@ export class DashboardView extends ItemView {
       return;
     }
 
-    for (const log of recent) {
+    for (const entry of recent) {
+      const log = entry.log;
       const row = list.createDiv({ cls: "gongkao-activity" });
       row.createEl("span", { text: `${log.date} ${log.module}` });
       row.createEl("strong", { text: `+${log.total}` });
+      row.addEventListener("click", () => this.actions.openFile(entry.file));
     }
   }
 
@@ -396,12 +310,14 @@ export class DashboardView extends ItemView {
       return;
     }
 
-    for (const entry of model.reflections.recent.slice(0, 3)) {
-      const item = list.createDiv({ cls: "gongkao-reflection" });
-      item.createEl("span", { text: entry.reflection_type, cls: "gongkao-tag gongkao-tag--soft" });
-      item.createEl("strong", { text: entry.problem ?? entry.trigger ?? "复盘记录" });
-      item.createEl("small", { text: `${entry.module ?? "综合"}｜下次纠偏：${entry.next_action ?? "待补充"}` });
-      item.createEl("span", { text: entry.date, cls: "gongkao-reflection__date" });
+    for (const source of model.reflections.recent.slice(0, 3)) {
+      const entry = source.reflection;
+      const row = list.createDiv({ cls: "gongkao-reflection" });
+      row.createEl("span", { text: entry.reflection_type, cls: "gongkao-tag gongkao-tag--soft" });
+      row.createEl("strong", { text: entry.problem ?? entry.trigger ?? "复盘记录" });
+      row.createEl("small", { text: `${entry.module ?? "综合"}｜下次纠偏：${entry.next_action ?? "待补充"}` });
+      row.createEl("span", { text: entry.date, cls: "gongkao-reflection__date" });
+      row.addEventListener("click", () => this.actions.openFile(source.file));
     }
   }
 
@@ -427,7 +343,9 @@ export class DashboardView extends ItemView {
     const heatmap = parent.createDiv({ cls: "gongkao-panel gongkao-panel--heatmap" });
     this.renderPanelTitle(heatmap, "备考努力热力图", "flame", "近 90 天");
 
-    const hasEffort = model.heatmap.some((day) => day.effortScore > 0);
+    const days = model.heatmap;
+    const layout = buildHeatmapLayout(days);
+    const hasEffort = days.some((day) => day.effortScore > 0);
     if (!hasEffort) {
       heatmap.createEl("p", {
         text: "暂无学习记录。完成学习后，这里会生成你的 90 天备考热力图。",
@@ -436,28 +354,38 @@ export class DashboardView extends ItemView {
     }
 
     const graph = heatmap.createDiv({ cls: "gongkao-heatmap-wrap" });
+
     const weekdays = graph.createDiv({ cls: "gongkao-heatmap-weekdays" });
     for (const day of ["一", "二", "三", "四", "五", "六", "日"]) {
       weekdays.createSpan({ text: day });
     }
 
     const content = graph.createDiv({ cls: "gongkao-heatmap-content" });
+
     const months = content.createDiv({ cls: "gongkao-heatmap-months" });
-    for (const month of this.getHeatmapMonths(model)) {
-      months.createSpan({ text: month });
+    months.style.gridTemplateColumns = `repeat(${layout.totalColumns}, var(--heatmap-cell-size))`;
+    for (const month of layout.months) {
+      const label = months.createSpan({ cls: "gongkao-heatmap-month", text: month.label });
+      label.style.gridColumnStart = String(month.column);
     }
 
-    const cells = content.createDiv({ cls: "gongkao-heatmap" });
-    for (const day of model.heatmap) {
-      const cell = cells.createDiv({
-        cls: `gongkao-heatmap__cell gongkao-heatmap__cell--${day.level}`,
+    const grid = content.createDiv({ cls: "gongkao-heatmap" });
+    grid.style.gridTemplateColumns = `repeat(${layout.totalColumns}, var(--heatmap-cell-size))`;
+
+    for (const cellModel of layout.cells) {
+      const day = cellModel.day;
+      const cell = grid.createDiv({
+        cls: `heatmap-cell gongkao-heatmap__cell gongkao-heatmap__cell--${day.level}`,
         attr: {
-          title: day.tooltip,
+          "data-date": day.date,
+          "data-count": String(day.count),
           "aria-label": day.tooltip,
         },
       });
+      cell.style.gridRowStart = String(cellModel.row);
+      cell.style.gridColumnStart = String(cellModel.column);
       cell.addEventListener("click", () => {
-        new Notice(`${day.date}：当天记录列表将在后续计划/记录视图中打开。`);
+        new Notice(`${day.date}：热力来自刷题与复盘 Markdown 数据。`);
       });
     }
 
@@ -467,42 +395,94 @@ export class DashboardView extends ItemView {
       legend.createDiv({ cls: `gongkao-heatmap__cell gongkao-heatmap__cell--${level}` });
     }
     legend.createEl("span", { text: "多" });
-    const detail = legend.createEl("button", { text: "查看详情", cls: "gongkao-heatmap-detail" });
-    detail.addEventListener("click", () => new Notice("备考努力详情将在后续记录视图中打开。"));
+    legend.createEl("span", { text: "数据来自 Vault Markdown", cls: "gongkao-heatmap-detail" });
+
+    this.setupHeatmapResizeObserver(content, layout.totalColumns);
+
+    console.info("Heatmap days:", days.length);
+    console.info("Cells:", grid.querySelectorAll(".heatmap-cell").length);
+    console.info("Calendar:", "enabled");
+    console.info("Months:");
+    for (const month of layout.months) console.info(month.label);
   }
 
-  private renderEmptyState(parent: HTMLElement): void {
-    const empty = parent.createDiv({ cls: "gongkao-empty-state" });
-    empty.createEl("h2", { text: "从第一个刷题集合开始" });
-    empty.createEl("p", { text: "全新 Vault 不会自动生成示例数据。你可以先创建集合，再记录一次刷题。" });
-    const actions = empty.createDiv({ cls: "gongkao-empty-actions" });
+  /** Dynamically set --heatmap-cell-size so the grid fits the panel without scrolling. */
+  private setupHeatmapResizeObserver(content: HTMLElement, totalColumns: number): void {
+    if (this.heatmapResizeObserver) {
+      this.heatmapResizeObserver.disconnect();
+    }
 
-    const buttons: Array<[string, string]> = [
-      ["创建第一个刷题集合", "folder-plus"],
-      ["记录一次刷题", "file-pen-line"],
-      ["新增错题卡", "square-pen"],
-      ["新增复盘记录", "notebook-pen"],
-      ["一键创建示例数据", "sparkles"],
-    ];
-    for (const [label, icon] of buttons) {
-      this.renderActionButton(actions, label, icon, () => {
-        if (label === "新增错题卡") {
-          this.actions.createErrorCard();
-          return;
-        }
+    const GAP = 4; // matches CSS gap on .gongkao-heatmap / .gongkao-heatmap-months
+    const MAX_CELL = 14;
+    const MIN_CELL = 8;
+    let lastCellSize = 0;
 
-        if (label === "新增复盘记录") {
-          this.actions.createReflectionLog();
-          return;
-        }
+    const updateSize = () => {
+      const w = content.clientWidth;
+      if (w === 0) return;
 
-        if (label === "一键创建示例数据") {
-          this.actions.createExampleData();
-          return;
-        }
+      let size = Math.floor((w - (totalColumns - 1) * GAP) / totalColumns);
+      size = Math.max(MIN_CELL, Math.min(MAX_CELL, size));
 
-        new Notice(`${label} 功能将在后续步骤接入。`);
-      });
+      if (size !== lastCellSize) {
+        lastCellSize = size;
+        content.style.setProperty("--heatmap-cell-size", `${size}px`);
+      }
+    };
+
+    updateSize();
+    this.heatmapResizeObserver = new ResizeObserver(() => updateSize());
+    this.heatmapResizeObserver.observe(content);
+  }
+
+  private renderCalendar(parent: HTMLElement, model: DashboardModel): void {
+    const panel = parent.createDiv({ cls: "gongkao-panel gongkao-panel--calendar" });
+    this.renderPanelTitle(panel, "学习日历", "calendar-days");
+
+    const today = new Date();
+    const year = today.getFullYear();
+    const month = today.getMonth(); // 0-based
+    const todayDate = today.getDate();
+
+    // Header
+    const header = panel.createDiv({ cls: "gongkao-mini-calendar__header" });
+    header.createEl("strong", { text: `${year}.${String(month + 1).padStart(2, "0")}` });
+
+    // Weekday labels
+    const weekRow = panel.createDiv({ cls: "gongkao-mini-calendar__week" });
+    for (const day of ["一", "二", "三", "四", "五", "六", "日"]) {
+      weekRow.createSpan({ text: day });
+    }
+
+    // Day grid
+    const grid = panel.createDiv({ cls: "gongkao-mini-calendar__grid" });
+
+    const firstDay = new Date(year, month, 1).getDay(); // 0=Sun
+    const mondayOffset = firstDay === 0 ? 6 : firstDay - 1; // days from Mon
+    const daysInMonth = new Date(year, month + 1, 0).getDate();
+
+    // Leading empty cells
+    for (let i = 0; i < mondayOffset; i++) {
+      grid.createDiv({ cls: "gongkao-mini-calendar__day gongkao-mini-calendar__day--muted" });
+    }
+
+    // Day cells
+    const hasPlanToday = model.plan.exists && model.plan.tasks.length > 0;
+    for (let d = 1; d <= daysInMonth; d++) {
+      const dayCell = grid.createDiv({ cls: "gongkao-mini-calendar__day" });
+      if (d === todayDate) {
+        dayCell.addClass("gongkao-mini-calendar__day--today");
+      }
+      dayCell.createSpan({ text: String(d) });
+
+      // Plan indicator for today
+      if (d === todayDate && hasPlanToday) {
+        dayCell.setAttr("title", `今日 ${model.plan.tasks.length} 项任务`);
+        dayCell.style.position = "relative";
+        const dot = dayCell.createDiv();
+        dot.style.cssText =
+          "position:absolute;bottom:2px;left:50%;transform:translateX(-50%);width:4px;height:4px;border-radius:50%;background:var(--gongkao-green,#6d925a);";
+      }
     }
   }
 
@@ -549,15 +529,15 @@ export class DashboardView extends ItemView {
   private getGreetingLine(): string {
     const hour = new Date().getHours();
     if (hour < 6) {
-      return "夜深了，收个漂亮的尾！";
+      return "晚上好，继续加油！";
     }
     if (hour < 12) {
-      return "早上好，先赢下第一组！";
+      return "早上好，继续加油！";
     }
     if (hour < 18) {
       return "下午好，继续加油呀！";
     }
-    return "晚上好，稳稳推进就好！";
+    return "晚上好，继续加油！";
   }
 
   private getTodayLine(): string {
@@ -567,15 +547,6 @@ export class DashboardView extends ItemView {
     const month = `${today.getMonth() + 1}`.padStart(2, "0");
     const day = `${today.getDate()}`.padStart(2, "0");
     return `今天是 ${year}-${month}-${day} ${weekdays[today.getDay()]}`;
-  }
-
-  private getHeatmapMonths(model: DashboardModel): string[] {
-    const months = new Set<string>();
-    for (const day of model.heatmap) {
-      const [, month] = day.date.split("-");
-      months.add(`${Number(month)}月`);
-    }
-    return [...months].slice(-3);
   }
 
   private getModuleIcon(module: string): string {

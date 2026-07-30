@@ -8,8 +8,8 @@ describe("ErrorCardService", () => {
     let capturedBody = "";
 
     const service = new ErrorCardService({
-      getSubdirectoryPath: () => "Gongkao/ErrorCards",
-      getAvailableMarkdownPath: async () => "Gongkao/ErrorCards/2026-07-30-资料分析-增长率.md",
+      getSubdirectoryPath: () => "Gongkao Sprint/03_错题库",
+      getAvailableMarkdownPath: async () => "Gongkao Sprint/03_错题库/2026-07-30-资料分析-增长率.md",
       createMarkdownFile: async (_path: string, frontmatter: ErrorCard, body: string) => {
         capturedCard = frontmatter;
         capturedBody = body;
@@ -44,8 +44,8 @@ describe("ErrorCardService", () => {
     let capturedCard: ErrorCard | undefined;
 
     const service = new ErrorCardService({
-      getSubdirectoryPath: () => "Gongkao/ErrorCards",
-      getAvailableMarkdownPath: async () => "Gongkao/ErrorCards/2026-07-30-判断推理-错题.md",
+      getSubdirectoryPath: () => "Gongkao Sprint/03_错题库",
+      getAvailableMarkdownPath: async () => "Gongkao Sprint/03_错题库/2026-07-30-判断推理-错题.md",
       createMarkdownFile: async (_path: string, frontmatter: ErrorCard) => {
         capturedCard = frontmatter;
         return { path: _path } as never;
@@ -69,8 +69,8 @@ describe("ErrorCardService", () => {
   it("schedules all initial mastery levels", async () => {
     const scheduledDates: string[] = [];
     const service = new ErrorCardService({
-      getSubdirectoryPath: () => "Gongkao/ErrorCards",
-      getAvailableMarkdownPath: async () => "Gongkao/ErrorCards/card.md",
+      getSubdirectoryPath: () => "Gongkao Sprint/03_错题库",
+      getAvailableMarkdownPath: async () => "Gongkao Sprint/03_错题库/card.md",
       createMarkdownFile: async (_path: string, frontmatter: ErrorCard) => {
         scheduledDates.push(frontmatter.next_review);
         return { path: _path } as never;
@@ -95,8 +95,8 @@ describe("ErrorCardService", () => {
     let capturedCard: ErrorCard | undefined;
     let capturedBody = "";
     const service = new ErrorCardService({
-      getSubdirectoryPath: () => "Gongkao/ErrorCards",
-      getAvailableMarkdownPath: async () => "Gongkao/ErrorCards/image-card.md",
+      getSubdirectoryPath: () => "Gongkao Sprint/03_错题库",
+      getAvailableMarkdownPath: async () => "Gongkao Sprint/03_错题库/image-card.md",
       createMarkdownFile: async (_path: string, frontmatter: ErrorCard, body: string) => {
         capturedCard = frontmatter;
         capturedBody = body;
@@ -108,15 +108,15 @@ describe("ErrorCardService", () => {
       {
         module: "资料分析",
         mastery: 2,
-        image: "Gongkao/Attachments/question.png",
+        image: "Gongkao Sprint/08_资源库/Attachments/question.png",
         masks: [{ x: 10, y: 20, width: 120, height: 80, label: "解析" }],
       },
       new Date("2026-07-30T10:00:00"),
     );
 
-    expect(capturedCard?.image).toBe("Gongkao/Attachments/question.png");
+    expect(capturedCard?.image).toBe("Gongkao Sprint/08_资源库/Attachments/question.png");
     expect(capturedCard?.masks).toEqual([{ x: 10, y: 20, width: 120, height: 80, label: "解析" }]);
-    expect(capturedBody).toContain("![[Gongkao/Attachments/question.png]]");
+    expect(capturedBody).toContain("![[Gongkao Sprint/08_资源库/Attachments/question.png]]");
     expect(capturedBody).toContain("正面复习时会遮挡");
   });
 

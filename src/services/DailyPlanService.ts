@@ -1,6 +1,5 @@
 import type { TFile } from "obsidian";
 import type { DailyPlan, DailyPlanTask, ErrorCard, PracticeCollection, ReflectionLog } from "../types";
-import { buildDatedFileName } from "../utils/fileName";
 import { createStableId } from "../utils/id";
 import { todayString } from "../utils/date";
 import type { VaultStore } from "./VaultStore";
@@ -66,7 +65,7 @@ export class DailyPlanService {
   }
 
   getPlanPath(date: string): string {
-    return `${this.store.getSubdirectoryPath("Plans")}/${buildDatedFileName(date, "今日计划", 1)}`;
+    return `${this.store.getSubdirectoryPath("01_今日计划")}/${date}.md`;
   }
 
   buildPlanBody(plan: DailyPlan): string {
@@ -150,4 +149,3 @@ export function calculateCompletionRate(tasks: DailyPlanTask[]): number {
 
   return Math.round((tasks.filter((task) => task.completed).length / tasks.length) * 100);
 }
-

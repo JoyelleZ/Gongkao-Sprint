@@ -90,17 +90,22 @@ src/
 
 ## 4. Vault 数据目录
 
-默认根目录为 `Gongkao`，可在设置中修改。
+默认根目录为 `Gongkao Sprint`，可在设置中修改。Gongkao Sprint 不是独立 App，而是基于 Obsidian 文件系统的备考管理增强层。
 
 ```text
-Gongkao/
-  Plans/
-  Collections/
-  ErrorCards/
-  Reflections/
-  PracticeLogs/
-  Attachments/
+Gongkao Sprint/
+  01_今日计划/
+  02_刷题记录/
+  03_错题库/
+  04_复习队列/
+  05_专题训练/
+  06_复盘记录/
+  07_学习模板/
+  08_资源库/
+  Dashboard.md
 ```
+
+Dashboard 只读取 Vault 中的 Markdown 数据并提供分析、跳转和快速创建操作。插件界面不得重复模拟“今日计划、复习队列、错题库、专题库、模板库、资源库”等 Obsidian 文件树导航，也不得把 `01_今日计划`、`04_复习队列`、`05_专题训练` 等 Vault 文件夹名显示为卡片右上角分类标签。
 
 ## 5. 数据模型
 
@@ -116,7 +121,7 @@ Gongkao/
 
 ### 5.2 刷题集合
 
-每个刷题集合是一篇 Markdown 文件，存放于 `Gongkao/Collections/`。
+每个刷题集合是一篇 Markdown 文件，存放于 `Gongkao Sprint/05_专题训练/`。
 
 frontmatter：
 
@@ -151,7 +156,7 @@ updated: 2026-07-29
 
 ### 5.3 刷题记录
 
-刷题记录存放于 `Gongkao/PracticeLogs/`，MVP 采用一条记录一文件。
+刷题记录存放于 `Gongkao Sprint/02_刷题记录/`，MVP 采用一条记录一文件。
 
 frontmatter：
 
@@ -175,7 +180,7 @@ created: 2026-07-29T20:00:00+08:00
 
 ### 5.4 错题卡
 
-每道错题是一篇 Markdown 文件，存放于 `Gongkao/ErrorCards/`。图片可选，纯文本错题也必须可保存和复习。
+每道错题是一篇 Markdown 文件，存放于 `Gongkao Sprint/03_错题库/`。图片可选，纯文本错题也必须可保存和复习。
 
 frontmatter：
 
@@ -241,7 +246,7 @@ review_history: []
 
 ### 5.6 复盘记录
 
-复盘记录存放于 `Gongkao/Reflections/`，用于记录技巧、思维惯性、触发场景和纠偏动作。复盘可以关联当天、一次刷题记录、一个错题卡、一个刷题集合或一个行测模块。
+复盘记录存放于 `Gongkao Sprint/06_复盘记录/`，用于记录技巧、思维惯性、触发场景和纠偏动作。复盘可以关联当天、一次刷题记录、一个错题卡、一个刷题集合或一个行测模块。
 
 frontmatter：
 
@@ -253,7 +258,7 @@ scope: error_card
 module: 资料分析
 collection_id: pc_20260729_001
 collection_name: 资料分析增长率专项
-error_card_path: ErrorCards/2026-07-29-资料分析-001.md
+error_card_path: 03_错题库/2026-07-29-资料分析-001.md
 reflection_type: 思维惯性
 created: 2026-07-29T21:00:00+08:00
 updated: 2026-07-29T21:00:00+08:00
@@ -292,7 +297,7 @@ updated: 2026-07-29T21:00:00+08:00
 
 ### 5.7 每日计划
 
-每日计划存放于 `Gongkao/Plans/YYYY-MM-DD.md`，工作台读取该文件并展示。
+每日计划存放于 `Gongkao Sprint/01_今日计划/YYYY-MM-DD.md`，工作台读取该文件并展示。
 
 frontmatter：
 
@@ -312,7 +317,7 @@ created: 2026-07-29T09:00:00+08:00
 - 拖拽
 - 剪贴板粘贴
 
-图片复制到 `Gongkao/Attachments/`。首版支持 `jpg`、`jpeg`、`png`、`webp`，不做 OCR、AI 识别、自动裁剪、压缩或旋转矫正。
+图片复制到 `Gongkao Sprint/08_资源库/Attachments/`。首版支持 `jpg`、`jpeg`、`png`、`webp`，不做 OCR、AI 识别、自动裁剪、压缩或旋转矫正。
 
 遮挡只支持多个矩形。坐标以原图自然尺寸为基准保存，渲染时按显示尺寸等比例换算。
 
@@ -390,8 +395,8 @@ created: 2026-07-29T09:00:00+08:00
 
 设置项：
 
-- 数据根目录，默认 `Gongkao`。
-- 附件目录，默认 `Gongkao/Attachments`。
+- 数据根目录，默认 `Gongkao Sprint`。
+- 附件目录，默认 `Gongkao Sprint/08_资源库/Attachments`。
 - 默认主刷题集合。
 - 是否启用图片遮挡，默认开启。
 - 是否显示示例数据入口，默认开启。
@@ -400,12 +405,12 @@ created: 2026-07-29T09:00:00+08:00
 ## 10. 文件命名规则
 
 ```text
-Collections/{safeCollectionName}.md
-PracticeLogs/{date}-{safeCollectionName}-{module}.md
-ErrorCards/{date}-{module}-{sequence}.md
-Reflections/{date}-{module}-{sequence}.md
-Attachments/{date}-{module}-{sequence}.{ext}
-Plans/{date}.md
+05_专题训练/{safeCollectionName}.md
+02_刷题记录/{date}-{safeCollectionName}-{module}.md
+03_错题库/{date}-{module}-{sequence}.md
+06_复盘记录/{date}-{module}-{sequence}.md
+08_资源库/Attachments/{date}-{module}-{sequence}.{ext}
+01_今日计划/{date}.md
 ```
 
 文件名需要清理 `/ \ : * ? " < > |` 等不适合跨平台文件系统的字符。中文名称应尽量保留可读性。
@@ -422,7 +427,9 @@ Plans/{date}.md
 - 复习正面显示遮罩图或纯文本正面，背面显示完整内容。
 - 新建错题按初始掌握度生成 `next_review`。
 - 复习后按掌握度更新排期和历史。
-- 今日计划生成 `Gongkao/Plans/YYYY-MM-DD.md`，工作台读取并展示。
+- 今日计划生成 `Gongkao Sprint/01_今日计划/YYYY-MM-DD.md`，工作台读取并展示。
+- Dashboard 不提供第二套左侧导航；用户通过 Obsidian 原生文件树进入 `01_今日计划`、`03_错题库`、`06_复盘记录` 等真实文件夹。
+- Dashboard Banner 使用插件内部 `assets/apple-banner.svg`，通过插件资源路径加载。
 - 工作台展示最近复盘，并在薄弱与纠偏提醒中纳入“思维惯性”复盘。
 - 工作台展示备考努力热力图，能反映最近一段备考周期的每日投入。
 - 所有核心数据均保存在 Markdown 和 frontmatter 中。

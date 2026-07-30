@@ -91,7 +91,7 @@ CSS class 必须使用 `gongkao-` 前缀。
 - 生成计划入口。
 - 今日无计划时的温和空状态。
 
-任务来自 `Gongkao/Plans/YYYY-MM-DD.md`。
+任务来自 `Gongkao Sprint/01_今日计划/YYYY-MM-DD.md`。Dashboard 不提供内部左侧导航，用户通过 Obsidian 原生文件树浏览 `01_今日计划`、`03_错题库`、`05_专题训练`、`06_复盘记录` 等真实文件夹。
 
 参考图样式：
 

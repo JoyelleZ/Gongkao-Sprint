@@ -170,7 +170,7 @@ describe("DashboardService", () => {
   it("includes recent reflection logs", () => {
     const model = buildModel("2026-07-30", { collections: [], logs: [], cards: [], reflections });
 
-    expect(model.reflections.recent[0]?.reflection_id).toBe("rf-1");
+    expect(model.reflections.recent[0]?.reflection.reflection_id).toBe("rf-1");
     expect(model.hasAnyData).toBe(true);
   });
 

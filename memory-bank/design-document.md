@@ -147,7 +147,7 @@ const VIEW_TYPE_GONGKAO_DASHBOARD = "gongkao-sprint-dashboard";
 刷题集合 Markdown 文件存放在：
 
 ```text
-Gongkao/Collections/
+Gongkao Sprint/05_专题训练/
 ```
 
 frontmatter：
@@ -328,7 +328,7 @@ review_history: []
 复盘记录存放在：
 
 ```text
-Gongkao/Reflections/
+Gongkao Sprint/06_复盘记录/
 ```
 
 frontmatter：
@@ -341,7 +341,7 @@ scope: error_card
 module: 资料分析
 collection_id: pc_20260729_001
 collection_name: 资料分析增长率专项
-error_card_path: ErrorCards/2026-07-29-资料分析-001.md
+error_card_path: 03_错题库/2026-07-29-资料分析-001.md
 reflection_type: 思维惯性
 created: 2026-07-29T21:00:00+08:00
 updated: 2026-07-29T21:00:00+08:00
@@ -418,7 +418,7 @@ updated: 2026-07-29T21:00:00+08:00
 图片统一复制到：
 
 ```text
-Gongkao/Attachments/
+Gongkao Sprint/08_资源库/Attachments/
 ```
 
 命名规则：
@@ -644,7 +644,7 @@ StatsService
 
 ### 12.3 缓存策略
 
-MVP 可以每次打开工作台时扫描 `Gongkao` 目录并解析 frontmatter。
+MVP 可以每次打开工作台时扫描 `Gongkao Sprint` 目录并解析 frontmatter。
 
 后续如性能不足，再引入内存缓存：
 
@@ -707,8 +707,8 @@ MVP 可以每次打开工作台时扫描 `Gongkao` 目录并解析 frontmatter�
 
 设置项：
 
-- 数据根目录，默认 `Gongkao`。
-- 附件目录，默认 `Gongkao/Attachments`。
+- 数据根目录，默认 `Gongkao Sprint`。
+- 附件目录，默认 `Gongkao Sprint/08_资源库/Attachments`。
 - 默认主刷题集合。
 - 是否启用图片遮挡，默认开启。
 - 是否显示示例数据入口，默认开启。
@@ -721,7 +721,7 @@ MVP 可以每次打开工作台时扫描 `Gongkao` 目录并解析 frontmatter�
 - 初始化 Obsidian 插件项目。
 - 注册工作台 View。
 - 实现设置页。
-- 创建 `Gongkao` 数据目录。
+- 创建 `Gongkao Sprint` 数据目录。
 - 实现基础 frontmatter 读写。
 
 ### Phase 2: 刷题集合与记录

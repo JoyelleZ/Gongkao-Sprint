@@ -168,13 +168,16 @@ modals/
 核心目录：
 
 ```text
-Gongkao/
-  Plans/
-  Collections/
-  ErrorCards/
-  Reflections/
-  PracticeLogs/
-  Attachments/
+Gongkao Sprint/
+  01_今日计划/
+  02_刷题记录/
+  03_错题库/
+  04_复习队列/
+  05_专题训练/
+  06_复盘记录/
+  07_学习模板/
+  08_资源库/
+  Dashboard.md
 ```
 
 不使用：
@@ -239,7 +242,7 @@ Gongkao/
 图片复制到：
 
 ```text
-Gongkao/Attachments/
+Gongkao Sprint/08_资源库/Attachments/
 ```
 
 通过 Obsidian Vault API 写入附件文件。
@@ -359,7 +362,7 @@ Services
 
 刷新策略：
 
-- 打开工作台时全量扫描 `Gongkao` 目录。
+- 打开工作台时全量扫描 `Gongkao Sprint` 目录。
 - 执行创建、更新、复习操作后主动刷新当前 View。
 - 后续可监听 Vault 事件做增量刷新。
 
@@ -480,7 +483,7 @@ Community Plugin 发布包包含：
 
 应对：
 
-- MVP 先全量扫描 `Gongkao` 目录，而不是全 vault。
+- MVP 先全量扫描 `Gongkao Sprint` 目录，而不是全 vault。
 - 后续引入内存缓存和 Vault 事件增量更新。
 
 ### 11.2 图片体积过大

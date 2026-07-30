@@ -59,12 +59,12 @@ export class ReflectionLogService {
       /\.md$/u,
       "",
     );
-    const path = await this.store.getAvailableMarkdownPath(this.store.getSubdirectoryPath("Reflections"), title);
+    const path = await this.store.getAvailableMarkdownPath(this.store.getSubdirectoryPath("06_复盘记录"), title);
     return this.store.createMarkdownFile(path, log, this.buildLogBody(log));
   }
 
   async listLogs(query: ReflectionLogQuery = {}): Promise<Array<{ file: TFile; data: ReflectionLog }>> {
-    const folder = this.store.getFolder(this.store.getSubdirectoryPath("Reflections"));
+    const folder = this.store.getFolder(this.store.getSubdirectoryPath("06_复盘记录"));
     if (!folder) {
       return [];
     }
@@ -171,4 +171,3 @@ export class ReflectionLogService {
     return labels[scope];
   }
 }
-

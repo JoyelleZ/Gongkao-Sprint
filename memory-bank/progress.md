@@ -68,7 +68,7 @@
 - Added tests for queue ordering and review feedback/history updates.
 - Re-verified `npm run build`, `npm test`, and `npm run lint` all pass with 32 tests across 10 test files.
 - Started Phase 11 daily plan and weakness correction implementation:
-  - Added `src/services/DailyPlanService.ts` for generating `Gongkao/Plans/YYYY-MM-DD-今日计划-001.md`, reading daily plan frontmatter, parsing checkbox tasks, and computing completion rate.
+  - Added `src/services/DailyPlanService.ts` for generating `Gongkao Sprint/01_今日计划/YYYY-MM-DD.md`, reading daily plan frontmatter, parsing checkbox tasks, and computing completion rate.
   - Dashboard "生成今日计划" and the `Generate Daily Plan` command now create a Markdown daily plan from due cards, default/active practice collection, and recent "思维惯性" reflections.
   - Existing daily plans are not overwritten automatically.
   - Dashboard "今日计划与倒计时" now reads today's plan tasks and completion rate.
@@ -83,3 +83,12 @@
   - Release check confirmed production dependencies are empty.
 - Added tests for example dataset creation and duplicate prevention.
 - Re-verified `npm run build`, `npm test`, and `npm run lint` all pass with 38 tests across 12 test files.
+- Completed the Vault-native Dashboard architecture correction:
+  - Removed plugin-owned Dashboard sidebar navigation so Obsidian File Explorer remains the only folder/navigation surface for `01_今日计划`, `02_刷题记录`, `03_错题库`, `04_复习队列`, `05_专题训练`, `06_复盘记录`, `07_学习模板`, and `08_资源库`.
+  - Removed Vault folder-name labels from Dashboard card headers. Dashboard cards now present study concepts such as 今日任务概览、复习提醒、专题进度、学习热力图 rather than storage folder names.
+  - Added click-through behavior from Dashboard data cards to source Markdown files where available, preserving Dashboard as a statistics/analysis layer rather than a nested app.
+  - Updated the default resource folder name to `08_资源库` and added settings migration from the previous default attachment locations.
+  - Changed daily-plan creation and reading to use `Gongkao Sprint/01_今日计划/YYYY-MM-DD.md`.
+  - Added plugin-local `assets/apple-banner.svg` and changed the Dashboard banner to load it through the plugin resource path as a CSS background, avoiding broken relative image references.
+  - Updated README, spec, architecture, frontend, implementation, tech-stack, and progress documents to reflect the Vault-native relationship.
+- Added a daily-plan path regression test; re-verified `npm test`, `npm run build`, and `npm run lint` all pass with 39 tests across 12 test files.

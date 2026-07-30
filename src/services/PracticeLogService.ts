@@ -49,12 +49,12 @@ export class PracticeLogService {
     };
 
     const baseName = buildDatedFileName(date, `${input.module}-${input.collectionName ?? "独立练习"}`, 1).replace(/\.md$/u, "");
-    const path = await this.store.getAvailableMarkdownPath(this.store.getSubdirectoryPath("PracticeLogs"), baseName);
+    const path = await this.store.getAvailableMarkdownPath(this.store.getSubdirectoryPath("02_刷题记录"), baseName);
     return this.store.createMarkdownFile(path, log, this.buildLogBody(log));
   }
 
   async listLogs(): Promise<Array<{ file: TFile; data: PracticeLog }>> {
-    const folder = this.store.getFolder(this.store.getSubdirectoryPath("PracticeLogs"));
+    const folder = this.store.getFolder(this.store.getSubdirectoryPath("02_刷题记录"));
     if (!folder) {
       return [];
     }

@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { buildDailyPlanTasks, calculateCompletionRate, parsePlanTasks } from "../src/services/DailyPlanService";
+import { buildDailyPlanTasks, calculateCompletionRate, DailyPlanService, parsePlanTasks } from "../src/services/DailyPlanService";
 import type { ErrorCard, PracticeCollection, ReflectionLog } from "../src/types";
 
 describe("DailyPlanService", () => {
@@ -53,5 +53,12 @@ describe("DailyPlanService", () => {
     expect(tasks).toHaveLength(3);
     expect(calculateCompletionRate(tasks)).toBe(67);
   });
-});
 
+  it("stores the daily plan as the date markdown file", () => {
+    const service = new DailyPlanService({
+      getSubdirectoryPath: () => "Gongkao Sprint/01_今日计划",
+    } as never);
+
+    expect(service.getPlanPath("2026-07-30")).toBe("Gongkao Sprint/01_今日计划/2026-07-30.md");
+  });
+});
