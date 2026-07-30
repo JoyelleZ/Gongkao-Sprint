@@ -1,6 +1,6 @@
 import type { TFile } from "obsidian";
-import type { ErrorCard, ImageMask, Mastery, PracticeCollectionType, XingceModule } from "../types";
-import { initialReviewDate, todayString } from "../utils/date";
+import type { ErrorCard, ImageMask, Mastery, PracticeCollectionType, ReviewResult, XingceModule } from "../types";
+import { initialReviewDate, nextReviewDate, todayString } from "../utils/date";
 import { createStableId } from "../utils/id";
 import { isXingceModule } from "../utils/validation";
 import type { VaultStore } from "./VaultStore";
@@ -93,7 +93,29 @@ export class ErrorCardService {
   }
 
   async listDueCards(today = todayString()): Promise<Array<{ file: TFile; data: ErrorCard }>> {
-    return this.listCards({ status: "active", dueOnOrBefore: today });
+    const cards = await this.listCards({ status: "active", dueOnOrBefore: today });
+    return sortReviewQueue(cards, today);
+  }
+
+  async recordReview(file: TFile, card: ErrorCard, result: ReviewResult, now = new Date()): Promise<void> {
+    const reviewedDate = todayString(now);
+    const reviewCount = card.review_count + 1;
+    const nextReview = nextReviewDate(result, reviewCount, now);
+
+    await this.store.updateFrontmatter(file, (frontmatter) => {
+      frontmatter.mastery = this.resultToMastery(result);
+      frontmatter.review_count = reviewCount;
+      frontmatter.last_reviewed = reviewedDate;
+      frontmatter.next_review = nextReview;
+      frontmatter.review_history = [
+        ...(Array.isArray(card.review_history) ? card.review_history : []),
+        {
+          date: reviewedDate,
+          result,
+          next_review: nextReview,
+        },
+      ];
+    });
   }
 
   buildCardBody(card: ErrorCard): string {
@@ -175,4 +197,34 @@ export class ErrorCardService {
 
     return labels[mastery];
   }
+
+  private resultToMastery(result: ReviewResult): Mastery {
+    const masteryByResult: Record<ReviewResult, Mastery> = {
+      again: 0,
+      hard: 1,
+      good: 2,
+      easy: 3,
+    };
+
+    return masteryByResult[result];
+  }
+}
+
+export function sortReviewQueue(
+  cards: Array<{ file: TFile; data: ErrorCard }>,
+  today = todayString(),
+): Array<{ file: TFile; data: ErrorCard }> {
+  return [...cards].sort((a, b) => {
+    const overdueDelta = daysOverdue(b.data, today) - daysOverdue(a.data, today);
+    if (overdueDelta !== 0) return overdueDelta;
+
+    const masteryDelta = a.data.mastery - b.data.mastery;
+    if (masteryDelta !== 0) return masteryDelta;
+
+    return a.data.created.localeCompare(b.data.created);
+  });
+}
+
+function daysOverdue(card: ErrorCard, today: string): number {
+  return Math.max(0, Math.floor((Date.parse(`${today}T00:00:00Z`) - Date.parse(`${card.next_review}T00:00:00Z`)) / 86400000));
 }

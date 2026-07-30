@@ -59,3 +59,11 @@
   - Unsupported file types are rejected with a user-facing hint.
 - Added tests for image file validation and error-card image/mask frontmatter output.
 - Re-verified `npm run build`, `npm test`, and `npm run lint` all pass with 30 tests across 10 test files.
+- Started Phase 10 review workflow implementation:
+  - Added `VIEW_TYPE_GONGKAO_REVIEW` and `src/views/ReviewSessionView.ts` for a dedicated main-area review session.
+  - Added review queue sorting by overdue days, mastery, and created date.
+  - Dashboard "开始复习" and the `Start Error Card Review` command now open the review View.
+  - Review front side shows text or image with saved rectangle masks. Back side reveals the full image, answer, wrong reason, and correction reminder.
+  - Mastery feedback buttons update mastery, review count, last reviewed date, next review date, and append review history in frontmatter.
+- Added tests for queue ordering and review feedback/history updates.
+- Re-verified `npm run build`, `npm test`, and `npm run lint` all pass with 32 tests across 10 test files.

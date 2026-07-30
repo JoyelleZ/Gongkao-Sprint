@@ -7,6 +7,7 @@ import { daysBetween, todayString } from "../utils/date";
 interface DashboardActions {
   createErrorCard: () => void;
   createReflectionLog: () => void;
+  startReview: () => void;
 }
 
 export class DashboardView extends ItemView {
@@ -65,6 +66,11 @@ export class DashboardView extends ItemView {
 
           if (label === "新增复盘") {
             this.actions.createReflectionLog();
+            return;
+          }
+
+          if (label === "开始复习") {
+            this.actions.startReview();
             return;
           }
 

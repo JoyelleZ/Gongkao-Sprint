@@ -1,6 +1,6 @@
 import { Notice, Plugin, WorkspaceLeaf } from "obsidian";
 import { GongkaoSprintSettingTab, DEFAULT_SETTINGS, GongkaoSprintSettings } from "./settings";
-import { VIEW_TYPE_GONGKAO_DASHBOARD } from "./constants";
+import { VIEW_TYPE_GONGKAO_DASHBOARD, VIEW_TYPE_GONGKAO_REVIEW } from "./constants";
 import { DashboardView } from "./views/DashboardView";
 import { VaultStore } from "./services/VaultStore";
 import { PracticeCollectionService } from "./services/PracticeCollectionService";
@@ -10,6 +10,7 @@ import { ErrorCardService } from "./services/ErrorCardService";
 import { ErrorCardModal } from "./modals/ErrorCardModal";
 import { ReflectionLogService } from "./services/ReflectionLogService";
 import { ReflectionLogModal } from "./modals/ReflectionLogModal";
+import { ReviewSessionView } from "./views/ReviewSessionView";
 
 export default class GongkaoSprintPlugin extends Plugin {
   settings: GongkaoSprintSettings = DEFAULT_SETTINGS;
@@ -42,6 +43,19 @@ export default class GongkaoSprintPlugin extends Plugin {
           },
           createReflectionLog: () => {
             void this.openReflectionLogModal();
+          },
+          startReview: () => {
+            void this.activateReview();
+          },
+        }),
+    );
+
+    this.registerView(
+      VIEW_TYPE_GONGKAO_REVIEW,
+      (leaf: WorkspaceLeaf) =>
+        new ReviewSessionView(leaf, this.errorCardService, {
+          onReviewed: async () => {
+            await this.refreshDashboards();
           },
         }),
     );
@@ -82,11 +96,20 @@ export default class GongkaoSprintPlugin extends Plugin {
       },
     });
 
+    this.addCommand({
+      id: "start-error-card-review",
+      name: "Start Error Card Review",
+      callback: () => {
+        void this.activateReview();
+      },
+    });
+
     this.addSettingTab(new GongkaoSprintSettingTab(this.app, this));
   }
 
   onunload(): void {
     this.app.workspace.detachLeavesOfType(VIEW_TYPE_GONGKAO_DASHBOARD);
+    this.app.workspace.detachLeavesOfType(VIEW_TYPE_GONGKAO_REVIEW);
   }
 
   async loadSettings(): Promise<void> {
@@ -112,6 +135,19 @@ export default class GongkaoSprintPlugin extends Plugin {
   async ensureDataDirectories(): Promise<void> {
     await this.vaultStore.ensureDataDirectories();
     new Notice("Gongkao Sprint 数据目录已准备好。");
+  }
+
+  async activateReview(): Promise<void> {
+    await this.vaultStore.ensureDataDirectories();
+    const leaves = this.app.workspace.getLeavesOfType(VIEW_TYPE_GONGKAO_REVIEW);
+    let leaf = leaves[0];
+
+    if (!leaf) {
+      leaf = this.app.workspace.getLeaf("tab");
+      await leaf.setViewState({ type: VIEW_TYPE_GONGKAO_REVIEW, active: true });
+    }
+
+    this.app.workspace.revealLeaf(leaf);
   }
 
   async openErrorCardModal(): Promise<void> {

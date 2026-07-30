@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { ErrorCardService } from "../src/services/ErrorCardService";
+import { ErrorCardService, sortReviewQueue } from "../src/services/ErrorCardService";
 import type { ErrorCard } from "../src/types";
 
 describe("ErrorCardService", () => {
@@ -118,5 +118,86 @@ describe("ErrorCardService", () => {
     expect(capturedCard?.masks).toEqual([{ x: 10, y: 20, width: 120, height: 80, label: "解析" }]);
     expect(capturedBody).toContain("![[Gongkao/Attachments/question.png]]");
     expect(capturedBody).toContain("正面复习时会遮挡");
+  });
+
+  it("sorts review queue by overdue days, mastery, and created date", () => {
+    const cards = [
+      {
+        file: { path: "newer.md" } as never,
+        data: {
+          type: "gongkao-error-card",
+          error_card_id: "ec-newer",
+          subject: "行测",
+          module: "资料分析",
+          mastery: 0,
+          review_count: 0,
+          created: "2026-07-29",
+          next_review: "2026-07-30",
+          status: "active",
+        } satisfies ErrorCard,
+      },
+      {
+        file: { path: "older.md" } as never,
+        data: {
+          type: "gongkao-error-card",
+          error_card_id: "ec-older",
+          subject: "行测",
+          module: "资料分析",
+          mastery: 0,
+          review_count: 0,
+          created: "2026-07-28",
+          next_review: "2026-07-30",
+          status: "active",
+        } satisfies ErrorCard,
+      },
+      {
+        file: { path: "overdue.md" } as never,
+        data: {
+          type: "gongkao-error-card",
+          error_card_id: "ec-overdue",
+          subject: "行测",
+          module: "判断推理",
+          mastery: 3,
+          review_count: 0,
+          created: "2026-07-29",
+          next_review: "2026-07-27",
+          status: "active",
+        } satisfies ErrorCard,
+      },
+    ];
+
+    const queue = sortReviewQueue(cards, "2026-07-30");
+
+    expect(queue.map((entry) => entry.data.error_card_id)).toEqual(["ec-overdue", "ec-older", "ec-newer"]);
+  });
+
+  it("records review feedback and appends history", async () => {
+    let updated: Record<string, unknown> = {};
+    const service = new ErrorCardService({
+      updateFrontmatter: async (_file: unknown, updater: (frontmatter: Record<string, unknown>) => void) => {
+        updated = {};
+        updater(updated);
+      },
+    } as never);
+    const card: ErrorCard = {
+      type: "gongkao-error-card",
+      error_card_id: "ec-1",
+      subject: "行测",
+      module: "判断推理",
+      mastery: 1,
+      review_count: 2,
+      created: "2026-07-20",
+      next_review: "2026-07-30",
+      status: "active",
+      review_history: [{ date: "2026-07-25", result: "hard", next_review: "2026-07-30" }],
+    };
+
+    await service.recordReview({ path: "card.md" } as never, card, "good", new Date("2026-07-30T10:00:00"));
+
+    expect(updated.mastery).toBe(2);
+    expect(updated.review_count).toBe(3);
+    expect(updated.last_reviewed).toBe("2026-07-30");
+    expect(updated.next_review).toBe("2026-08-09");
+    expect(updated.review_history).toHaveLength(2);
   });
 });

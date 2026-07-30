@@ -2,6 +2,7 @@ export const PLUGIN_ID = "gongkao-sprint";
 export const PLUGIN_NAME = "Gongkao Sprint";
 
 export const VIEW_TYPE_GONGKAO_DASHBOARD = "gongkao-sprint-dashboard";
+export const VIEW_TYPE_GONGKAO_REVIEW = "gongkao-sprint-review";
 
 export const DEFAULT_DATA_ROOT = "Gongkao";
 export const DEFAULT_ATTACHMENTS_DIR = "Gongkao/Attachments";
