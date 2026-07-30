@@ -5,6 +5,7 @@ import type { PracticeCollectionService } from "./PracticeCollectionService";
 import type { PracticeLogService } from "./PracticeLogService";
 import type { ErrorCardService } from "./ErrorCardService";
 import type { ReflectionLogService } from "./ReflectionLogService";
+import { buildEffortHeatmap, type HeatmapDay } from "./EffortService";
 
 export interface DashboardCollectionSummary {
   file: TFile;
@@ -33,6 +34,7 @@ export interface DashboardModel {
   modules: DashboardModuleSummary[];
   review: DashboardReviewSummary;
   reflections: DashboardReflectionSummary;
+  heatmap: HeatmapDay[];
   hasAnyData: boolean;
 }
 
@@ -106,6 +108,7 @@ export function buildDashboardModel(
     reflections: {
       recent: [...reflections].sort((a, b) => b.date.localeCompare(a.date)).slice(0, 3),
     },
+    heatmap: buildEffortHeatmap(logs, cards, reflections, today),
     hasAnyData: collections.length > 0 || logs.length > 0 || cards.length > 0 || reflections.length > 0,
   };
 }

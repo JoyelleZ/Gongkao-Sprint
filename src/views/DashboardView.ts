@@ -93,12 +93,7 @@ export class DashboardView extends ItemView {
       this.renderEmptyState(container);
     }
 
-    const heatmap = container.createDiv({ cls: "gongkao-panel gongkao-panel--wide" });
-    heatmap.createEl("h2", { text: "备考努力热力图" });
-    const cells = heatmap.createDiv({ cls: "gongkao-heatmap" });
-    for (let index = 0; index < 90; index += 1) {
-      cells.createDiv({ cls: `gongkao-heatmap__cell gongkao-heatmap__cell--${index % 5}` });
-    }
+    this.renderHeatmap(container, model);
   }
 
   private renderPanel(parent: HTMLElement, title: string, lines: string[]): void {
@@ -214,6 +209,42 @@ export class DashboardView extends ItemView {
     });
 
     this.renderPanel(parent, "最近复盘", lines.length > 0 ? lines : ["暂无复盘记录", "记录技巧、惯性和下次纠偏动作。"]);
+  }
+
+  private renderHeatmap(parent: HTMLElement, model: DashboardModel): void {
+    const heatmap = parent.createDiv({ cls: "gongkao-panel gongkao-panel--wide" });
+    const header = heatmap.createDiv({ cls: "gongkao-panel__header" });
+    header.createEl("h2", { text: "备考努力热力图" });
+    header.createEl("span", { text: "近 90 天", cls: "gongkao-panel__meta" });
+
+    const hasEffort = model.heatmap.some((day) => day.effortScore > 0);
+    if (!hasEffort) {
+      heatmap.createEl("p", {
+        text: "暂无努力数据。记录刷题、复习错题或写复盘后，这里会逐渐亮起来。",
+        cls: "gongkao-empty-text",
+      });
+    }
+
+    const cells = heatmap.createDiv({ cls: "gongkao-heatmap" });
+    for (const day of model.heatmap) {
+      const cell = cells.createDiv({
+        cls: `gongkao-heatmap__cell gongkao-heatmap__cell--${day.level}`,
+        attr: {
+          title: day.tooltip,
+          "aria-label": day.tooltip,
+        },
+      });
+      cell.addEventListener("click", () => {
+        new Notice(`${day.date}：当天记录列表将在后续计划/记录视图中打开。`);
+      });
+    }
+
+    const legend = heatmap.createDiv({ cls: "gongkao-heatmap-legend" });
+    legend.createEl("span", { text: "少" });
+    for (let level = 0; level <= 4; level += 1) {
+      legend.createDiv({ cls: `gongkao-heatmap__cell gongkao-heatmap__cell--${level}` });
+    }
+    legend.createEl("span", { text: "多" });
   }
 
   private formatCollectionType(type: DashboardCollectionSummary["collection"]["collection_type"]): string {

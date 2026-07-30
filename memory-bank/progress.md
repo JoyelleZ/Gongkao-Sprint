@@ -44,3 +44,10 @@
   - Dashboard now reads recent reflection logs and displays the latest correction actions in the "最近复盘" panel.
 - Added tests for structured reflection creation, required field validation, dashboard reflection summaries, and empty-state detection from reflections.
 - Re-verified `npm run build`, `npm test`, and `npm run lint` all pass with 22 tests across 8 test files.
+- Started Phase 8 effort heatmap implementation:
+  - Added `src/services/EffortService.ts` for recent-date heatmap generation, daily effort scoring, 0-4 visual levels, and tooltip text.
+  - Dashboard now renders the recent 90-day effort heatmap from real practice logs, error-card review history, and reflection logs.
+  - Added heatmap empty state, hover tooltip via `title`/`aria-label`, click placeholder feedback, and `少` to `多` legend.
+  - Daily plan completion is included in the scoring API but remains `0` until Phase 11 daily plans are implemented.
+- Added tests for effort scoring, heatmap levels, date continuity, and dashboard heatmap model output.
+- Re-verified `npm run build`, `npm test`, and `npm run lint` all pass with 26 tests across 9 test files.

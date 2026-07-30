@@ -156,4 +156,18 @@ describe("DashboardService", () => {
     expect(model.reflections.recent[0]?.reflection_id).toBe("rf-1");
     expect(model.hasAnyData).toBe(true);
   });
+
+  it("includes a 90 day effort heatmap in the dashboard model", () => {
+    const model = buildDashboardModel(
+      [{ file: { path: "collection.md" } as never, data: collection }],
+      logs,
+      cards,
+      reflections,
+      "2026-07-30",
+    );
+
+    expect(model.heatmap).toHaveLength(90);
+    expect(model.heatmap.at(-1)?.date).toBe("2026-07-30");
+    expect(model.heatmap.some((day) => day.level > 0)).toBe(true);
+  });
 });
