@@ -12,6 +12,7 @@ import { ReflectionLogService } from "./services/ReflectionLogService";
 import { ReflectionLogModal } from "./modals/ReflectionLogModal";
 import { ReviewSessionView } from "./views/ReviewSessionView";
 import { DailyPlanService } from "./services/DailyPlanService";
+import { ExampleDataService } from "./services/ExampleDataService";
 
 export default class GongkaoSprintPlugin extends Plugin {
   settings: GongkaoSprintSettings = DEFAULT_SETTINGS;
@@ -21,6 +22,7 @@ export default class GongkaoSprintPlugin extends Plugin {
   private errorCardService!: ErrorCardService;
   private reflectionLogService!: ReflectionLogService;
   private dailyPlanService!: DailyPlanService;
+  private exampleDataService!: ExampleDataService;
 
   async onload(): Promise<void> {
     await this.loadSettings();
@@ -30,6 +32,7 @@ export default class GongkaoSprintPlugin extends Plugin {
     this.errorCardService = new ErrorCardService(this.vaultStore);
     this.reflectionLogService = new ReflectionLogService(this.vaultStore);
     this.dailyPlanService = new DailyPlanService(this.vaultStore);
+    this.exampleDataService = new ExampleDataService(this.vaultStore);
     this.dashboardService = new DashboardService(
       this.collectionService,
       practiceLogService,
@@ -53,6 +56,9 @@ export default class GongkaoSprintPlugin extends Plugin {
           },
           generateDailyPlan: () => {
             void this.generateDailyPlan();
+          },
+          createExampleData: () => {
+            void this.createExampleData();
           },
         }),
     );
@@ -116,6 +122,14 @@ export default class GongkaoSprintPlugin extends Plugin {
       name: "Generate Daily Plan",
       callback: () => {
         void this.generateDailyPlan();
+      },
+    });
+
+    this.addCommand({
+      id: "create-example-data",
+      name: "Create Example Data",
+      callback: () => {
+        void this.createExampleData();
       },
     });
 
@@ -213,6 +227,16 @@ export default class GongkaoSprintPlugin extends Plugin {
       await this.refreshDashboards();
     } catch (error) {
       new Notice(error instanceof Error ? error.message : "今日计划生成失败。");
+    }
+  }
+
+  async createExampleData(): Promise<void> {
+    try {
+      await this.exampleDataService.createExampleData();
+      new Notice("示例数据已创建。");
+      await this.refreshDashboards();
+    } catch (error) {
+      new Notice(error instanceof Error ? error.message : "示例数据创建失败。");
     }
   }
 

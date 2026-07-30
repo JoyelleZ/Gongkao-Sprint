@@ -75,3 +75,11 @@
   - Dashboard weakness panel now uses recent 7-day wrong counts, active low-mastery cards, due review pressure, and repeated "思维惯性" reflections.
 - Added tests for daily-plan task generation, checkbox parsing/completion rate, dashboard plan display, and weakness/correction reminders.
 - Re-verified `npm run build`, `npm test`, and `npm run lint` all pass with 36 tests across 11 test files.
+- Started Phase 12 example data and release check:
+  - Added `src/services/ExampleDataService.ts` to create a complete example dataset with clearly marked example filenames.
+  - Example data includes a practice collection, multiple practice logs across different dates, an active due error card, a "思维惯性" reflection, an example daily plan, and a marker file to prevent duplicate example generation.
+  - Dashboard empty-state "一键创建示例数据" and the `Create Example Data` command now create the sample dataset.
+  - Expanded `README.md` with MVP features, data storage paths, commands, release files, development commands, and the no-AI/no-OCR/no-database MVP constraint.
+  - Release check confirmed production dependencies are empty.
+- Added tests for example dataset creation and duplicate prevention.
+- Re-verified `npm run build`, `npm test`, and `npm run lint` all pass with 38 tests across 12 test files.

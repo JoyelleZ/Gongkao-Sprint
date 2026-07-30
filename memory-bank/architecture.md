@@ -16,6 +16,7 @@ The repository now contains a minimal Obsidian Community Plugin scaffold for `Go
 - `src/services/DailyPlanService.ts`: daily-plan service for `Gongkao/Plans/`, responsible for Markdown plan generation, checkbox task parsing, and completion-rate calculation.
 - `src/services/EffortService.ts`: effort heatmap service that creates a continuous recent-day series, scores daily effort from practice, review history, reflections, and planned future plan completion, then maps scores to 0-4 visual levels.
 - `src/services/ErrorCardService.ts`: error-card service for `Gongkao/ErrorCards/`, using stable `error_card_id`, fixed frontmatter, initial review scheduling, optional collection binding, due-card queries, review queue sorting, and feedback updates.
+- `src/services/ExampleDataService.ts`: example-data service that creates a clearly marked sample practice collection, practice logs, error card, reflection, daily plan, and marker file for clean-vault onboarding.
 - `src/services/ReflectionLogService.ts`: reflection-log service for `Gongkao/Reflections/`, using stable `reflection_id`, fixed frontmatter, structured Markdown body sections, and query support.
 - `src/services/VaultStore.ts`: shared Obsidian Vault access layer for path normalization, required folder creation, Markdown file creation, frontmatter read/update, unique path generation, and attachment copying.
 - `src/services/PracticeCollectionService.ts`: practice collection service for `Gongkao/Collections/`, using stable `collection_id` values and Markdown-readable collection files.
@@ -53,6 +54,8 @@ Effort heatmap data is computed at render time rather than stored separately. Th
 Daily plans are Markdown-first files in `Gongkao/Plans/`. Plan tasks use ordinary Markdown checkboxes so users can complete tasks in their own Obsidian workflow. The dashboard parses checked/unchecked boxes to compute completion rate.
 
 Weakness/correction reminders are computed rather than stored. Current signals include recent 7-day wrong counts, low-mastery active cards, due review pressure, and repeated "思维惯性" reflection logs.
+
+Example data is guarded by `Gongkao/示例数据说明.md`. If the marker exists, example generation stops to avoid hard-to-distinguish duplicate sample files.
 
 The main plugin entry owns lifecycle registration and delegates vault file operations to `VaultStore`. Feature services should depend on `VaultStore` rather than calling Obsidian Vault APIs directly, keeping future dashboard and modal code focused on workflow behavior.
 

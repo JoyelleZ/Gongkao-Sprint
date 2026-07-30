@@ -9,6 +9,7 @@ interface DashboardActions {
   createReflectionLog: () => void;
   startReview: () => void;
   generateDailyPlan: () => void;
+  createExampleData: () => void;
 }
 
 export class DashboardView extends ItemView {
@@ -182,6 +183,11 @@ export class DashboardView extends ItemView {
 
         if (label === "新增复盘记录") {
           this.actions.createReflectionLog();
+          return;
+        }
+
+        if (label === "一键创建示例数据") {
+          this.actions.createExampleData();
           return;
         }
 
