@@ -6,6 +6,7 @@ import { daysBetween, todayString } from "../utils/date";
 
 interface DashboardActions {
   createErrorCard: () => void;
+  createReflectionLog: () => void;
 }
 
 export class DashboardView extends ItemView {
@@ -62,6 +63,11 @@ export class DashboardView extends ItemView {
             return;
           }
 
+          if (label === "新增复盘") {
+            this.actions.createReflectionLog();
+            return;
+          }
+
           new Notice(`${label} 功能将在后续步骤接入。`);
         });
       },
@@ -80,7 +86,7 @@ export class DashboardView extends ItemView {
     this.renderReviewPanel(grid, model);
     this.renderCollectionPanel(grid, model.collections);
     this.renderWeekPanel(grid, model);
-    this.renderPanel(grid, "最近复盘", ["暂无复盘记录", "记录技巧、惯性和下次纠偏动作。"]);
+    this.renderReflectionPanel(grid, model);
     this.renderWeaknessPanel(grid, model);
 
     if (!model.hasAnyData) {
@@ -181,6 +187,11 @@ export class DashboardView extends ItemView {
           return;
         }
 
+        if (label === "新增复盘记录") {
+          this.actions.createReflectionLog();
+          return;
+        }
+
         new Notice(`${label} 功能将在后续步骤接入。`);
       });
     });
@@ -194,6 +205,15 @@ export class DashboardView extends ItemView {
 
     const days = daysBetween(todayString(), examDate);
     return days >= 0 ? `距考试：${days} 天` : "考试日期已过去";
+  }
+
+  private renderReflectionPanel(parent: HTMLElement, model: DashboardModel): void {
+    const lines = model.reflections.recent.map((entry) => {
+      const module = entry.module ? `${entry.module}｜` : "";
+      return `${entry.date} ${entry.reflection_type}｜${module}${entry.next_action ?? "待补充纠偏动作"}`;
+    });
+
+    this.renderPanel(parent, "最近复盘", lines.length > 0 ? lines : ["暂无复盘记录", "记录技巧、惯性和下次纠偏动作。"]);
   }
 
   private formatCollectionType(type: DashboardCollectionSummary["collection"]["collection_type"]): string {

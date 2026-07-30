@@ -37,3 +37,10 @@
   - Image upload, clipboard paste, drag/drop, and rectangle masks are intentionally deferred to Phase 9.
 - Added tests for text error-card creation, unbound independent cards, all initial mastery schedules, and dashboard due-card summaries.
 - Re-verified `npm run build`, `npm test`, and `npm run lint` all pass with 19 tests across 7 test files.
+- Started Phase 7 reflection log implementation:
+  - Added `src/services/ReflectionLogService.ts` for structured reflection log creation, stable `reflection_id`, fixed Markdown body sections, and query support by date, scope, module, type, and collection.
+  - Added `src/modals/ReflectionLogModal.ts` using Obsidian native Modal and Setting APIs. It supports fixed reflection types, fixed scopes, optional module, optional practice collection binding, trigger, problem, method, and next correction action.
+  - Added the `Create Reflection Log` command and connected the dashboard "新增复盘" / empty-state "新增复盘记录" actions to the modal.
+  - Dashboard now reads recent reflection logs and displays the latest correction actions in the "最近复盘" panel.
+- Added tests for structured reflection creation, required field validation, dashboard reflection summaries, and empty-state detection from reflections.
+- Re-verified `npm run build`, `npm test`, and `npm run lint` all pass with 22 tests across 8 test files.

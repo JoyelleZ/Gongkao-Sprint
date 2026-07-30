@@ -8,6 +8,8 @@ import { PracticeLogService } from "./services/PracticeLogService";
 import { DashboardService } from "./services/DashboardService";
 import { ErrorCardService } from "./services/ErrorCardService";
 import { ErrorCardModal } from "./modals/ErrorCardModal";
+import { ReflectionLogService } from "./services/ReflectionLogService";
+import { ReflectionLogModal } from "./modals/ReflectionLogModal";
 
 export default class GongkaoSprintPlugin extends Plugin {
   settings: GongkaoSprintSettings = DEFAULT_SETTINGS;
@@ -15,6 +17,7 @@ export default class GongkaoSprintPlugin extends Plugin {
   private dashboardService!: DashboardService;
   private collectionService!: PracticeCollectionService;
   private errorCardService!: ErrorCardService;
+  private reflectionLogService!: ReflectionLogService;
 
   async onload(): Promise<void> {
     await this.loadSettings();
@@ -22,7 +25,13 @@ export default class GongkaoSprintPlugin extends Plugin {
     this.collectionService = new PracticeCollectionService(this.vaultStore);
     const practiceLogService = new PracticeLogService(this.vaultStore);
     this.errorCardService = new ErrorCardService(this.vaultStore);
-    this.dashboardService = new DashboardService(this.collectionService, practiceLogService, this.errorCardService);
+    this.reflectionLogService = new ReflectionLogService(this.vaultStore);
+    this.dashboardService = new DashboardService(
+      this.collectionService,
+      practiceLogService,
+      this.errorCardService,
+      this.reflectionLogService,
+    );
 
     this.registerView(
       VIEW_TYPE_GONGKAO_DASHBOARD,
@@ -30,6 +39,9 @@ export default class GongkaoSprintPlugin extends Plugin {
         new DashboardView(leaf, this.dashboardService, () => this.settings, {
           createErrorCard: () => {
             void this.openErrorCardModal();
+          },
+          createReflectionLog: () => {
+            void this.openReflectionLogModal();
           },
         }),
     );
@@ -59,6 +71,14 @@ export default class GongkaoSprintPlugin extends Plugin {
       name: "Create Error Card",
       callback: () => {
         void this.openErrorCardModal();
+      },
+    });
+
+    this.addCommand({
+      id: "create-reflection-log",
+      name: "Create Reflection Log",
+      callback: () => {
+        void this.openReflectionLogModal();
       },
     });
 
@@ -103,14 +123,32 @@ export default class GongkaoSprintPlugin extends Plugin {
         collectionService: this.collectionService,
       },
       async () => {
-        const leaves = this.app.workspace.getLeavesOfType(VIEW_TYPE_GONGKAO_DASHBOARD);
-        for (const leaf of leaves) {
-          const view = leaf.view;
-          if (view instanceof DashboardView) {
-            await view.render();
-          }
-        }
+        await this.refreshDashboards();
       },
     ).open();
+  }
+
+  async openReflectionLogModal(): Promise<void> {
+    await this.vaultStore.ensureDataDirectories();
+    new ReflectionLogModal(
+      this.app,
+      {
+        reflectionLogService: this.reflectionLogService,
+        collectionService: this.collectionService,
+      },
+      async () => {
+        await this.refreshDashboards();
+      },
+    ).open();
+  }
+
+  private async refreshDashboards(): Promise<void> {
+    const leaves = this.app.workspace.getLeavesOfType(VIEW_TYPE_GONGKAO_DASHBOARD);
+    for (const leaf of leaves) {
+      const view = leaf.view;
+      if (view instanceof DashboardView) {
+        await view.render();
+      }
+    }
   }
 }

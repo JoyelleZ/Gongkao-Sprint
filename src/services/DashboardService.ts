@@ -1,9 +1,10 @@
 import type { TFile } from "obsidian";
-import type { ErrorCard, PracticeCollection, PracticeLog, XingceModule } from "../types";
+import type { ErrorCard, PracticeCollection, PracticeLog, ReflectionLog, XingceModule } from "../types";
 import { todayString } from "../utils/date";
 import type { PracticeCollectionService } from "./PracticeCollectionService";
 import type { PracticeLogService } from "./PracticeLogService";
 import type { ErrorCardService } from "./ErrorCardService";
+import type { ReflectionLogService } from "./ReflectionLogService";
 
 export interface DashboardCollectionSummary {
   file: TFile;
@@ -31,6 +32,7 @@ export interface DashboardModel {
   week: DashboardWeekSummary;
   modules: DashboardModuleSummary[];
   review: DashboardReviewSummary;
+  reflections: DashboardReflectionSummary;
   hasAnyData: boolean;
 }
 
@@ -41,19 +43,31 @@ export interface DashboardReviewSummary {
   byModule: Partial<Record<XingceModule, number>>;
 }
 
+export interface DashboardReflectionSummary {
+  recent: ReflectionLog[];
+}
+
 export class DashboardService {
   constructor(
     private readonly collectionService: PracticeCollectionService,
     private readonly practiceLogService: PracticeLogService,
     private readonly errorCardService: ErrorCardService,
+    private readonly reflectionLogService: ReflectionLogService,
   ) {}
 
   async loadModel(today = todayString()): Promise<DashboardModel> {
     const collections = await this.collectionService.listCollections();
     const logs = await this.practiceLogService.listLogs();
     const cards = await this.errorCardService.listCards();
+    const reflections = await this.reflectionLogService.listLogs();
 
-    return buildDashboardModel(collections, logs.map((entry) => entry.data), cards.map((entry) => entry.data), today);
+    return buildDashboardModel(
+      collections,
+      logs.map((entry) => entry.data),
+      cards.map((entry) => entry.data),
+      reflections.map((entry) => entry.data),
+      today,
+    );
   }
 }
 
@@ -61,6 +75,7 @@ export function buildDashboardModel(
   collections: Array<{ file: TFile; data: PracticeCollection }>,
   logs: PracticeLog[],
   cards: ErrorCard[],
+  reflections: ReflectionLog[],
   today: string,
 ): DashboardModel {
   const collectionSummaries = collections.map(({ file, data }) => {
@@ -88,7 +103,10 @@ export function buildDashboardModel(
     },
     modules,
     review: buildReviewSummary(cards, today),
-    hasAnyData: collections.length > 0 || logs.length > 0 || cards.length > 0,
+    reflections: {
+      recent: [...reflections].sort((a, b) => b.date.localeCompare(a.date)).slice(0, 3),
+    },
+    hasAnyData: collections.length > 0 || logs.length > 0 || cards.length > 0 || reflections.length > 0,
   };
 }
 

@@ -104,6 +104,10 @@ export interface ReflectionLog {
   collection_name?: string;
   error_card_path?: string;
   reflection_type: ReflectionType;
+  trigger?: string;
+  problem?: string;
+  method?: string;
+  next_action?: string;
   created: string;
   updated: string;
 }

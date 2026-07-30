@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { buildDashboardModel } from "../src/services/DashboardService";
-import type { ErrorCard, PracticeCollection, PracticeLog } from "../src/types";
+import type { ErrorCard, PracticeCollection, PracticeLog, ReflectionLog } from "../src/types";
 
 describe("DashboardService", () => {
   const collection: PracticeCollection = {
@@ -91,8 +91,28 @@ describe("DashboardService", () => {
     },
   ];
 
+  const reflections: ReflectionLog[] = [
+    {
+      type: "gongkao-reflection-log",
+      reflection_id: "rf-1",
+      date: "2026-07-30",
+      scope: "module",
+      module: "判断推理",
+      reflection_type: "思维惯性",
+      next_action: "先扫数量变化",
+      created: "2026-07-30",
+      updated: "2026-07-30",
+    },
+  ];
+
   it("summarizes collections by stable collection id", () => {
-    const model = buildDashboardModel([{ file: { path: "collection.md" } as never, data: collection }], logs, cards, "2026-07-29");
+    const model = buildDashboardModel(
+      [{ file: { path: "collection.md" } as never, data: collection }],
+      logs,
+      cards,
+      reflections,
+      "2026-07-29",
+    );
 
     expect(model.collections[0]?.total).toBe(50);
     expect(model.collections[0]?.wrong).toBe(10);
@@ -100,7 +120,13 @@ describe("DashboardService", () => {
   });
 
   it("summarizes the current week from Monday to today", () => {
-    const model = buildDashboardModel([{ file: { path: "collection.md" } as never, data: collection }], logs, cards, "2026-07-29");
+    const model = buildDashboardModel(
+      [{ file: { path: "collection.md" } as never, data: collection }],
+      logs,
+      cards,
+      reflections,
+      "2026-07-29",
+    );
 
     expect(model.week.total).toBe(50);
     expect(model.week.wrong).toBe(10);
@@ -108,7 +134,13 @@ describe("DashboardService", () => {
   });
 
   it("summarizes due active error cards for review", () => {
-    const model = buildDashboardModel([{ file: { path: "collection.md" } as never, data: collection }], logs, cards, "2026-07-30");
+    const model = buildDashboardModel(
+      [{ file: { path: "collection.md" } as never, data: collection }],
+      logs,
+      cards,
+      reflections,
+      "2026-07-30",
+    );
 
     expect(model.review.dueCount).toBe(2);
     expect(model.review.overdueCount).toBe(1);
@@ -116,5 +148,12 @@ describe("DashboardService", () => {
     expect(model.review.byModule["判断推理"]).toBe(1);
     expect(model.review.byModule["资料分析"]).toBe(1);
     expect(model.review.byModule["言语理解"]).toBeUndefined();
+  });
+
+  it("includes recent reflection logs", () => {
+    const model = buildDashboardModel([], [], [], reflections, "2026-07-30");
+
+    expect(model.reflections.recent[0]?.reflection_id).toBe("rf-1");
+    expect(model.hasAnyData).toBe(true);
   });
 });
