@@ -1,4 +1,4 @@
-import { Notice, Plugin, WorkspaceLeaf } from "obsidian";
+import { normalizePath, Notice, Plugin, WorkspaceLeaf } from "obsidian";
 import { GongkaoSprintSettingTab, DEFAULT_SETTINGS, GongkaoSprintSettings } from "./settings";
 import { VIEW_TYPE_GONGKAO_DASHBOARD, VIEW_TYPE_GONGKAO_REVIEW } from "./constants";
 import { DashboardView } from "./views/DashboardView";
@@ -44,7 +44,7 @@ export default class GongkaoSprintPlugin extends Plugin {
     this.registerView(
       VIEW_TYPE_GONGKAO_DASHBOARD,
       (leaf: WorkspaceLeaf) =>
-        new DashboardView(leaf, this.dashboardService, () => this.settings, {
+        new DashboardView(leaf, this.dashboardService, () => this.settings, this.getCoverImageSrc(), {
           createErrorCard: () => {
             void this.openErrorCardModal();
           },
@@ -254,5 +254,10 @@ export default class GongkaoSprintPlugin extends Plugin {
     const date = new Date();
     date.setDate(date.getDate() - days);
     return date.toISOString().slice(0, 10);
+  }
+
+  private getCoverImageSrc(): string {
+    const pluginDir = this.manifest.dir ?? "";
+    return this.app.vault.adapter.getResourcePath(normalizePath(`${pluginDir}/frontcover.png`));
   }
 }
