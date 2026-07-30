@@ -149,30 +149,30 @@
   font-weight: 700;
 }
 
-/* Calendar panel inside the dashboard grid */
-.gongkao-panel--calendar .gongkao-mini-calendar__header {
+/* Calendar embedded in the dashboard time panel */
+.gongkao-calendar-panel .gongkao-mini-calendar__header {
   margin-bottom: 14px;
 }
 
-.gongkao-panel--calendar .gongkao-mini-calendar__header strong {
+.gongkao-calendar-panel .gongkao-mini-calendar__header strong {
   font-size: 15px;
   font-weight: 650;
 }
 
-.gongkao-panel--calendar .gongkao-mini-calendar__week {
+.gongkao-calendar-panel .gongkao-mini-calendar__week {
   margin-bottom: 8px;
   color: var(--text-muted);
   font-size: 12px;
 }
 
-.gongkao-panel--calendar .gongkao-mini-calendar__grid {
+.gongkao-calendar-panel .gongkao-mini-calendar__grid {
   display: grid;
   grid-template-columns: repeat(7, minmax(0, 1fr));
   gap: 6px;
   text-align: center;
 }
 
-.gongkao-panel--calendar .gongkao-mini-calendar__day {
+.gongkao-calendar-panel .gongkao-mini-calendar__day {
   display: inline-flex;
   aspect-ratio: 1;
   align-items: center;
@@ -182,12 +182,12 @@
   color: var(--text-normal);
 }
 
-.gongkao-panel--calendar .gongkao-mini-calendar__day--muted {
+.gongkao-calendar-panel .gongkao-mini-calendar__day--muted {
   color: var(--text-muted);
   opacity: 0.4;
 }
 
-.gongkao-panel--calendar .gongkao-mini-calendar__day--today {
+.gongkao-calendar-panel .gongkao-mini-calendar__day--today {
   background: var(--gongkao-green, #6d925a);
   color: white;
   font-weight: 700;
@@ -367,10 +367,13 @@
   grid-column: span 3;
 }
 
-.gongkao-panel--weakness,
-.gongkao-panel--heatmap,
-.gongkao-panel--calendar {
+.gongkao-panel--weakness {
   grid-column: span 2;
+}
+
+.gongkao-panel--time {
+  grid-column: span 6;
+  height: auto;
 }
 
 .gongkao-panel h2 {
@@ -992,6 +995,30 @@
   line-height: 1.5;
 }
 
+.gongkao-time-panel__body {
+  display: grid;
+  grid-template-columns: minmax(220px, 35%) minmax(0, 65%);
+  gap: 24px;
+  align-items: start;
+}
+
+.gongkao-time-panel__calendar,
+.gongkao-time-panel__heatmap,
+.gongkao-calendar-panel,
+.gongkao-heatmap-panel {
+  min-width: 0;
+}
+
+.gongkao-calendar-panel,
+.gongkao-heatmap-panel {
+  height: auto;
+}
+
+.gongkao-time-panel__heatmap {
+  padding-left: 22px;
+  border-left: 1px solid rgba(104, 139, 91, 0.12);
+}
+
 .gongkao-heatmap-detail {
   margin-left: auto;
   padding: 0;
@@ -1099,10 +1126,12 @@
 
   .gongkao-panel--week,
   .gongkao-panel--reflection,
-  .gongkao-panel--weakness,
-  .gongkao-panel--heatmap,
-  .gongkao-panel--calendar {
+  .gongkao-panel--weakness {
     grid-column: span 2;
+  }
+
+  .gongkao-panel--time {
+    grid-column: span 4;
   }
 
   .gongkao-review-feedback {
@@ -1143,9 +1172,19 @@
   .gongkao-panel--plan,
   .gongkao-panel--review,
   .gongkao-panel--collections,
-  .gongkao-panel--heatmap,
-  .gongkao-panel--calendar {
+  .gongkao-panel--time {
     grid-column: auto;
+  }
+
+  .gongkao-time-panel__body {
+    grid-template-columns: 1fr;
+  }
+
+  .gongkao-time-panel__heatmap {
+    padding-top: 18px;
+    padding-left: 0;
+    border-top: 1px solid rgba(104, 139, 91, 0.12);
+    border-left: 0;
   }
 
   .gongkao-weakness-list,
@@ -1779,12 +1818,26 @@
   font-size: 15px;
 }
 
+.nav-folder-title[data-path="Gongkao Sprint"],
+.nav-folder-title[data-path^="Gongkao Sprint/"] {
+  display: flex;
+  align-items: center;
+}
+
 .nav-folder-title[data-path="Gongkao Sprint"] .nav-folder-collapse-indicator,
 .nav-folder-title[data-path^="Gongkao Sprint/"] .nav-folder-collapse-indicator {
-  flex: 0 0 18px;
+  display: inline-flex;
+  width: 16px;
+  height: 16px;
+  flex: 0 0 20px;
+  align-items: center;
+  justify-content: center;
+  margin-left: 0;
   margin-right: 8px;
-  transform: translateX(6px);
   color: color-mix(in srgb, var(--text-muted) 78%, transparent);
+  font-size: 14px;
+  line-height: 1;
+  transform: none;
 }
 
 .nav-folder-title[data-path="Gongkao Sprint"] .nav-folder-title-content,
@@ -1809,7 +1862,7 @@
 
 .nav-folder-title[data-path="Gongkao Sprint"] + .nav-folder-children,
 .nav-folder-title[data-path^="Gongkao Sprint/"] + .nav-folder-children {
-  margin-left: 10px;
+  margin-left: 0;
   padding-left: 24px;
 }
 

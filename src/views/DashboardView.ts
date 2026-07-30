@@ -69,8 +69,7 @@ export class DashboardView extends ItemView {
     this.renderWeekPanel(grid, model);
     this.renderReflectionPanel(grid, model);
     this.renderWeaknessPanel(grid, model);
-    this.renderHeatmap(grid, model);
-    this.renderCalendar(grid, model);
+    this.renderTimePanel(grid, model);
   }
 
   private renderTopbar(parent: HTMLElement): void {
@@ -346,9 +345,20 @@ export class DashboardView extends ItemView {
     }
   }
 
+  private renderTimePanel(parent: HTMLElement, model: DashboardModel): void {
+    const panel = parent.createDiv({ cls: "gongkao-panel gongkao-panel--time" });
+    this.renderPanelTitle(panel, "学习日历与备考热力图", "calendar-days", "近90天备考热力图");
+
+    const body = panel.createDiv({ cls: "gongkao-time-panel__body" });
+    const calendar = body.createDiv({ cls: "gongkao-time-panel__calendar" });
+    const heatmap = body.createDiv({ cls: "gongkao-time-panel__heatmap" });
+
+    this.renderCalendar(calendar, model);
+    this.renderHeatmap(heatmap, model);
+  }
+
   private renderHeatmap(parent: HTMLElement, model: DashboardModel): void {
-    const heatmap = parent.createDiv({ cls: "gongkao-panel gongkao-panel--heatmap" });
-    this.renderPanelTitle(heatmap, "备考努力热力图", "flame", "近 90 天");
+    const heatmap = parent.createDiv({ cls: "gongkao-heatmap-panel" });
 
     const days = model.heatmap;
     const layout = buildHeatmapLayout(days);
@@ -443,9 +453,7 @@ export class DashboardView extends ItemView {
   }
 
   private renderCalendar(parent: HTMLElement, model: DashboardModel): void {
-    const panel = parent.createDiv({ cls: "gongkao-panel gongkao-panel--calendar" });
-    this.renderPanelTitle(panel, "学习日历", "calendar-days");
-
+    const panel = parent.createDiv({ cls: "gongkao-calendar-panel" });
     const today = new Date();
     const year = today.getFullYear();
     const month = today.getMonth(); // 0-based
