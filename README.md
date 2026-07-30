@@ -59,7 +59,7 @@ For an Obsidian plugin install, the required files are:
 - `manifest.json`
 - `main.js`
 - `styles.css`
-- `assets/apple-banner.svg`
+- `assets/frontcover.png`
 
 ## Development
 

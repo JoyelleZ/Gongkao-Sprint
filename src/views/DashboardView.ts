@@ -111,12 +111,19 @@ export class DashboardView extends ItemView {
 
   private renderHero(parent: HTMLElement): void {
     const banner = parent.createDiv({ cls: "gongkao-banner" });
-    banner.createEl("img", {
+    const image = banner.createEl("img", {
       cls: "banner-image",
       attr: {
         src: this.coverImageSrc,
         alt: "Gongkao Sprint Banner",
       },
+    });
+    const fallback = banner.createDiv({ cls: "gongkao-banner__fallback", text: "Gongkao Sprint" });
+    image.addEventListener("error", () => {
+      image.addClass("banner-image--hidden");
+      fallback.addClass("gongkao-banner__fallback--visible");
+      banner.addClass("gongkao-banner--fallback");
+      console.warn("Gongkao Sprint banner image failed to load:", this.coverImageSrc);
     });
   }
 
