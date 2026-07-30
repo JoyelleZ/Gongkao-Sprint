@@ -1822,6 +1822,7 @@
 .nav-folder-title[data-path^="Gongkao Sprint/"] {
   display: flex;
   align-items: center;
+  gap: 6px;
 }
 
 .nav-folder-title[data-path="Gongkao Sprint"] .nav-folder-collapse-indicator,
@@ -1829,11 +1830,11 @@
   display: inline-flex;
   width: 16px;
   height: 16px;
-  flex: 0 0 20px;
+  flex: 0 0 auto;
   align-items: center;
   justify-content: center;
   margin-left: 0;
-  margin-right: 8px;
+  margin-right: 6px;
   color: color-mix(in srgb, var(--text-muted) 78%, transparent);
   font-size: 14px;
   line-height: 1;
@@ -1863,7 +1864,7 @@
 .nav-folder-title[data-path="Gongkao Sprint"] + .nav-folder-children,
 .nav-folder-title[data-path^="Gongkao Sprint/"] + .nav-folder-children {
   margin-left: 0;
-  padding-left: 24px;
+  padding-left: 12px;
 }
 
 .nav-folder-title[data-path="Gongkao Sprint"] + .nav-folder-children,
