@@ -1,5 +1,5 @@
 import type { TFile } from "obsidian";
-import type { ErrorCard, Mastery, PracticeCollectionType, XingceModule } from "../types";
+import type { ErrorCard, ImageMask, Mastery, PracticeCollectionType, XingceModule } from "../types";
 import { initialReviewDate, todayString } from "../utils/date";
 import { createStableId } from "../utils/id";
 import { isXingceModule } from "../utils/validation";
@@ -19,6 +19,7 @@ export interface CreateErrorCardInput {
   mastery: Mastery;
   body?: string;
   image?: string;
+  masks?: ImageMask[];
 }
 
 export interface ErrorCardQuery {
@@ -31,6 +32,10 @@ export interface ErrorCardQuery {
 
 export class ErrorCardService {
   constructor(private readonly store: VaultStore) {}
+
+  async copyImageAttachment(file: File, targetBaseName: string): Promise<string> {
+    return this.store.copyAttachment(file, targetBaseName);
+  }
 
   async createCard(input: CreateErrorCardInput, now = new Date()): Promise<TFile> {
     this.validateInput(input);
@@ -57,6 +62,7 @@ export class ErrorCardService {
       status: "active",
       body: input.body?.trim() || undefined,
       image: input.image,
+      masks: input.masks,
     };
 
     const title = `${created}-${card.module}-${card.question_type ?? "错题"}`;
@@ -97,6 +103,7 @@ export class ErrorCardService {
       "## 正面",
       "",
       card.image ? `![[${card.image}]]` : card.body || "在这里补充题干、选项或图片信息。",
+      card.masks?.length ? "\n> 正面复习时会遮挡图片中的答案、解析或手写笔记区域。" : "",
       "",
       "## 背面",
       "",

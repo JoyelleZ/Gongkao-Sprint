@@ -51,3 +51,11 @@
   - Daily plan completion is included in the scoring API but remains `0` until Phase 11 daily plans are implemented.
 - Added tests for effort scoring, heatmap levels, date continuity, and dashboard heatmap model output.
 - Re-verified `npm run build`, `npm test`, and `npm run lint` all pass with 26 tests across 9 test files.
+- Started Phase 9 image input and masking implementation:
+  - Added `src/utils/imageFile.ts` for supported image validation. MVP accepts jpg, jpeg, png, and webp.
+  - `ErrorCardModal` now supports local file selection, drag/drop image input, clipboard image paste, image preview, and lightweight two-click rectangle mask creation.
+  - Selected images are copied through `VaultStore.copyAttachment()` and saved to error-card frontmatter as `image`.
+  - Rectangle masks are saved to error-card frontmatter as natural-image-coordinate `masks`, allowing users to cover answers, printed explanations, or handwritten notes near the question.
+  - Unsupported file types are rejected with a user-facing hint.
+- Added tests for image file validation and error-card image/mask frontmatter output.
+- Re-verified `npm run build`, `npm test`, and `npm run lint` all pass with 30 tests across 10 test files.

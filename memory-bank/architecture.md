@@ -9,7 +9,7 @@ The repository now contains a minimal Obsidian Community Plugin scaffold for `Go
 - `src/main.ts`: plugin lifecycle, dashboard command, ribbon entry, settings registration, and data directory initialization command.
 - `src/settings.ts`: persisted plugin settings and settings tab UI.
 - `src/views/DashboardView.ts`: main workspace dashboard View aligned to the frontend design. It renders the top action area, today plan placeholder, real review summary, real collection summaries, real weekly practice summaries, recent reflections, weakness reminder, empty state, and real effort heatmap.
-- `src/modals/ErrorCardModal.ts`: native Obsidian modal for text-first error-card creation. It keeps input choices constrained for the target user and defers image-specific workflows to Phase 9.
+- `src/modals/ErrorCardModal.ts`: native Obsidian modal for error-card creation. It supports constrained text fields, optional local/dragged/pasted image input, preview, and lightweight two-click rectangle mask creation for covering answers, explanations, or handwritten notes.
 - `src/modals/ReflectionLogModal.ts`: native Obsidian modal for structured reflection logs. It uses fixed scope/type options and required correction fields to prevent the feature from becoming a free-form diary.
 - `src/services/DashboardService.ts`: dashboard model builder that combines practice collections, practice logs, error cards, and reflection logs into collection summaries, current-week totals, recent logs, module wrong-rate summaries, review summaries, recent reflections, effort heatmap data, and empty-state detection.
 - `src/services/EffortService.ts`: effort heatmap service that creates a continuous recent-day series, scores daily effort from practice, review history, reflections, and planned future plan completion, then maps scores to 0-4 visual levels.
@@ -23,6 +23,7 @@ The repository now contains a minimal Obsidian Community Plugin scaffold for `Go
 - `src/utils/date.ts`: date formatting and review scheduling helpers.
 - `src/utils/fileName.ts`: safe filename helpers.
 - `src/utils/id.ts`: stable ID helper for entities such as `PracticeCollection` and `ReflectionLog`.
+- `src/utils/imageFile.ts`: supported image validation helpers for jpg, jpeg, png, and webp inputs.
 - `src/utils/validation.ts`: shared validation helpers for 行测 modules and numeric user input.
 
 ## Build And Test
@@ -38,6 +39,8 @@ Core data remains Markdown-first. The default vault root is `Gongkao/`, with pla
 `PracticeCollection` files are stored under `Gongkao/Collections/` and must preserve their `collection_id` across display-name edits. `PracticeLog` files are stored under `Gongkao/PracticeLogs/`; logs keep both `collection_id` and readable collection names so old records remain attributable after a collection is renamed.
 
 `ErrorCard` files are stored under `Gongkao/ErrorCards/`. Cards can be independent or bound to a practice collection through `collection_id`; the readable collection name is retained for Markdown usability. Initial review dates are generated from mastery 0-3 using the lightweight spaced-review schedule in `src/utils/date.ts`.
+
+Error-card images are copied into the configured attachments directory through `VaultStore.copyAttachment()`. `image` stores the vault-relative attachment path. `masks` stores rectangle coordinates in the original image's natural pixel dimensions, so future review views can render遮挡 accurately regardless of display scaling.
 
 `ReflectionLog` files are stored under `Gongkao/Reflections/`. Logs can represent daily, module, collection, practice-log, or error-card scopes. The required fields are trigger, problem, method, and next correction action, preserving the product focus on exam-specific复盘 rather than open-ended journaling.
 

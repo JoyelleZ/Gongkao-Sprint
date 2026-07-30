@@ -90,4 +90,33 @@ describe("ErrorCardService", () => {
 
     expect(scheduledDates).toEqual(["2026-07-31", "2026-08-02", "2026-08-06", "2026-08-20"]);
   });
+
+  it("stores image paths and masks in frontmatter", async () => {
+    let capturedCard: ErrorCard | undefined;
+    let capturedBody = "";
+    const service = new ErrorCardService({
+      getSubdirectoryPath: () => "Gongkao/ErrorCards",
+      getAvailableMarkdownPath: async () => "Gongkao/ErrorCards/image-card.md",
+      createMarkdownFile: async (_path: string, frontmatter: ErrorCard, body: string) => {
+        capturedCard = frontmatter;
+        capturedBody = body;
+        return { path: _path } as never;
+      },
+    } as never);
+
+    await service.createCard(
+      {
+        module: "资料分析",
+        mastery: 2,
+        image: "Gongkao/Attachments/question.png",
+        masks: [{ x: 10, y: 20, width: 120, height: 80, label: "解析" }],
+      },
+      new Date("2026-07-30T10:00:00"),
+    );
+
+    expect(capturedCard?.image).toBe("Gongkao/Attachments/question.png");
+    expect(capturedCard?.masks).toEqual([{ x: 10, y: 20, width: 120, height: 80, label: "解析" }]);
+    expect(capturedBody).toContain("![[Gongkao/Attachments/question.png]]");
+    expect(capturedBody).toContain("正面复习时会遮挡");
+  });
 });
