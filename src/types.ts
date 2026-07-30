@@ -115,7 +115,16 @@ export interface ReflectionLog {
 export interface DailyPlan {
   type: "gongkao-daily-plan";
   date: string;
+  plan_id: string;
+  tasks?: DailyPlanTask[];
   created: string;
+  updated: string;
+}
+
+export interface DailyPlanTask {
+  text: string;
+  completed: boolean;
+  source: "review" | "practice" | "correction";
 }
 
 export interface EffortDay {

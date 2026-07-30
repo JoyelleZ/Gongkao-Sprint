@@ -96,6 +96,10 @@ export class VaultStore {
     return match ? ((parseYaml(match[1]) ?? {}) as Partial<T>) : {};
   }
 
+  async readFile(file: TFile): Promise<string> {
+    return this.app.vault.read(file);
+  }
+
   async updateFrontmatter(file: TFile, updater: (frontmatter: MutableFrontmatter) => void): Promise<void> {
     await this.app.fileManager.processFrontMatter(file, updater);
   }
@@ -115,6 +119,11 @@ export class VaultStore {
   getFolder(path: string): TFolder | null {
     const abstractFile = this.app.vault.getAbstractFileByPath(normalizePath(path));
     return abstractFile instanceof TFolder ? abstractFile : null;
+  }
+
+  getFile(path: string): TFile | null {
+    const abstractFile = this.app.vault.getAbstractFileByPath(normalizePath(path));
+    return abstractFile instanceof TFile ? abstractFile : null;
   }
 
   buildMarkdown(frontmatter: Frontmatter, body: string): string {

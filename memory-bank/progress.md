@@ -67,3 +67,11 @@
   - Mastery feedback buttons update mastery, review count, last reviewed date, next review date, and append review history in frontmatter.
 - Added tests for queue ordering and review feedback/history updates.
 - Re-verified `npm run build`, `npm test`, and `npm run lint` all pass with 32 tests across 10 test files.
+- Started Phase 11 daily plan and weakness correction implementation:
+  - Added `src/services/DailyPlanService.ts` for generating `Gongkao/Plans/YYYY-MM-DD-今日计划-001.md`, reading daily plan frontmatter, parsing checkbox tasks, and computing completion rate.
+  - Dashboard "生成今日计划" and the `Generate Daily Plan` command now create a Markdown daily plan from due cards, default/active practice collection, and recent "思维惯性" reflections.
+  - Existing daily plans are not overwritten automatically.
+  - Dashboard "今日计划与倒计时" now reads today's plan tasks and completion rate.
+  - Dashboard weakness panel now uses recent 7-day wrong counts, active low-mastery cards, due review pressure, and repeated "思维惯性" reflections.
+- Added tests for daily-plan task generation, checkbox parsing/completion rate, dashboard plan display, and weakness/correction reminders.
+- Re-verified `npm run build`, `npm test`, and `npm run lint` all pass with 36 tests across 11 test files.

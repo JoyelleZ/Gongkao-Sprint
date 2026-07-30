@@ -11,6 +11,7 @@ import { ErrorCardModal } from "./modals/ErrorCardModal";
 import { ReflectionLogService } from "./services/ReflectionLogService";
 import { ReflectionLogModal } from "./modals/ReflectionLogModal";
 import { ReviewSessionView } from "./views/ReviewSessionView";
+import { DailyPlanService } from "./services/DailyPlanService";
 
 export default class GongkaoSprintPlugin extends Plugin {
   settings: GongkaoSprintSettings = DEFAULT_SETTINGS;
@@ -19,6 +20,7 @@ export default class GongkaoSprintPlugin extends Plugin {
   private collectionService!: PracticeCollectionService;
   private errorCardService!: ErrorCardService;
   private reflectionLogService!: ReflectionLogService;
+  private dailyPlanService!: DailyPlanService;
 
   async onload(): Promise<void> {
     await this.loadSettings();
@@ -27,11 +29,13 @@ export default class GongkaoSprintPlugin extends Plugin {
     const practiceLogService = new PracticeLogService(this.vaultStore);
     this.errorCardService = new ErrorCardService(this.vaultStore);
     this.reflectionLogService = new ReflectionLogService(this.vaultStore);
+    this.dailyPlanService = new DailyPlanService(this.vaultStore);
     this.dashboardService = new DashboardService(
       this.collectionService,
       practiceLogService,
       this.errorCardService,
       this.reflectionLogService,
+      this.dailyPlanService,
     );
 
     this.registerView(
@@ -46,6 +50,9 @@ export default class GongkaoSprintPlugin extends Plugin {
           },
           startReview: () => {
             void this.activateReview();
+          },
+          generateDailyPlan: () => {
+            void this.generateDailyPlan();
           },
         }),
     );
@@ -101,6 +108,14 @@ export default class GongkaoSprintPlugin extends Plugin {
       name: "Start Error Card Review",
       callback: () => {
         void this.activateReview();
+      },
+    });
+
+    this.addCommand({
+      id: "generate-daily-plan",
+      name: "Generate Daily Plan",
+      callback: () => {
+        void this.generateDailyPlan();
       },
     });
 
@@ -178,6 +193,29 @@ export default class GongkaoSprintPlugin extends Plugin {
     ).open();
   }
 
+  async generateDailyPlan(): Promise<void> {
+    try {
+      await this.vaultStore.ensureDataDirectories();
+      const dueCards = (await this.errorCardService.listDueCards()).map((entry) => entry.data);
+      const collections = await this.collectionService.listCollections();
+      const defaultCollection =
+        collections.find((entry) => entry.data.collection_id === this.settings.defaultCollectionId)?.data ??
+        collections.find((entry) => entry.data.status === "active")?.data;
+      const reflections = (await this.reflectionLogService.listLogs({ dateFrom: this.recentDate(7) })).map((entry) => entry.data);
+
+      await this.dailyPlanService.generatePlan({
+        dueCards,
+        defaultCollection,
+        recentReflections: reflections,
+      });
+
+      new Notice("今日计划已生成。");
+      await this.refreshDashboards();
+    } catch (error) {
+      new Notice(error instanceof Error ? error.message : "今日计划生成失败。");
+    }
+  }
+
   private async refreshDashboards(): Promise<void> {
     const leaves = this.app.workspace.getLeavesOfType(VIEW_TYPE_GONGKAO_DASHBOARD);
     for (const leaf of leaves) {
@@ -186,5 +224,11 @@ export default class GongkaoSprintPlugin extends Plugin {
         await view.render();
       }
     }
+  }
+
+  private recentDate(days: number): string {
+    const date = new Date();
+    date.setDate(date.getDate() - days);
+    return date.toISOString().slice(0, 10);
   }
 }

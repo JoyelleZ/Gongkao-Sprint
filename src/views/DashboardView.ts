@@ -8,6 +8,7 @@ interface DashboardActions {
   createErrorCard: () => void;
   createReflectionLog: () => void;
   startReview: () => void;
+  generateDailyPlan: () => void;
 }
 
 export class DashboardView extends ItemView {
@@ -74,6 +75,11 @@ export class DashboardView extends ItemView {
             return;
           }
 
+          if (label === "生成今日计划") {
+            this.actions.generateDailyPlan();
+            return;
+          }
+
           new Notice(`${label} 功能将在后续步骤接入。`);
         });
       },
@@ -84,11 +90,7 @@ export class DashboardView extends ItemView {
     hero.createEl("p", { text: "每一步都算数，理想终将抵达。", cls: "gongkao-hero__subtitle" });
 
     const grid = container.createDiv({ cls: "gongkao-dashboard__grid" });
-    this.renderPanel(grid, "今日计划与倒计时", [
-      this.getExamCountdownLine(),
-      "今日任务：暂无计划",
-      "完成率：0%",
-    ]);
+    this.renderPlanPanel(grid, model);
     this.renderReviewPanel(grid, model);
     this.renderCollectionPanel(grid, model.collections);
     this.renderWeekPanel(grid, model);
@@ -161,17 +163,7 @@ export class DashboardView extends ItemView {
   }
 
   private renderWeaknessPanel(parent: HTMLElement, model: DashboardModel): void {
-    const weakest = model.modules[0];
-    if (!weakest) {
-      this.renderPanel(parent, "薄弱与纠偏提醒", ["暂无足够数据", "完成几次刷题和复盘后，这里会出现提醒。"]);
-      return;
-    }
-
-    this.renderPanel(parent, "薄弱与纠偏提醒", [
-      `当前高错率模块：${weakest.module}`,
-      `累计错题：${weakest.wrong} / ${weakest.total}`,
-      "建议：下一次复盘记录具体错因与纠偏动作。",
-    ]);
+    this.renderPanel(parent, "薄弱与纠偏提醒", model.weakness.lines);
   }
 
   private renderEmptyState(parent: HTMLElement): void {
@@ -206,6 +198,14 @@ export class DashboardView extends ItemView {
 
     const days = daysBetween(todayString(), examDate);
     return days >= 0 ? `距考试：${days} 天` : "考试日期已过去";
+  }
+
+  private renderPlanPanel(parent: HTMLElement, model: DashboardModel): void {
+    this.renderPanel(parent, "今日计划与倒计时", [
+      this.getExamCountdownLine(),
+      ...(model.plan.exists ? model.plan.tasks : ["今日任务：暂无计划"]),
+      `完成率：${model.plan.completionRate}%`,
+    ]);
   }
 
   private renderReflectionPanel(parent: HTMLElement, model: DashboardModel): void {

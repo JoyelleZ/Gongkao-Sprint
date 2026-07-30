@@ -1,6 +1,15 @@
 import { describe, expect, it } from "vitest";
 import { buildDashboardModel } from "../src/services/DashboardService";
-import type { ErrorCard, PracticeCollection, PracticeLog, ReflectionLog } from "../src/types";
+import type { DailyPlanReadResult } from "../src/services/DailyPlanService";
+import type { DailyPlanTask, ErrorCard, PracticeCollection, PracticeLog, ReflectionLog } from "../src/types";
+
+interface DashboardTestOverrides {
+  collections?: Array<{ file: never; data: PracticeCollection }>;
+  logs?: PracticeLog[];
+  cards?: ErrorCard[];
+  reflections?: ReflectionLog[];
+  plan?: Parameters<typeof buildDashboardModel>[5];
+}
 
 describe("DashboardService", () => {
   const collection: PracticeCollection = {
@@ -105,14 +114,34 @@ describe("DashboardService", () => {
     },
   ];
 
-  it("summarizes collections by stable collection id", () => {
-    const model = buildDashboardModel(
-      [{ file: { path: "collection.md" } as never, data: collection }],
-      logs,
-      cards,
-      reflections,
-      "2026-07-29",
+  const plan: DailyPlanReadResult = {
+    file: { path: "plan.md" } as never,
+    data: {
+      type: "gongkao-daily-plan",
+      plan_id: "dp-1",
+      date: "2026-07-30",
+      created: "2026-07-30",
+      updated: "2026-07-30",
+    },
+    tasks: [
+      { text: "复习错题", completed: true, source: "review" },
+      { text: "推进刷题", completed: false, source: "practice" },
+    ] as DailyPlanTask[],
+    completionRate: 50,
+  };
+
+  const buildModel = (today: string, overrides: DashboardTestOverrides = {}) =>
+    buildDashboardModel(
+      overrides.collections ?? [{ file: { path: "collection.md" } as never, data: collection }],
+      overrides.logs ?? logs,
+      overrides.cards ?? cards,
+      overrides.reflections ?? reflections,
+      today,
+      overrides.plan ?? null,
     );
+
+  it("summarizes collections by stable collection id", () => {
+    const model = buildModel("2026-07-29");
 
     expect(model.collections[0]?.total).toBe(50);
     expect(model.collections[0]?.wrong).toBe(10);
@@ -120,13 +149,7 @@ describe("DashboardService", () => {
   });
 
   it("summarizes the current week from Monday to today", () => {
-    const model = buildDashboardModel(
-      [{ file: { path: "collection.md" } as never, data: collection }],
-      logs,
-      cards,
-      reflections,
-      "2026-07-29",
-    );
+    const model = buildModel("2026-07-29");
 
     expect(model.week.total).toBe(50);
     expect(model.week.wrong).toBe(10);
@@ -134,13 +157,7 @@ describe("DashboardService", () => {
   });
 
   it("summarizes due active error cards for review", () => {
-    const model = buildDashboardModel(
-      [{ file: { path: "collection.md" } as never, data: collection }],
-      logs,
-      cards,
-      reflections,
-      "2026-07-30",
-    );
+    const model = buildModel("2026-07-30");
 
     expect(model.review.dueCount).toBe(2);
     expect(model.review.overdueCount).toBe(1);
@@ -151,23 +168,52 @@ describe("DashboardService", () => {
   });
 
   it("includes recent reflection logs", () => {
-    const model = buildDashboardModel([], [], [], reflections, "2026-07-30");
+    const model = buildModel("2026-07-30", { collections: [], logs: [], cards: [], reflections });
 
     expect(model.reflections.recent[0]?.reflection_id).toBe("rf-1");
     expect(model.hasAnyData).toBe(true);
   });
 
   it("includes a 90 day effort heatmap in the dashboard model", () => {
-    const model = buildDashboardModel(
-      [{ file: { path: "collection.md" } as never, data: collection }],
-      logs,
-      cards,
-      reflections,
-      "2026-07-30",
-    );
+    const model = buildModel("2026-07-30");
 
     expect(model.heatmap).toHaveLength(90);
     expect(model.heatmap.at(-1)?.date).toBe("2026-07-30");
     expect(model.heatmap.some((day) => day.level > 0)).toBe(true);
+  });
+
+  it("includes daily plan completion and tasks", () => {
+    const model = buildModel("2026-07-30", { plan });
+
+    expect(model.plan.exists).toBe(true);
+    expect(model.plan.completionRate).toBe(50);
+    expect(model.plan.tasks[0]).toContain("已完成");
+  });
+
+  it("builds recent weakness and correction reminders", () => {
+    const model = buildModel("2026-07-30", {
+      cards: [
+        ...cards,
+        {
+          ...cards[0],
+          error_card_id: "ec-4",
+          module: "判断推理",
+          mastery: 1,
+          next_review: "2026-07-30",
+        },
+      ],
+      reflections: [
+        ...reflections,
+        {
+          ...reflections[0],
+          reflection_id: "rf-2",
+          date: "2026-07-29",
+          module: "判断推理",
+        },
+      ],
+    });
+
+    expect(model.weakness.lines.some((line) => line.includes("最近 7 天错题最多"))).toBe(true);
+    expect(model.weakness.lines.some((line) => line.includes("思维惯性反复出现"))).toBe(true);
   });
 });

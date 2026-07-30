@@ -8,11 +8,12 @@ The repository now contains a minimal Obsidian Community Plugin scaffold for `Go
 
 - `src/main.ts`: plugin lifecycle, dashboard command, ribbon entry, settings registration, and data directory initialization command.
 - `src/settings.ts`: persisted plugin settings and settings tab UI.
-- `src/views/DashboardView.ts`: main workspace dashboard View aligned to the frontend design. It renders the top action area, today plan placeholder, real review summary, real collection summaries, real weekly practice summaries, recent reflections, weakness reminder, empty state, and real effort heatmap.
+- `src/views/DashboardView.ts`: main workspace dashboard View aligned to the frontend design. It renders the top action area, real daily plan summary, real review summary, real collection summaries, real weekly practice summaries, recent reflections, weakness/correction reminder, empty state, and real effort heatmap.
 - `src/views/ReviewSessionView.ts`: main-area review View for due error cards. It renders front/back card states, front-side image masks, back-side answer/wrong-reason details, and mastery feedback controls.
 - `src/modals/ErrorCardModal.ts`: native Obsidian modal for error-card creation. It supports constrained text fields, optional local/dragged/pasted image input, preview, and lightweight two-click rectangle mask creation for covering answers, explanations, or handwritten notes.
 - `src/modals/ReflectionLogModal.ts`: native Obsidian modal for structured reflection logs. It uses fixed scope/type options and required correction fields to prevent the feature from becoming a free-form diary.
-- `src/services/DashboardService.ts`: dashboard model builder that combines practice collections, practice logs, error cards, and reflection logs into collection summaries, current-week totals, recent logs, module wrong-rate summaries, review summaries, recent reflections, effort heatmap data, and empty-state detection.
+- `src/services/DashboardService.ts`: dashboard model builder that combines practice collections, practice logs, error cards, reflection logs, and daily plans into collection summaries, current-week totals, recent logs, review summaries, recent reflections, effort heatmap data, daily-plan summary, weakness/correction reminders, and empty-state detection.
+- `src/services/DailyPlanService.ts`: daily-plan service for `Gongkao/Plans/`, responsible for Markdown plan generation, checkbox task parsing, and completion-rate calculation.
 - `src/services/EffortService.ts`: effort heatmap service that creates a continuous recent-day series, scores daily effort from practice, review history, reflections, and planned future plan completion, then maps scores to 0-4 visual levels.
 - `src/services/ErrorCardService.ts`: error-card service for `Gongkao/ErrorCards/`, using stable `error_card_id`, fixed frontmatter, initial review scheduling, optional collection binding, due-card queries, review queue sorting, and feedback updates.
 - `src/services/ReflectionLogService.ts`: reflection-log service for `Gongkao/Reflections/`, using stable `reflection_id`, fixed frontmatter, structured Markdown body sections, and query support.
@@ -49,6 +50,10 @@ Review feedback is stored directly on the error-card frontmatter: `mastery`, `re
 
 Effort heatmap data is computed at render time rather than stored separately. The current score inputs are practice totals, error-card review history, and reflection counts. Plan completion contribution is reserved in `EffortService` and should be connected when `DailyPlan` support lands in Phase 11.
 
+Daily plans are Markdown-first files in `Gongkao/Plans/`. Plan tasks use ordinary Markdown checkboxes so users can complete tasks in their own Obsidian workflow. The dashboard parses checked/unchecked boxes to compute completion rate.
+
+Weakness/correction reminders are computed rather than stored. Current signals include recent 7-day wrong counts, low-mastery active cards, due review pressure, and repeated "思维惯性" reflection logs.
+
 The main plugin entry owns lifecycle registration and delegates vault file operations to `VaultStore`. Feature services should depend on `VaultStore` rather than calling Obsidian Vault APIs directly, keeping future dashboard and modal code focused on workflow behavior.
 
-`DashboardView` receives `DashboardService` and action callbacks from `src/main.ts` through constructor injection. Keep dashboard statistics in `DashboardService` or pure helpers so layout changes do not duplicate aggregation logic. Current collection, practice-log, and daily-plan action buttons intentionally show placeholder notices until the corresponding workflows are implemented.
+`DashboardView` receives `DashboardService` and action callbacks from `src/main.ts` through constructor injection. Keep dashboard statistics in `DashboardService` or pure helpers so layout changes do not duplicate aggregation logic. Current collection and practice-log action buttons intentionally show placeholder notices until the corresponding workflows are implemented.
