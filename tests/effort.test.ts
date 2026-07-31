@@ -89,5 +89,6 @@ describe("EffortService", () => {
     expect(layout.cells.at(-1)?.day.date).toBe("2026-07-30");
     expect(layout.cells.at(-1)?.row).toBe(4);
     expect(layout.months.map((month) => month.label)).toEqual(["5月", "6月", "7月"]);
+    expect(layout.months.map((month) => month.column)).toEqual([1, 6, 10]);
   });
 });

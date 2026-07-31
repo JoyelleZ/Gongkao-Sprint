@@ -115,15 +115,19 @@ function generateLastDays(endDate: string, days: number): string[] {
 
 function buildFixedMonthLabels(days: HeatmapDay[], cells: HeatmapLayoutCell[]): HeatmapMonthLabel[] {
   const byMonth = new Map<string, HeatmapMonthLabel>();
+  const firstDate = days[0] ? parseLocalDate(days[0].date) : parseLocalDate(formatDate(new Date()));
+  const epochMonday = getWeekMonday(firstDate);
 
   for (let index = 0; index < days.length; index += 1) {
     const day = days[index];
     const cell = cells[index];
     const monthKey = day.date.slice(0, 7);
     if (!byMonth.has(monthKey)) {
+      const monthStart = parseLocalDate(`${monthKey}-01`);
+      const labelDate = monthStart < firstDate ? parseLocalDate(day.date) : monthStart;
       byMonth.set(monthKey, {
         label: `${Number(day.date.slice(5, 7))}月`,
-        column: cell.column,
+        column: Math.floor(daysBetweenDates(epochMonday, labelDate) / 7) + 1 || cell.column,
       });
     }
   }

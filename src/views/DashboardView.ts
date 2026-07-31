@@ -381,27 +381,22 @@ export class DashboardView extends ItemView {
     }
 
     const graph = heatmap.createDiv({ cls: "gongkao-heatmap-wrap" });
-
-    const weekdays = graph.createDiv({ cls: "gongkao-heatmap-weekdays" });
-    for (const day of ["一", "二", "三", "四", "五", "六", "日"]) {
-      weekdays.createSpan({ text: day });
-    }
-
-    const content = graph.createDiv({ cls: "gongkao-heatmap-content" });
-
-    const months = content.createDiv({ cls: "gongkao-heatmap-months" });
-    months.style.gridTemplateColumns = `repeat(${layout.totalColumns}, var(--heatmap-cell-size))`;
+    graph.style.gridTemplateColumns = `24px repeat(${layout.totalColumns}, var(--heatmap-cell-size))`;
     for (const month of layout.months) {
-      const label = months.createSpan({ cls: "gongkao-heatmap-month", text: month.label });
-      label.style.gridColumnStart = String(month.column);
+      const label = graph.createSpan({ cls: "gongkao-heatmap-month", text: month.label });
+      label.style.gridColumnStart = String(month.column + 1);
+      label.style.gridRowStart = "1";
     }
 
-    const grid = content.createDiv({ cls: "gongkao-heatmap" });
-    grid.style.gridTemplateColumns = `repeat(${layout.totalColumns}, var(--heatmap-cell-size))`;
+    for (const [index, day] of ["一", "二", "三", "四", "五", "六", "日"].entries()) {
+      const weekday = graph.createSpan({ cls: "gongkao-heatmap-weekday", text: day });
+      weekday.style.gridColumnStart = "1";
+      weekday.style.gridRowStart = String(index + 2);
+    }
 
     for (const cellModel of layout.cells) {
       const day = cellModel.day;
-      const cell = grid.createDiv({
+      const cell = graph.createDiv({
         cls: `heatmap-cell gongkao-heatmap__cell gongkao-heatmap__cell--${day.level}`,
         attr: {
           "data-date": day.date,
@@ -409,8 +404,8 @@ export class DashboardView extends ItemView {
           "aria-label": day.tooltip,
         },
       });
-      cell.style.gridRowStart = String(cellModel.row);
-      cell.style.gridColumnStart = String(cellModel.column);
+      cell.style.gridRowStart = String(cellModel.row + 1);
+      cell.style.gridColumnStart = String(cellModel.column + 1);
       cell.addEventListener("click", () => {
         new Notice(`${day.date}：热力来自刷题与复盘 Markdown 数据。`);
       });
@@ -424,42 +419,43 @@ export class DashboardView extends ItemView {
     legend.createEl("span", { text: "多" });
     legend.createEl("span", { text: "数据来自 Vault Markdown", cls: "gongkao-heatmap-detail" });
 
-    this.setupHeatmapResizeObserver(content, layout.totalColumns);
+    this.setupHeatmapResizeObserver(graph, layout.totalColumns);
 
     console.info("Heatmap days:", days.length);
-    console.info("Cells:", grid.querySelectorAll(".heatmap-cell").length);
+    console.info("Cells:", graph.querySelectorAll(".heatmap-cell").length);
     console.info("Calendar:", "enabled");
     console.info("Months:");
     for (const month of layout.months) console.info(month.label);
   }
 
   /** Dynamically set --heatmap-cell-size so the grid fits the panel without scrolling. */
-  private setupHeatmapResizeObserver(content: HTMLElement, totalColumns: number): void {
+  private setupHeatmapResizeObserver(graph: HTMLElement, totalColumns: number): void {
     if (this.heatmapResizeObserver) {
       this.heatmapResizeObserver.disconnect();
     }
 
-    const GAP = 4; // matches CSS gap on .gongkao-heatmap / .gongkao-heatmap-months
-    const MAX_CELL = 14;
-    const MIN_CELL = 8;
+    const GAP = 4; // matches CSS gap on .gongkao-heatmap-wrap
+    const MAX_CELL = 20;
+    const MIN_CELL = 10;
     let lastCellSize = 0;
 
     const updateSize = () => {
-      const w = content.clientWidth;
+      const w = graph.clientWidth;
       if (w === 0) return;
 
-      let size = Math.floor((w - (totalColumns - 1) * GAP) / totalColumns);
+      const WEEKDAY_COLUMN = 24;
+      let size = Math.floor((w - WEEKDAY_COLUMN - totalColumns * GAP) / totalColumns);
       size = Math.max(MIN_CELL, Math.min(MAX_CELL, size));
 
       if (size !== lastCellSize) {
         lastCellSize = size;
-        content.style.setProperty("--heatmap-cell-size", `${size}px`);
+        graph.style.setProperty("--heatmap-cell-size", `${size}px`);
       }
     };
 
     updateSize();
     this.heatmapResizeObserver = new ResizeObserver(() => updateSize());
-    this.heatmapResizeObserver.observe(content);
+    this.heatmapResizeObserver.observe(graph);
   }
 
   private renderCalendar(parent: HTMLElement, model: DashboardModel): void {
