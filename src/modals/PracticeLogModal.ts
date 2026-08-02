@@ -9,6 +9,7 @@ import { todayString } from "../utils/date";
 interface PracticeLogModalServices {
   collectionService: PracticeCollectionService;
   practiceLogService: PracticeLogService;
+  openPracticeCollectionModal?: () => void;
 }
 
 export class PracticeLogModal extends Modal {
@@ -76,6 +77,16 @@ export class PracticeLogModal extends Modal {
         }
       });
     });
+
+    new Setting(contentEl)
+      .setName(this.collections.length === 0 ? "还没有刷题集合" : "需要新专题或题集？")
+      .setDesc(this.collections.length === 0 ? "先创建专题、套卷或题集，再回来记录本次刷题。" : "从这里创建新的专题、套卷或题集。")
+      .addButton((button) => {
+        button.setButtonText("新建刷题集合").onClick(() => {
+          this.close();
+          this.services.openPracticeCollectionModal?.();
+        });
+      });
 
     new Setting(contentEl).setName("行测模块").addDropdown((dropdown) => {
       for (const moduleName of XINGCE_MODULES) {
@@ -162,4 +173,3 @@ export class PracticeLogModal extends Modal {
     return this.collections.find((collection) => collection.collection_id === this.selectedCollectionId);
   }
 }
-

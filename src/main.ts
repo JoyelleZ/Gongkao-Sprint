@@ -15,6 +15,8 @@ import { DailyPlanService } from "./services/DailyPlanService";
 import { ExampleDataService } from "./services/ExampleDataService";
 import { PracticeCollectionModal } from "./modals/PracticeCollectionModal";
 import { PracticeLogModal } from "./modals/PracticeLogModal";
+import { ExamCountdownService } from "./services/ExamCountdownService";
+import { ExamCountdownModal } from "./modals/ExamCountdownModal";
 
 export default class GongkaoSprintPlugin extends Plugin {
   settings: GongkaoSprintSettings = DEFAULT_SETTINGS;
@@ -25,6 +27,8 @@ export default class GongkaoSprintPlugin extends Plugin {
   private errorCardService!: ErrorCardService;
   private reflectionLogService!: ReflectionLogService;
   private dailyPlanService!: DailyPlanService;
+  private practiceLogService!: PracticeLogService;
+  private examCountdownService!: ExamCountdownService;
   private exampleDataService!: ExampleDataService;
 
   async onload(): Promise<void> {
@@ -32,23 +36,26 @@ export default class GongkaoSprintPlugin extends Plugin {
     this.coverImageSrc = await this.resolveCoverImageSrc();
     this.vaultStore = new VaultStore(this.app, () => this.settings);
     this.collectionService = new PracticeCollectionService(this.vaultStore);
-    const practiceLogService = new PracticeLogService(this.vaultStore);
+    this.practiceLogService = new PracticeLogService(this.vaultStore);
     this.errorCardService = new ErrorCardService(this.vaultStore);
     this.reflectionLogService = new ReflectionLogService(this.vaultStore);
     this.dailyPlanService = new DailyPlanService(this.vaultStore);
+    this.examCountdownService = new ExamCountdownService(this.vaultStore);
     this.exampleDataService = new ExampleDataService(this.vaultStore);
     this.dashboardService = new DashboardService(
       this.collectionService,
-      practiceLogService,
+      this.practiceLogService,
       this.errorCardService,
       this.reflectionLogService,
       this.dailyPlanService,
+      this.examCountdownService,
     );
+    await this.migrateLegacyExamDate();
 
     this.registerView(
       VIEW_TYPE_GONGKAO_DASHBOARD,
       (leaf: WorkspaceLeaf) =>
-        new DashboardView(leaf, this.dashboardService, () => this.settings, this.coverImageSrc, {
+        new DashboardView(leaf, this.dashboardService, this.coverImageSrc, {
           createErrorCard: () => {
             void this.openErrorCardModal();
           },
@@ -60,6 +67,9 @@ export default class GongkaoSprintPlugin extends Plugin {
           },
           createPracticeCollection: () => {
             void this.openPracticeCollectionModal();
+          },
+          manageExamCountdowns: () => {
+            void this.openExamCountdownModal();
           },
           startReview: () => {
             void this.activateReview();
@@ -151,6 +161,14 @@ export default class GongkaoSprintPlugin extends Plugin {
       name: "Create Practice Collection",
       callback: () => {
         void this.openPracticeCollectionModal();
+      },
+    });
+
+    this.addCommand({
+      id: "manage-exam-countdowns",
+      name: "Manage Exam Countdowns",
+      callback: () => {
+        void this.openExamCountdownModal();
       },
     });
 
@@ -271,12 +289,49 @@ export default class GongkaoSprintPlugin extends Plugin {
       this.app,
       {
         collectionService: this.collectionService,
-        practiceLogService: new PracticeLogService(this.vaultStore),
+        practiceLogService: this.practiceLogService,
+        openPracticeCollectionModal: () => {
+          void this.openPracticeCollectionModal();
+        },
       },
       async () => {
         await this.refreshDashboards();
       },
     ).open();
+  }
+
+  async openExamCountdownModal(): Promise<void> {
+    await this.vaultStore.ensureDataDirectories();
+    new ExamCountdownModal(
+      this.app,
+      {
+        examCountdownService: this.examCountdownService,
+      },
+      async () => {
+        await this.refreshDashboards();
+      },
+    ).open();
+  }
+
+  private async migrateLegacyExamDate(): Promise<void> {
+    if (!this.settings.examDate) {
+      return;
+    }
+
+    try {
+      const existing = await this.examCountdownService.listCountdowns();
+      if (existing.length === 0) {
+        await this.examCountdownService.createCountdown({
+          name: "考试倒计时",
+          date: this.settings.examDate,
+        });
+      }
+
+      this.settings.examDate = "";
+      await this.saveSettings();
+    } catch (error) {
+      console.warn("Gongkao Sprint legacy exam date migration skipped:", error);
+    }
   }
 
   async generateDailyPlan(): Promise<void> {

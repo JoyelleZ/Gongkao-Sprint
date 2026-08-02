@@ -99,3 +99,11 @@
   - Dashboard "记录刷题" and the `Create Practice Log` command now open the practice-log modal instead of creating a placeholder Markdown template.
   - `PracticeCollectionService` and `PracticeLogService` now export their create input types for modal integration.
 - Re-verified `npm run build`, `npm test`, and `npm run lint` all pass with 41 tests across 12 test files.
+- Added multi-target exam countdown support:
+  - Added `src/services/ExamCountdownService.ts` and `src/modals/ExamCountdownModal.ts`.
+  - Countdown data is stored in `Gongkao Sprint/Dashboard.md` frontmatter under `exam_countdowns`.
+  - Dashboard now shows the nearest enabled upcoming exam and opens countdown management from the countdown area.
+  - Legacy single `examDate` settings migrate into a Markdown countdown when possible.
+- Updated the top Dashboard action order to: 制定今日计划, 记录刷题, 新增错题, 新建复盘, 开始复习.
+- Removed "新建专题" from the top toolbar; the creation entry is now inside the 记录刷题 modal and the empty 专题进度 card.
+- Re-verified `npm run build`, `npm test`, and `npm run lint` all pass with 46 tests across 13 test files.

@@ -1,15 +1,14 @@
 import { ItemView, Notice, setIcon, TFile, WorkspaceLeaf } from "obsidian";
 import { VIEW_TYPE_GONGKAO_DASHBOARD } from "../constants";
-import type { GongkaoSprintSettings } from "../settings";
 import type { DashboardCollectionSummary, DashboardModel, DashboardService } from "../services/DashboardService";
 import { buildHeatmapLayout } from "../services/EffortService";
-import { daysBetween, todayString } from "../utils/date";
 
 interface DashboardActions {
   createErrorCard: () => void;
   createReflectionLog: () => void;
   createPracticeLog: () => void;
   createPracticeCollection: () => void;
+  manageExamCountdowns: () => void;
   startReview: () => void;
   generateDailyPlan: () => void;
   createExampleData: () => void;
@@ -24,7 +23,6 @@ export class DashboardView extends ItemView {
   constructor(
     leaf: WorkspaceLeaf,
     private readonly dashboardService: DashboardService,
-    private readonly getSettings: () => GongkaoSprintSettings,
     private readonly coverImageSrc: string,
     private readonly actions: DashboardActions,
   ) {
@@ -86,11 +84,10 @@ export class DashboardView extends ItemView {
 
   private renderActions(parent: HTMLElement): void {
     const actions = parent.createDiv({ cls: "gongkao-actions" });
+    this.renderActionButton(actions, "制定今日计划", "calendar-plus", () => this.actions.generateDailyPlan());
+    this.renderActionButton(actions, "记录刷题", "file-pen-line", () => this.actions.createPracticeLog());
     this.renderActionButton(actions, "新增错题", "x", () => this.actions.createErrorCard());
     this.renderActionButton(actions, "新建复盘", "calendar-check", () => this.actions.createReflectionLog());
-    this.renderActionButton(actions, "记录刷题", "file-pen-line", () => this.actions.createPracticeLog());
-    this.renderActionButton(actions, "新建专题", "folder-plus", () => this.actions.createPracticeCollection());
-    this.renderActionButton(actions, "创建今日计划", "calendar-plus", () => this.actions.generateDailyPlan());
     this.renderActionButton(actions, "开始复习", "play", () => this.actions.startReview(), true);
   }
 
@@ -149,6 +146,7 @@ export class DashboardView extends ItemView {
   private renderPlanPanel(parent: HTMLElement, model: DashboardModel): void {
     const panel = parent.createDiv({ cls: "gongkao-panel gongkao-panel--plan" });
     this.renderPanelTitle(panel, "今日任务概览", "sprout");
+    this.renderCountdown(panel, model);
 
     if (!model.plan.exists || model.plan.tasks.length === 0) {
       this.renderEmptyBlock(
@@ -161,13 +159,6 @@ export class DashboardView extends ItemView {
       );
       return;
     }
-
-    const countdownLine = this.getExamCountdownLine();
-    const countdownNumber = countdownLine.match(/\d+/)?.[0] ?? "--";
-    const countdown = panel.createDiv({ cls: "gongkao-countdown" });
-    countdown.createEl("span", { text: countdownLine.includes("天") ? "距离考试还有" : "考试倒计时" });
-    countdown.createEl("strong", { text: countdownNumber });
-    countdown.createEl("small", { text: countdownLine.includes("天") ? "天" : countdownLine });
 
     const completedCount = model.plan.tasks.filter((task) => task.startsWith("已完成")).length;
     const taskTotal = model.plan.tasks.length;
@@ -539,14 +530,26 @@ export class DashboardView extends ItemView {
     label.createEl("strong", { text: `${value}%` });
   }
 
-  private getExamCountdownLine(): string {
-    const examDate = this.getSettings().examDate;
-    if (!examDate) {
-      return "距考试：未设置";
+  private renderCountdown(parent: HTMLElement, model: DashboardModel): void {
+    const countdown = parent.createDiv({ cls: "gongkao-countdown" });
+    countdown.addEventListener("click", () => this.actions.manageExamCountdowns());
+
+    if (!model.countdown.countdown) {
+      countdown.createEl("span", { text: "考试倒计时" });
+      countdown.createEl("strong", { text: "--" });
+      countdown.createEl("small", { text: "点击设置国考、省考等目标" });
+      return;
     }
 
-    const days = daysBetween(todayString(), examDate);
-    return days >= 0 ? `距考试：${days} 天` : "考试日期已过去";
+    countdown.createEl("span", { text: model.countdown.countdown.name });
+    if (model.countdown.status === "past") {
+      countdown.createEl("strong", { text: "--" });
+      countdown.createEl("small", { text: `${model.countdown.countdown.date} 已过去，点击更新` });
+      return;
+    }
+
+    countdown.createEl("strong", { text: String(model.countdown.days ?? 0) });
+    countdown.createEl("small", { text: model.countdown.status === "today" ? "今天考试" : `天｜${model.countdown.countdown.date}` });
   }
 
   private getGreetingLine(): string {

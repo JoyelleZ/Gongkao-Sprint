@@ -1,5 +1,5 @@
 import type { TFile } from "obsidian";
-import type { ErrorCard, PracticeCollection, PracticeLog, ReflectionLog, XingceModule } from "../types";
+import type { ErrorCard, ExamCountdown, PracticeCollection, PracticeLog, ReflectionLog, XingceModule } from "../types";
 import { todayString } from "../utils/date";
 import type { PracticeCollectionService } from "./PracticeCollectionService";
 import type { PracticeLogService } from "./PracticeLogService";
@@ -7,6 +7,8 @@ import type { ErrorCardService } from "./ErrorCardService";
 import type { ReflectionLogService } from "./ReflectionLogService";
 import { buildEffortHeatmap, type HeatmapDay } from "./EffortService";
 import type { DailyPlanService, DailyPlanReadResult } from "./DailyPlanService";
+import type { CountdownSummary, ExamCountdownService } from "./ExamCountdownService";
+import { buildCountdownSummary } from "./ExamCountdownService";
 
 export interface DashboardCollectionSummary {
   file: TFile;
@@ -37,6 +39,7 @@ export interface DashboardModel {
   reflections: DashboardReflectionSummary;
   heatmap: HeatmapDay[];
   plan: DashboardPlanSummary;
+  countdown: CountdownSummary;
   weakness: DashboardWeaknessSummary;
   hasAnyData: boolean;
 }
@@ -71,6 +74,7 @@ export class DashboardService {
     private readonly errorCardService: ErrorCardService,
     private readonly reflectionLogService: ReflectionLogService,
     private readonly dailyPlanService: DailyPlanService,
+    private readonly examCountdownService: ExamCountdownService,
   ) {}
 
   async loadModel(today = todayString()): Promise<DashboardModel> {
@@ -79,6 +83,7 @@ export class DashboardService {
     const cards = await this.errorCardService.listCards();
     const reflections = await this.reflectionLogService.listLogs();
     const plan = await this.dailyPlanService.readPlan(today);
+    const countdowns = await this.examCountdownService.listCountdowns();
 
     return buildDashboardModel(
       collections,
@@ -87,6 +92,7 @@ export class DashboardService {
       reflections,
       today,
       plan,
+      countdowns.map((entry) => entry.data),
     );
   }
 }
@@ -98,6 +104,7 @@ export function buildDashboardModel(
   reflections: Array<{ file?: TFile; data: ReflectionLog }> | ReflectionLog[],
   today: string,
   plan?: DailyPlanReadResult | null,
+  countdowns: ExamCountdown[] = [],
 ): DashboardModel {
   const logEntries = normalizeEntries(logs);
   const cardEntries = normalizeEntries(cards);
@@ -144,6 +151,7 @@ export function buildDashboardModel(
       completionRate: plan?.completionRate ?? 0,
       file: plan?.file,
     },
+    countdown: buildCountdownSummary(countdowns, today),
     weakness: buildWeaknessSummary(logData, cardData, reflectionData, today),
     hasAnyData: collections.length > 0 || logEntries.length > 0 || cardEntries.length > 0 || reflectionEntries.length > 0,
   };

@@ -71,16 +71,6 @@ export class GongkaoSprintSettingTab extends PluginSettingTab {
       });
 
     new Setting(containerEl)
-      .setName("考试日期")
-      .setDesc("格式为 YYYY-MM-DD，用于工作台倒计时。")
-      .addText((text) => {
-        text.setPlaceholder("2026-11-29").setValue(this.plugin.settings.examDate).onChange(async (value) => {
-          this.plugin.settings.examDate = value.trim();
-          await this.plugin.saveSettings();
-        });
-      });
-
-    new Setting(containerEl)
       .setName("启用图片遮挡")
       .setDesc("新增图片错题时允许框选答案、解析或手写笔记区域。")
       .addToggle((toggle) => {

@@ -135,3 +135,12 @@ export interface EffortDay {
   planCompletionRate: number;
   effortScore: number;
 }
+
+export interface ExamCountdown {
+  countdown_id: string;
+  name: string;
+  date: string;
+  enabled: boolean;
+  created: string;
+  updated: string;
+}

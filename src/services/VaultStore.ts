@@ -132,13 +132,18 @@ export class VaultStore {
     return `---\n${yaml}\n---\n\n${body.trim()}\n`;
   }
 
-  private async ensureDashboardFile(): Promise<void> {
-    const dashboardPath = normalizePath(`${this.getDataRoot()}/Dashboard.md`);
-    if (this.app.vault.getAbstractFileByPath(dashboardPath)) {
-      return;
+  getDashboardPath(): string {
+    return normalizePath(`${this.getDataRoot()}/Dashboard.md`);
+  }
+
+  async ensureDashboardFile(): Promise<TFile> {
+    const dashboardPath = this.getDashboardPath();
+    const existing = this.app.vault.getAbstractFileByPath(dashboardPath);
+    if (existing instanceof TFile) {
+      return existing;
     }
 
-    await this.createMarkdownFile(
+    return this.createMarkdownFile(
       dashboardPath,
       { type: "gongkao-dashboard", created: new Date().toISOString().slice(0, 10) },
       [

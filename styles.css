@@ -239,7 +239,7 @@
 
 .gongkao-actions {
   display: grid;
-  grid-template-columns: repeat(6, minmax(116px, 1fr));
+  grid-template-columns: repeat(5, minmax(116px, 1fr));
   gap: 18px;
   margin-bottom: 16px;
 }
@@ -434,6 +434,13 @@
   justify-items: center;
   gap: 6px;
   margin: 6px 0 12px;
+  padding: 6px;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+.gongkao-countdown:hover {
+  background: rgba(104, 139, 91, 0.06);
 }
 
 .gongkao-countdown span,
@@ -827,6 +834,49 @@
   justify-content: flex-end;
   gap: 10px;
   margin-top: 18px;
+}
+
+.gongkao-countdown-list {
+  display: grid;
+  gap: 10px;
+  margin-top: 16px;
+}
+
+.gongkao-countdown-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 12px;
+  border: 1px solid var(--background-modifier-border);
+  border-radius: 8px;
+  background: var(--background-secondary);
+}
+
+.gongkao-countdown-row div {
+  display: grid;
+  gap: 4px;
+}
+
+.gongkao-countdown-row small {
+  color: var(--text-muted);
+}
+
+.gongkao-icon-button {
+  display: inline-flex;
+  width: 32px;
+  height: 32px;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--background-modifier-border);
+  border-radius: 8px;
+  background: var(--background-primary);
+  color: var(--text-muted);
+}
+
+.gongkao-icon-button:hover,
+.gongkao-icon-button:focus-visible {
+  color: var(--text-normal);
 }
 
 .gongkao-image-input {
@@ -1383,7 +1433,7 @@
 }
 
 .gongkao-actions {
-  grid-template-columns: repeat(6, minmax(116px, 1fr));
+  grid-template-columns: repeat(5, minmax(116px, 1fr));
   gap: 16px;
 }
 

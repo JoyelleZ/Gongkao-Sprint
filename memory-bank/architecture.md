@@ -12,10 +12,12 @@ The repository now contains a minimal Obsidian Community Plugin scaffold for `Go
 - `src/views/ReviewSessionView.ts`: main-area review View for due error cards. It renders front/back card states, front-side image masks, back-side answer/wrong-reason details, and mastery feedback controls.
 - `src/modals/ErrorCardModal.ts`: native Obsidian modal for error-card creation. It supports constrained text fields, optional local/dragged/pasted image input, preview, and lightweight two-click rectangle mask creation for covering answers, explanations, or handwritten notes.
 - `src/modals/PracticeCollectionModal.ts`: native Obsidian modal for creating practice collections with constrained topic/paper/book type choices and optional 行测 module binding.
-- `src/modals/PracticeLogModal.ts`: native Obsidian modal for recording practice sessions with collection binding, module, totals, wrong count, duration, round, source, and range fields.
+- `src/modals/PracticeLogModal.ts`: native Obsidian modal for recording practice sessions with collection binding, module, totals, wrong count, duration, round, source, and range fields. It also contains the user-facing entry for creating a new practice collection, keeping "新增专题" out of the top toolbar.
+- `src/modals/ExamCountdownModal.ts`: native Obsidian modal for adding and deleting named exam countdowns such as 国考 and 省考.
 - `src/modals/ReflectionLogModal.ts`: native Obsidian modal for structured reflection logs. It uses fixed scope/type options and required correction fields to prevent the feature from becoming a free-form diary.
 - `src/services/DashboardService.ts`: dashboard model builder that combines practice collections, practice logs, error cards, reflection logs, and daily plans into collection summaries, current-week totals, recent logs, review summaries, recent reflections, effort heatmap data, daily-plan summary, weakness/correction reminders, and empty-state detection.
 - `src/services/DailyPlanService.ts`: daily-plan service for `Gongkao Sprint/01_今日计划/`, responsible for Markdown plan generation, checkbox task parsing, and completion-rate calculation.
+- `src/services/ExamCountdownService.ts`: named exam countdown service. Countdown records live in `Gongkao Sprint/Dashboard.md` frontmatter under `exam_countdowns`, and the dashboard selects the nearest enabled future target.
 - `src/services/EffortService.ts`: effort heatmap service that creates a continuous recent-day series, scores daily effort from practice, review history, reflections, and planned future plan completion, then maps scores to 0-4 visual levels.
 - `src/services/ErrorCardService.ts`: error-card service for `Gongkao Sprint/03_错题库/`, using stable `error_card_id`, fixed frontmatter, initial review scheduling, optional collection binding, due-card queries, review queue sorting, and feedback updates.
 - `src/services/ExampleDataService.ts`: example-data service that creates a clearly marked sample practice collection, practice logs, error card, reflection, daily plan, and marker file for clean-vault onboarding.
@@ -60,6 +62,10 @@ Effort heatmap data is computed at render time rather than stored separately. Th
 Daily plans are Markdown-first files in `Gongkao Sprint/01_今日计划/`. Plan tasks use ordinary Markdown checkboxes so users can complete tasks in their own Obsidian workflow. The dashboard parses checked/unchecked boxes to compute completion rate.
 
 Daily plan files use the exact date filename `YYYY-MM-DD.md` under `Gongkao Sprint/01_今日计划/`. The dashboard create action and read path must remain the same path so creating a plan immediately makes it visible in the dashboard.
+
+Exam countdowns are Markdown-first metadata stored on `Gongkao Sprint/Dashboard.md` as `exam_countdowns`. Each countdown has `countdown_id`, `name`, `date`, `enabled`, `created`, and `updated`. Dashboard shows the nearest enabled upcoming date, supports multiple targets such as 国考 and 省考, and opens the countdown manager when the countdown area is clicked.
+
+Top dashboard actions are intentionally limited to five workflow actions in this order: 制定今日计划, 记录刷题, 新增错题, 新建复盘, 开始复习. Creating a new 专题/套卷/题集 belongs inside the 记录刷题 flow and in the empty 专题进度 card, not as a top-level toolbar action.
 
 Weakness/correction reminders are computed rather than stored. Current signals include recent 7-day wrong counts, low-mastery active cards, due review pressure, and repeated "思维惯性" reflection logs.
 
