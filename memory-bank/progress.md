@@ -92,3 +92,10 @@
   - Added plugin-local `assets/apple-banner.svg` and changed the Dashboard banner to load it through the plugin resource path as a CSS background, avoiding broken relative image references.
   - Updated README, spec, architecture, frontend, implementation, tech-stack, and progress documents to reflect the Vault-native relationship.
 - Added a daily-plan path regression test; re-verified `npm test`, `npm run build`, and `npm run lint` all pass with 39 tests across 12 test files.
+- Added direct input workflows for remaining MVP creation actions:
+  - Added `src/modals/PracticeCollectionModal.ts` for creating topic, paper, and book practice collections without editing frontmatter by hand.
+  - Added `src/modals/PracticeLogModal.ts` for recording practice date, collection, module, totals, wrong count, duration, round, source, and range.
+  - Dashboard "新建专题" and empty collection actions now open the collection modal.
+  - Dashboard "记录刷题" and the `Create Practice Log` command now open the practice-log modal instead of creating a placeholder Markdown template.
+  - `PracticeCollectionService` and `PracticeLogService` now export their create input types for modal integration.
+- Re-verified `npm run build`, `npm test`, and `npm run lint` all pass with 41 tests across 12 test files.

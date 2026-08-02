@@ -5,7 +5,7 @@ import { todayString } from "../utils/date";
 import { isXingceModule, toNonNegativeInteger, toPositiveInteger } from "../utils/validation";
 import type { VaultStore } from "./VaultStore";
 
-interface CreatePracticeLogInput {
+export interface CreatePracticeLogInput {
   date?: string;
   collectionId?: string;
   collectionName?: string;

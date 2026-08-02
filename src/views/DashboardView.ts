@@ -9,6 +9,7 @@ interface DashboardActions {
   createErrorCard: () => void;
   createReflectionLog: () => void;
   createPracticeLog: () => void;
+  createPracticeCollection: () => void;
   startReview: () => void;
   generateDailyPlan: () => void;
   createExampleData: () => void;
@@ -88,6 +89,7 @@ export class DashboardView extends ItemView {
     this.renderActionButton(actions, "新增错题", "x", () => this.actions.createErrorCard());
     this.renderActionButton(actions, "新建复盘", "calendar-check", () => this.actions.createReflectionLog());
     this.renderActionButton(actions, "记录刷题", "file-pen-line", () => this.actions.createPracticeLog());
+    this.renderActionButton(actions, "新建专题", "folder-plus", () => this.actions.createPracticeCollection());
     this.renderActionButton(actions, "创建今日计划", "calendar-plus", () => this.actions.generateDailyPlan());
     this.renderActionButton(actions, "开始复习", "play", () => this.actions.startReview(), true);
   }
@@ -262,7 +264,7 @@ export class DashboardView extends ItemView {
         "创建一个专题、套卷或题库，开始记录你的学习进度。",
         "新建专题",
         "folder-plus",
-        () => new Notice("新建专题功能将在后续步骤接入。"),
+        () => this.actions.createPracticeCollection(),
       );
       return;
     }

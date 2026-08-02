@@ -13,7 +13,8 @@ import { ReflectionLogModal } from "./modals/ReflectionLogModal";
 import { ReviewSessionView } from "./views/ReviewSessionView";
 import { DailyPlanService } from "./services/DailyPlanService";
 import { ExampleDataService } from "./services/ExampleDataService";
-import { todayString } from "./utils/date";
+import { PracticeCollectionModal } from "./modals/PracticeCollectionModal";
+import { PracticeLogModal } from "./modals/PracticeLogModal";
 
 export default class GongkaoSprintPlugin extends Plugin {
   settings: GongkaoSprintSettings = DEFAULT_SETTINGS;
@@ -55,7 +56,10 @@ export default class GongkaoSprintPlugin extends Plugin {
             void this.openReflectionLogModal();
           },
           createPracticeLog: () => {
-            void this.createPracticeLogTemplate();
+            void this.openPracticeLogModal();
+          },
+          createPracticeCollection: () => {
+            void this.openPracticeCollectionModal();
           },
           startReview: () => {
             void this.activateReview();
@@ -138,7 +142,15 @@ export default class GongkaoSprintPlugin extends Plugin {
       id: "create-practice-log",
       name: "Create Practice Log",
       callback: () => {
-        void this.createPracticeLogTemplate();
+        void this.openPracticeLogModal();
+      },
+    });
+
+    this.addCommand({
+      id: "create-practice-collection",
+      name: "Create Practice Collection",
+      callback: () => {
+        void this.openPracticeCollectionModal();
       },
     });
 
@@ -240,6 +252,33 @@ export default class GongkaoSprintPlugin extends Plugin {
     ).open();
   }
 
+  async openPracticeCollectionModal(): Promise<void> {
+    await this.vaultStore.ensureDataDirectories();
+    new PracticeCollectionModal(
+      this.app,
+      {
+        collectionService: this.collectionService,
+      },
+      async () => {
+        await this.refreshDashboards();
+      },
+    ).open();
+  }
+
+  async openPracticeLogModal(): Promise<void> {
+    await this.vaultStore.ensureDataDirectories();
+    new PracticeLogModal(
+      this.app,
+      {
+        collectionService: this.collectionService,
+        practiceLogService: new PracticeLogService(this.vaultStore),
+      },
+      async () => {
+        await this.refreshDashboards();
+      },
+    ).open();
+  }
+
   async generateDailyPlan(): Promise<void> {
     try {
       await this.vaultStore.ensureDataDirectories();
@@ -270,56 +309,6 @@ export default class GongkaoSprintPlugin extends Plugin {
       await this.refreshDashboards();
     } catch (error) {
       new Notice(error instanceof Error ? error.message : "示例数据创建失败。");
-    }
-  }
-
-  async createPracticeLogTemplate(): Promise<void> {
-    try {
-      await this.vaultStore.ensureDataDirectories();
-      const date = todayString();
-      const path = await this.vaultStore.getAvailableMarkdownPath(
-        this.vaultStore.getSubdirectoryPath("02_刷题记录"),
-        `${date}-刷题记录`,
-      );
-
-      const file = await this.vaultStore.createMarkdownFile(
-        path,
-        {
-          type: "gongkao-practice-log",
-          date,
-          module: "资料分析",
-          total: 0,
-          wrong: 0,
-          round: 1,
-          created: date,
-        },
-        [
-          `# ${date} 刷题记录`,
-          "",
-          "## 本次范围",
-          "",
-          "- 刷题集合：未绑定",
-          "- 模块：资料分析",
-          "- 范围：",
-          "- 轮次：第 1 轮",
-          "",
-          "## 数据",
-          "",
-          "- 刷题数：0",
-          "- 错题数：0",
-          "- 时长：未填写",
-          "",
-          "## 备注",
-          "",
-          "完成练习后，请同步更新上方 frontmatter 中的 module、total、wrong 和 round，工作台会读取这些字段生成统计。",
-        ].join("\n"),
-      );
-
-      new Notice("刷题记录 Markdown 已创建。");
-      await this.openMarkdownFile(file);
-      await this.refreshDashboards();
-    } catch (error) {
-      new Notice(error instanceof Error ? error.message : "刷题记录创建失败。");
     }
   }
 

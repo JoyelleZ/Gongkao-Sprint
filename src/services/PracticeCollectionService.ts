@@ -5,7 +5,7 @@ import { todayString } from "../utils/date";
 import { isXingceModule } from "../utils/validation";
 import type { VaultStore } from "./VaultStore";
 
-interface CreatePracticeCollectionInput {
+export interface CreatePracticeCollectionInput {
   name: string;
   collectionType: PracticeCollectionType;
   module?: XingceModule;
