@@ -35,6 +35,7 @@ export class ErrorCardModal extends Modal {
   private cropMode = false;
   private ignoreNextImageClick = false;
   private contrastLevel: ContrastLevel = 2;
+  private previewContrastLevel: ContrastLevel = 0;
   private collections: Array<{ filePath: string; data: PracticeCollection }> = [];
 
   constructor(
@@ -257,14 +258,9 @@ export class ErrorCardModal extends Modal {
   private renderImageEditorControls(parent: HTMLElement): void {
     const controls = parent.createDiv({ cls: "gongkao-image-editor" });
     controls
-      .createEl("button", { text: "左转", cls: "gongkao-button" })
+      .createEl("button", { text: "右转90°", cls: "gongkao-button" })
       .addEventListener("click", () => {
-        void this.rotateImage(false);
-      });
-    controls
-      .createEl("button", { text: "右转", cls: "gongkao-button" })
-      .addEventListener("click", () => {
-        void this.rotateImage(true);
+        void this.rotateImage();
       });
     controls
       .createEl("button", {
@@ -294,9 +290,11 @@ export class ErrorCardModal extends Modal {
     });
     slider.addEventListener("input", () => {
       this.contrastLevel = Number(slider.value) as ContrastLevel;
+      this.previewContrastLevel = this.contrastLevel;
       label.setText(`对比度 ${this.getContrastLabel()}`);
+      this.updateImagePreviewFilter();
     });
-    contrast.createEl("button", { text: "应用", cls: "gongkao-button" }).addEventListener("click", () => {
+    slider.addEventListener("change", () => {
       void this.applyImageFilter("contrast");
     });
   }
@@ -310,6 +308,7 @@ export class ErrorCardModal extends Modal {
 
     const preview = parent.createDiv({ cls: "gongkao-image-preview" });
     const image = preview.createEl("img", { attr: { src: this.imageObjectUrl, alt: "错题图片预览" } });
+    this.updateImagePreviewFilter(image);
     image.addEventListener("load", () => {
       this.imageNaturalSize = { width: image.naturalWidth, height: image.naturalHeight };
     });
@@ -386,10 +385,12 @@ export class ErrorCardModal extends Modal {
     this.cropDragStart = undefined;
     this.cropSelection = undefined;
     this.cropMode = false;
+    this.contrastLevel = 2;
+    this.previewContrastLevel = 0;
     this.render();
   }
 
-  private async rotateImage(clockwise: boolean): Promise<void> {
+  private async rotateImage(): Promise<void> {
     if (!this.imageObjectUrl) {
       return;
     }
@@ -404,16 +405,11 @@ export class ErrorCardModal extends Modal {
         throw new Error("无法创建图片编辑画布。");
       }
 
-      if (clockwise) {
-        context.translate(canvas.width, 0);
-        context.rotate(Math.PI / 2);
-      } else {
-        context.translate(0, canvas.height);
-        context.rotate(-Math.PI / 2);
-      }
+      context.translate(canvas.width, 0);
+      context.rotate(Math.PI / 2);
       context.drawImage(image, 0, 0);
-      await this.replaceImageFromCanvas(canvas, clockwise ? "right" : "left");
-      new Notice(clockwise ? "图片已右转。" : "图片已左转。");
+      await this.replaceImageFromCanvas(canvas, "right");
+      new Notice("已右转 90°。");
     } catch (error) {
       new Notice(error instanceof Error ? error.message : "图片旋转失败。");
     }
@@ -437,6 +433,7 @@ export class ErrorCardModal extends Modal {
       context.drawImage(image, 0, 0);
       const imageData = context.getImageData(0, 0, canvas.width, canvas.height);
       const data = imageData.data;
+      const contrastLevel = this.contrastLevel;
       for (let index = 0; index < data.length; index += 4) {
         if (filter === "grayscale") {
           const gray = Math.round(data[index] * 0.299 + data[index + 1] * 0.587 + data[index + 2] * 0.114);
@@ -444,14 +441,14 @@ export class ErrorCardModal extends Modal {
           data[index + 1] = gray;
           data[index + 2] = gray;
         } else {
-          data[index] = this.applyContrast(data[index]);
-          data[index + 1] = this.applyContrast(data[index + 1]);
-          data[index + 2] = this.applyContrast(data[index + 2]);
+          data[index] = this.applyContrast(data[index], contrastLevel);
+          data[index + 1] = this.applyContrast(data[index + 1], contrastLevel);
+          data[index + 2] = this.applyContrast(data[index + 2], contrastLevel);
         }
       }
       context.putImageData(imageData, 0, 0);
       await this.replaceImageFromCanvas(canvas, filter);
-      new Notice(filter === "grayscale" ? "图片已转为黑白。" : "图片对比度已增强。");
+      new Notice(filter === "grayscale" ? "图片已转为黑白。" : "对比度已调整。");
     } catch (error) {
       new Notice(error instanceof Error ? error.message : "图片处理失败。");
     }
@@ -515,7 +512,8 @@ export class ErrorCardModal extends Modal {
     this.cropSelection = undefined;
     this.ignoreNextImageClick = false;
     this.cropMode = false;
-    this.render();
+    this.previewContrastLevel = 0;
+    this.rerenderPreservingScroll();
   }
 
   private async loadImage(src: string): Promise<HTMLImageElement> {
@@ -563,7 +561,7 @@ export class ErrorCardModal extends Modal {
 
     if (width < 20 || height < 20) {
       new Notice("裁剪区域太小，请重新选择。");
-      this.render();
+      this.rerenderPreservingScroll();
       return;
     }
 
@@ -621,12 +619,12 @@ export class ErrorCardModal extends Modal {
     };
   }
 
-  private applyContrast(value: number): number {
-    const factor = this.getContrastFactor();
+  private applyContrast(value: number, level = this.contrastLevel): number {
+    const factor = this.getContrastFactor(level);
     return Math.max(0, Math.min(255, Math.round((value - 128) * factor + 128)));
   }
 
-  private getContrastFactor(): number {
+  private getContrastFactor(level = this.contrastLevel): number {
     const factors: Record<ContrastLevel, number> = {
       0: 1,
       1: 1.12,
@@ -635,11 +633,33 @@ export class ErrorCardModal extends Modal {
       4: 1.65,
       5: 1.9,
     };
-    return factors[this.contrastLevel];
+    return factors[level];
   }
 
   private getContrastLabel(): string {
     return `${this.contrastLevel} 档`;
+  }
+
+  private updateImagePreviewFilter(image = this.contentEl.querySelector<HTMLImageElement>(".gongkao-image-preview img")): void {
+    if (!image) {
+      return;
+    }
+
+    const factor = this.getContrastFactor(this.previewContrastLevel);
+    image.style.filter = factor === 1 ? "" : `contrast(${factor})`;
+  }
+
+  private rerenderPreservingScroll(): void {
+    const scrollParent = this.contentEl.parentElement;
+    const contentTop = this.contentEl.scrollTop;
+    const parentTop = scrollParent?.scrollTop ?? 0;
+    this.render();
+    window.requestAnimationFrame(() => {
+      this.contentEl.scrollTop = contentTop;
+      if (scrollParent) {
+        scrollParent.scrollTop = parentTop;
+      }
+    });
   }
 
   private openCropEditor(): void {

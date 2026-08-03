@@ -934,7 +934,7 @@
 
 .gongkao-image-editor {
   display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 8px;
   margin-top: 10px;
 }
@@ -947,7 +947,7 @@
 
 .gongkao-contrast-control {
   display: grid;
-  grid-template-columns: minmax(84px, auto) minmax(0, 1fr) auto;
+  grid-template-columns: minmax(84px, auto) minmax(0, 1fr);
   gap: 10px;
   align-items: center;
   margin-top: 10px;
@@ -1511,10 +1511,6 @@
     background: var(--background-primary);
   }
 
-  .gongkao-image-editor {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-
   .gongkao-image-pickers {
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -1525,11 +1521,10 @@
   }
 
   .gongkao-contrast-control {
-    grid-template-columns: 1fr auto;
+    grid-template-columns: 1fr;
   }
 
   .gongkao-contrast-control input[type="range"] {
-    grid-column: 1 / -1;
     min-height: 34px;
   }
 
