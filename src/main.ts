@@ -331,8 +331,8 @@ export default class GongkaoSprintPlugin extends Plugin {
 
       this.settings.examDate = "";
       await this.saveSettings();
-    } catch (error) {
-      console.warn("Gongkao Sprint legacy exam date migration skipped:", error);
+    } catch {
+      return;
     }
   }
 
@@ -409,16 +409,10 @@ export default class GongkaoSprintPlugin extends Plugin {
     const fullPath = normalizePath(`${pluginDir}/${assetPath}`);
     const exists = await this.app.vault.adapter.exists(fullPath);
     const resourcePath = this.app.vault.adapter.getResourcePath(fullPath);
-    console.info(`${label} resource:`, resourcePath);
-    console.info(`${label} path:`, fullPath);
-    console.info(`${label} exists:`, exists);
     if (!exists && fallbackAssetPath) {
       const fallbackPath = normalizePath(`${pluginDir}/${fallbackAssetPath}`);
       const fallbackExists = await this.app.vault.adapter.exists(fallbackPath);
       const fallbackResourcePath = this.app.vault.adapter.getResourcePath(fallbackPath);
-      console.info(`${label} fallback resource:`, fallbackResourcePath);
-      console.info(`${label} fallback path:`, fallbackPath);
-      console.info(`${label} fallback exists:`, fallbackExists);
       if (fallbackExists) {
         return fallbackResourcePath;
       }

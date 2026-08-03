@@ -57,11 +57,14 @@ No AI service, OCR service, database, or network API is required for the MVP.
 
 ## Release Files
 
-For an Obsidian plugin install, the required files are:
+For an Obsidian Community Plugin release, upload:
 
 - `manifest.json`
 - `main.js`
 - `styles.css`
+
+Optional visual assets for manual/source installs:
+
 - `assets/frontcover.png`
 - `assets/mobilecover.png`
 
@@ -142,11 +145,14 @@ Gongkao Sprint 是一款面向公务员考试备考的 Obsidian 插件。当前�
 
 ## 手动安装文件
 
-Obsidian 插件安装需要以下文件：
+Obsidian Community Plugin release 需要上传：
 
 - `manifest.json`
 - `main.js`
 - `styles.css`
+
+手动安装或源码安装可额外包含视觉资源：
+
 - `assets/frontcover.png`
 - `assets/mobilecover.png`
 

@@ -107,7 +107,6 @@ export class DashboardView extends ItemView {
     image.addEventListener("error", () => {
       image.addClass("gongkao-mobile-banner__image--hidden");
       fallback.addClass("gongkao-mobile-banner__fallback--visible");
-      console.warn("Gongkao Sprint mobile banner image failed to load:", this.mobileCoverImageSrc);
     });
   }
 
@@ -233,7 +232,6 @@ export class DashboardView extends ItemView {
       image.addClass("banner-image--hidden");
       fallback.addClass("gongkao-banner__fallback--visible");
       banner.addClass("gongkao-banner--fallback");
-      console.warn("Gongkao Sprint banner image failed to load:", this.coverImageSrc);
     });
   }
 
@@ -460,15 +458,6 @@ export class DashboardView extends ItemView {
 
     this.renderCalendar(calendar, model);
     this.renderHeatmap(heatmap, model);
-
-    requestAnimationFrame(() => {
-      console.info("Gongkao time layout:", {
-        parentClass: parent.className,
-        weaknessClass: "gongkao-panel gongkao-panel--weakness",
-        timePanelClass: panel.className,
-        timePanelComputedWidth: `${Math.round(panel.getBoundingClientRect().width)} px`,
-      });
-    });
   }
 
   private renderHeatmap(parent: HTMLElement, model: DashboardModel): void {
@@ -524,12 +513,6 @@ export class DashboardView extends ItemView {
     legend.createEl("span", { text: "数据来自 Vault Markdown", cls: "gongkao-heatmap-detail" });
 
     this.setupHeatmapResizeObserver(graph, layout.totalColumns);
-
-    console.info("Heatmap days:", days.length);
-    console.info("Cells:", graph.querySelectorAll(".heatmap-cell").length);
-    console.info("Calendar:", "enabled");
-    console.info("Months:");
-    for (const month of layout.months) console.info(month.label);
   }
 
   /** Dynamically set --heatmap-cell-size so the grid fits the panel without scrolling. */
