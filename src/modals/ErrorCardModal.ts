@@ -7,6 +7,7 @@ import type { PracticeCollectionService } from "../services/PracticeCollectionSe
 import { getSupportedImageHint, isSupportedImageFile } from "../utils/imageFile";
 
 type ImageFilter = "contrast" | "grayscale";
+type ContrastLevel = 0 | 1 | 2 | 3 | 4 | 5;
 
 interface ErrorCardModalServices {
   errorCardService: ErrorCardService;
@@ -33,6 +34,7 @@ export class ErrorCardModal extends Modal {
   private cropSelection?: { left: number; top: number; width: number; height: number };
   private cropMode = false;
   private ignoreNextImageClick = false;
+  private contrastLevel: ContrastLevel = 2;
   private collections: Array<{ filePath: string; data: PracticeCollection }> = [];
 
   constructor(
@@ -180,25 +182,12 @@ export class ErrorCardModal extends Modal {
     section.createEl("h3", { text: "题目图片" });
     section.createEl("p", {
       text: Platform.isMobile
-        ? `可拍照或从相册选择图片。${getSupportedImageHint()} 选图后可旋转或裁剪。`
-        : `可选择、拖拽或粘贴图片。${getSupportedImageHint()} 选图后可旋转、裁剪；点击预览图两次可创建矩形遮挡。`,
+        ? `可拍照或从相册/文件选择图片。${getSupportedImageHint()} 选图后可旋转、放大裁剪、调对比度或转黑白。`
+        : `可选择、拖拽或粘贴图片。${getSupportedImageHint()} 选图后可旋转、放大裁剪、调对比度或转黑白；点击预览图两次可创建矩形遮挡。`,
       cls: "gongkao-empty-text",
     });
 
-    const picker = section.createEl("input", {
-      cls: "gongkao-image-picker",
-      attr: {
-        type: "file",
-        accept: ".jpg,.jpeg,.png,.webp,image/jpeg,image/png,image/webp",
-        ...(Platform.isMobile ? { capture: "environment" } : {}),
-      },
-    });
-    picker.addEventListener("change", () => {
-      const file = picker.files?.[0];
-      if (file) {
-        this.selectImageFile(file);
-      }
-    });
+    this.renderImagePickers(section);
 
     if (!Platform.isMobile) {
       const dropZone = section.createDiv({ cls: "gongkao-image-dropzone" });
@@ -235,6 +224,36 @@ export class ErrorCardModal extends Modal {
     this.renderImagePreview(section);
   }
 
+  private renderImagePickers(parent: HTMLElement): void {
+    const pickers = parent.createDiv({ cls: "gongkao-image-pickers" });
+    this.createImagePicker(pickers, Platform.isMobile ? "拍照" : "选择图片", Platform.isMobile);
+    if (Platform.isMobile) {
+      this.createImagePicker(pickers, "相册/文件", false);
+    }
+  }
+
+  private createImagePicker(parent: HTMLElement, label: string, capture: boolean): void {
+    const pickerId = `gongkao-image-picker-${Math.random().toString(36).slice(2)}`;
+    const picker = parent.createEl("input", {
+      cls: Platform.isMobile ? "gongkao-hidden-file-input" : "gongkao-image-picker",
+      attr: {
+        id: pickerId,
+        type: "file",
+        accept: ".jpg,.jpeg,.png,.webp,image/jpeg,image/png,image/webp",
+        ...(capture ? { capture: "environment" } : {}),
+      },
+    });
+    picker.addEventListener("change", () => {
+      const file = picker.files?.[0];
+      if (file) {
+        this.selectImageFile(file);
+      }
+    });
+    if (Platform.isMobile) {
+      parent.createEl("label", { text: label, cls: "gongkao-file-button", attr: { for: pickerId } });
+    }
+  }
+
   private renderImageEditorControls(parent: HTMLElement): void {
     const controls = parent.createDiv({ cls: "gongkao-image-editor" });
     controls
@@ -249,25 +268,37 @@ export class ErrorCardModal extends Modal {
       });
     controls
       .createEl("button", {
-        text: this.cropMode ? "裁剪中" : "裁剪",
-        cls: this.cropMode ? "gongkao-button gongkao-button--soft-active" : "gongkao-button",
+        text: "放大裁剪",
+        cls: "gongkao-button",
       })
       .addEventListener("click", () => {
-        this.cropMode = !this.cropMode;
-        this.pendingCropStart = undefined;
-        new Notice(this.cropMode ? "裁剪模式：在图片上点两次确定裁剪区域。" : "已退出裁剪模式。");
-        this.render();
-      });
-    controls
-      .createEl("button", { text: "增强", cls: "gongkao-button" })
-      .addEventListener("click", () => {
-        void this.applyImageFilter("contrast");
+        this.openCropEditor();
       });
     controls
       .createEl("button", { text: "黑白", cls: "gongkao-button" })
       .addEventListener("click", () => {
         void this.applyImageFilter("grayscale");
       });
+
+    const contrast = parent.createDiv({ cls: "gongkao-contrast-control" });
+    const label = contrast.createEl("label", { text: `对比度 ${this.getContrastLabel()}` });
+    const slider = contrast.createEl("input", {
+      attr: {
+        type: "range",
+        min: "0",
+        max: "5",
+        step: "1",
+        value: String(this.contrastLevel),
+        "aria-label": "对比度档位",
+      },
+    });
+    slider.addEventListener("input", () => {
+      this.contrastLevel = Number(slider.value) as ContrastLevel;
+      label.setText(`对比度 ${this.getContrastLabel()}`);
+    });
+    contrast.createEl("button", { text: "应用", cls: "gongkao-button" }).addEventListener("click", () => {
+      void this.applyImageFilter("contrast");
+    });
   }
 
   private renderImagePreview(parent: HTMLElement): void {
@@ -591,8 +622,34 @@ export class ErrorCardModal extends Modal {
   }
 
   private applyContrast(value: number): number {
-    const factor = 1.28;
+    const factor = this.getContrastFactor();
     return Math.max(0, Math.min(255, Math.round((value - 128) * factor + 128)));
+  }
+
+  private getContrastFactor(): number {
+    const factors: Record<ContrastLevel, number> = {
+      0: 1,
+      1: 1.12,
+      2: 1.28,
+      3: 1.45,
+      4: 1.65,
+      5: 1.9,
+    };
+    return factors[this.contrastLevel];
+  }
+
+  private getContrastLabel(): string {
+    return `${this.contrastLevel} 档`;
+  }
+
+  private openCropEditor(): void {
+    if (!this.imageObjectUrl) {
+      return;
+    }
+
+    new ImageCropModal(this.app, this.imageObjectUrl, async (canvas) => {
+      await this.replaceImageFromCanvas(canvas, "crop");
+    }).open();
   }
 
   private eventToNaturalPoint(event: MouseEvent, image: HTMLImageElement): { x: number; y: number } {
@@ -615,6 +672,159 @@ export class ErrorCardModal extends Modal {
       top: (mask.y / naturalHeight) * 100,
       width: (mask.width / naturalWidth) * 100,
       height: (mask.height / naturalHeight) * 100,
+    };
+  }
+}
+
+class ImageCropModal extends Modal {
+  private image?: HTMLImageElement;
+  private naturalSize?: { width: number; height: number };
+  private dragStart?: { x: number; y: number };
+  private cropRect?: { x: number; y: number; width: number; height: number };
+  private selection?: { left: number; top: number; width: number; height: number };
+
+  constructor(
+    app: App,
+    private readonly imageSrc: string,
+    private readonly onApply: (canvas: HTMLCanvasElement) => Promise<void> | void,
+  ) {
+    super(app);
+  }
+
+  onOpen(): void {
+    this.render();
+  }
+
+  onClose(): void {
+    this.contentEl.empty();
+  }
+
+  private render(): void {
+    const { contentEl } = this;
+    contentEl.empty();
+    contentEl.addClass("gongkao-modal");
+    contentEl.addClass("gongkao-crop-modal");
+    contentEl.createEl("h2", { text: "放大裁剪" });
+    contentEl.createEl("p", { text: "在图片上拖出虚线框，确认后应用裁剪。", cls: "gongkao-empty-text" });
+
+    const stage = contentEl.createDiv({ cls: "gongkao-crop-stage" });
+    const image = stage.createEl("img", { attr: { src: this.imageSrc, alt: "裁剪图片" } });
+    this.image = image;
+    image.addEventListener("load", () => {
+      this.naturalSize = { width: image.naturalWidth, height: image.naturalHeight };
+    });
+    stage.addEventListener("pointerdown", (event) => {
+      if (event.button !== 0) {
+        return;
+      }
+      event.preventDefault();
+      stage.setPointerCapture(event.pointerId);
+      this.dragStart = this.eventToNaturalPoint(event, image);
+      this.cropRect = undefined;
+      this.selection = { left: 0, top: 0, width: 0, height: 0 };
+      this.renderSelection(stage, image);
+    });
+    stage.addEventListener("pointermove", (event) => {
+      if (!this.dragStart) {
+        return;
+      }
+      event.preventDefault();
+      this.cropRect = this.buildNaturalRect(this.dragStart, this.eventToNaturalPoint(event, image));
+      this.selection = this.naturalRectToDisplayRect(this.cropRect, image);
+      this.renderSelection(stage, image);
+    });
+    stage.addEventListener("pointerup", (event) => {
+      if (!this.dragStart) {
+        return;
+      }
+      event.preventDefault();
+      this.cropRect = this.buildNaturalRect(this.dragStart, this.eventToNaturalPoint(event, image));
+      this.selection = this.naturalRectToDisplayRect(this.cropRect, image);
+      this.dragStart = undefined;
+      this.renderSelection(stage, image);
+    });
+
+    const actions = contentEl.createDiv({ cls: "gongkao-modal__actions" });
+    actions.createEl("button", { text: "取消", cls: "gongkao-button" }).addEventListener("click", () => {
+      this.close();
+    });
+    actions.createEl("button", { text: "应用裁剪", cls: "gongkao-button gongkao-button--primary" }).addEventListener("click", () => {
+      void this.applyCrop();
+    });
+  }
+
+  private async applyCrop(): Promise<void> {
+    if (!this.image || !this.cropRect) {
+      new Notice("请先拖出裁剪区域。");
+      return;
+    }
+
+    const x = Math.max(0, Math.round(this.cropRect.x));
+    const y = Math.max(0, Math.round(this.cropRect.y));
+    const width = Math.min((this.naturalSize?.width ?? this.image.naturalWidth) - x, Math.round(this.cropRect.width));
+    const height = Math.min((this.naturalSize?.height ?? this.image.naturalHeight) - y, Math.round(this.cropRect.height));
+    if (width < 20 || height < 20) {
+      new Notice("裁剪区域太小，请重新选择。");
+      return;
+    }
+
+    const canvas = document.createElement("canvas");
+    canvas.width = width;
+    canvas.height = height;
+    const context = canvas.getContext("2d");
+    if (!context) {
+      new Notice("无法创建图片编辑画布。");
+      return;
+    }
+
+    context.drawImage(this.image, x, y, width, height, 0, 0, width, height);
+    await this.onApply(canvas);
+    new Notice("图片已裁剪。");
+    this.close();
+  }
+
+  private renderSelection(stage: HTMLElement, image: HTMLImageElement): void {
+    stage.find(".gongkao-image-crop-selection")?.remove();
+    if (!this.selection) {
+      return;
+    }
+
+    stage.createDiv({
+      cls: "gongkao-image-crop-selection",
+      attr: {
+        style: `left:${this.selection.left}%;top:${this.selection.top}%;width:${this.selection.width}%;height:${this.selection.height}%;`,
+      },
+    });
+    image.addClass("gongkao-crop-stage__image--selecting");
+  }
+
+  private eventToNaturalPoint(event: PointerEvent, image: HTMLImageElement): { x: number; y: number } {
+    const rect = image.getBoundingClientRect();
+    const naturalWidth = this.naturalSize?.width ?? image.naturalWidth;
+    const naturalHeight = this.naturalSize?.height ?? image.naturalHeight;
+    return {
+      x: Math.round(((event.clientX - rect.left) / rect.width) * naturalWidth),
+      y: Math.round(((event.clientY - rect.top) / rect.height) * naturalHeight),
+    };
+  }
+
+  private buildNaturalRect(start: { x: number; y: number }, end: { x: number; y: number }): { x: number; y: number; width: number; height: number } {
+    return {
+      x: Math.min(start.x, end.x),
+      y: Math.min(start.y, end.y),
+      width: Math.abs(end.x - start.x),
+      height: Math.abs(end.y - start.y),
+    };
+  }
+
+  private naturalRectToDisplayRect(rect: { x: number; y: number; width: number; height: number }, image: HTMLImageElement): { left: number; top: number; width: number; height: number } {
+    const naturalWidth = (this.naturalSize?.width ?? image.naturalWidth) || 1;
+    const naturalHeight = (this.naturalSize?.height ?? image.naturalHeight) || 1;
+    return {
+      left: (rect.x / naturalWidth) * 100,
+      top: (rect.y / naturalHeight) * 100,
+      width: (rect.width / naturalWidth) * 100,
+      height: (rect.height / naturalHeight) * 100,
     };
   }
 }

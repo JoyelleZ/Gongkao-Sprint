@@ -904,9 +904,37 @@
   margin-top: 10px;
 }
 
+.gongkao-image-pickers {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.gongkao-hidden-file-input {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+}
+
+.gongkao-file-button {
+  display: inline-flex;
+  min-height: 42px;
+  align-items: center;
+  justify-content: center;
+  padding: 0 14px;
+  border: 1px solid rgba(104, 139, 91, 0.26);
+  border-radius: 8px;
+  background: color-mix(in srgb, var(--background-primary) 82%, rgba(132, 166, 108, 0.18));
+  color: var(--text-normal);
+  font-weight: 600;
+}
+
 .gongkao-image-editor {
   display: grid;
-  grid-template-columns: repeat(5, minmax(0, 1fr));
+  grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: 8px;
   margin-top: 10px;
 }
@@ -915,6 +943,28 @@
   min-width: 0;
   width: 100%;
   padding: 0 10px;
+}
+
+.gongkao-contrast-control {
+  display: grid;
+  grid-template-columns: minmax(84px, auto) minmax(0, 1fr) auto;
+  gap: 10px;
+  align-items: center;
+  margin-top: 10px;
+  padding: 10px;
+  border: 1px solid rgba(104, 139, 91, 0.14);
+  border-radius: 8px;
+  background: var(--background-primary);
+}
+
+.gongkao-contrast-control label {
+  color: var(--text-muted);
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.gongkao-contrast-control input[type="range"] {
+  width: 100%;
 }
 
 .gongkao-image-crop-selection {
@@ -926,6 +976,29 @@
     0 0 0 9999px rgba(0, 0, 0, 0.26),
     0 0 0 1px rgba(75, 121, 66, 0.9);
   pointer-events: none;
+}
+
+.gongkao-crop-modal {
+  max-width: min(96vw, 920px);
+}
+
+.gongkao-crop-stage {
+  position: relative;
+  overflow: hidden;
+  max-height: 72vh;
+  margin-top: 12px;
+  border: 1px solid var(--background-modifier-border);
+  border-radius: 10px;
+  background: var(--background-secondary);
+  touch-action: none;
+  user-select: none;
+}
+
+.gongkao-crop-stage img {
+  display: block;
+  width: 100%;
+  max-height: 72vh;
+  object-fit: contain;
 }
 
 .gongkao-mobile {
@@ -1439,7 +1512,25 @@
   }
 
   .gongkao-image-editor {
-    grid-template-columns: repeat(3, minmax(0, 1fr));
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .gongkao-image-pickers {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .gongkao-file-button {
+    width: 100%;
+  }
+
+  .gongkao-contrast-control {
+    grid-template-columns: 1fr auto;
+  }
+
+  .gongkao-contrast-control input[type="range"] {
+    grid-column: 1 / -1;
+    min-height: 34px;
   }
 
   .gongkao-dashboard__grid {
