@@ -35,7 +35,7 @@ export default class GongkaoSprintPlugin extends Plugin {
   async onload(): Promise<void> {
     await this.loadSettings();
     this.coverImageSrc = await this.resolveCoverImageSrc();
-    this.mobileCoverImageSrc = await this.resolvePluginAssetSrc("assets/mobilecover.png", "Mobile banner");
+    this.mobileCoverImageSrc = await this.resolveMobileCoverImageSrc();
     this.vaultStore = new VaultStore(this.app, () => this.settings);
     this.collectionService = new PracticeCollectionService(this.vaultStore);
     this.practiceLogService = new PracticeLogService(this.vaultStore);
@@ -400,7 +400,11 @@ export default class GongkaoSprintPlugin extends Plugin {
     return this.resolvePluginAssetSrc("assets/frontcover.png", "Banner");
   }
 
-  private async resolvePluginAssetSrc(assetPath: string, label: string): Promise<string> {
+  private async resolveMobileCoverImageSrc(): Promise<string> {
+    return this.resolvePluginAssetSrc("assets/mobilecover.png", "Mobile banner", "assets/frontcover.png");
+  }
+
+  private async resolvePluginAssetSrc(assetPath: string, label: string, fallbackAssetPath?: string): Promise<string> {
     const pluginDir = this.manifest.dir ?? "";
     const fullPath = normalizePath(`${pluginDir}/${assetPath}`);
     const exists = await this.app.vault.adapter.exists(fullPath);
@@ -408,6 +412,17 @@ export default class GongkaoSprintPlugin extends Plugin {
     console.info(`${label} resource:`, resourcePath);
     console.info(`${label} path:`, fullPath);
     console.info(`${label} exists:`, exists);
+    if (!exists && fallbackAssetPath) {
+      const fallbackPath = normalizePath(`${pluginDir}/${fallbackAssetPath}`);
+      const fallbackExists = await this.app.vault.adapter.exists(fallbackPath);
+      const fallbackResourcePath = this.app.vault.adapter.getResourcePath(fallbackPath);
+      console.info(`${label} fallback resource:`, fallbackResourcePath);
+      console.info(`${label} fallback path:`, fallbackPath);
+      console.info(`${label} fallback exists:`, fallbackExists);
+      if (fallbackExists) {
+        return fallbackResourcePath;
+      }
+    }
     return resourcePath;
   }
 }

@@ -333,6 +333,12 @@
   background: rgb(75, 121, 66);
 }
 
+.gongkao-button--soft-active {
+  border-color: rgba(104, 139, 91, 0.46);
+  background: rgba(104, 139, 91, 0.12);
+  color: rgb(75, 121, 66);
+}
+
 .gongkao-section-label {
   margin: 12px 0 10px;
   font-size: 13px;
@@ -898,6 +904,19 @@
   margin-top: 10px;
 }
 
+.gongkao-image-editor {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.gongkao-image-editor .gongkao-button {
+  min-width: 0;
+  width: 100%;
+  padding: 0 10px;
+}
+
 .gongkao-mobile {
   display: grid;
   gap: 14px;
@@ -918,6 +937,7 @@
   width: 100%;
   height: 100%;
   object-fit: cover;
+  object-position: center;
 }
 
 .gongkao-mobile-banner__image--hidden {
@@ -945,45 +965,47 @@
 }
 
 .gongkao-mobile-action {
-  display: flex;
+  display: grid;
+  grid-template-columns: 42px minmax(0, 1fr);
   width: 100%;
-  min-height: 68px;
+  min-height: 74px;
   align-items: center;
   gap: 12px;
   padding: 12px 14px;
-  border: 1px solid rgba(104, 139, 91, 0.16);
+  border: 1px solid rgba(104, 139, 91, 0.24);
   border-radius: 10px;
-  background: var(--background-primary);
+  background: color-mix(in srgb, var(--background-primary) 78%, rgba(132, 166, 108, 0.22));
   color: var(--text-normal);
   text-align: left;
   box-shadow: 0 4px 14px rgba(31, 41, 30, 0.04);
 }
 
 .gongkao-mobile-action--primary {
-  border-color: rgb(92, 137, 78);
-  background: rgb(92, 137, 78);
-  color: white;
+  border-color: rgba(104, 139, 91, 0.36);
+  background: color-mix(in srgb, var(--background-primary) 66%, rgba(132, 166, 108, 0.34));
+  color: var(--text-normal);
 }
 
 .gongkao-mobile-action__icon {
   display: inline-flex;
-  flex: 0 0 38px;
-  width: 38px;
-  height: 38px;
+  width: 42px;
+  height: 42px;
   align-items: center;
   justify-content: center;
   border-radius: 10px;
-  background: rgba(104, 139, 91, 0.1);
+  background: rgba(104, 139, 91, 0.13);
+  color: rgb(75, 121, 66);
 }
 
 .gongkao-mobile-action--primary .gongkao-mobile-action__icon {
-  background: rgba(255, 255, 255, 0.18);
+  background: rgba(104, 139, 91, 0.18);
 }
 
 .gongkao-mobile-action__copy {
   display: grid;
   min-width: 0;
   gap: 3px;
+  align-content: center;
 }
 
 .gongkao-mobile-action__copy strong {
@@ -999,7 +1021,7 @@
 }
 
 .gongkao-mobile-action--primary .gongkao-mobile-action__copy small {
-  color: rgba(255, 255, 255, 0.82);
+  color: var(--text-muted);
 }
 
 .gongkao-mobile-summary {

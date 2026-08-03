@@ -112,4 +112,5 @@
   - Dashboard now renders a mobile-specific entry page with 拍照新增错题, 记录刷题, and 开始复习.
   - Added `assets/mobilecover.png` as the mobile dashboard banner.
   - Mobile error-card image input now favors camera/photo-library selection and hides desktop drag-and-drop.
+  - Error-card image preview now supports lightweight left/right rotation and two-tap cropping before saving.
   - Added touch-friendly mobile modal and card styles.
