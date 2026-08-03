@@ -9,9 +9,10 @@ Development is guided by the documents in `memory-bank/`.
 
 ## MVP Features
 
-- Dashboard for daily plan, due reviews, topic practice, weekly practice, reflections, weakness reminders, and effort heatmap.
+- Desktop dashboard for daily plan, due reviews, topic practice, weekly practice, reflections, weakness reminders, and effort heatmap.
+- Lightweight mobile dashboard for photo error-card capture, practice logging, and review.
 - Practice collections for 行测 topics, papers, and books.
-- Error cards with text or image input, optional collection binding, review scheduling, and rectangle masks for covering answers or handwritten explanations.
+- Error cards with text or image input, optional collection binding, review scheduling, and rectangle masks for covering answers or handwritten explanations. Mobile supports camera/photo-library image selection.
 - Structured reflection logs for techniques, thinking habits, mistakes, time strategy, and correction actions.
 - Review session with front/back card flow and mastery feedback.
 - Daily plan generation using due cards, active/default topics, and recent correction signals.
@@ -48,6 +49,8 @@ No AI service, OCR service, database, or network API is required for the MVP.
 - `Create Error Card`
 - `Create Reflection Log`
 - `Create Practice Log`
+- `Create Practice Collection`
+- `Manage Exam Countdowns`
 - `Start Error Card Review`
 - `Generate Daily Plan`
 - `Create Example Data`
@@ -60,6 +63,7 @@ For an Obsidian plugin install, the required files are:
 - `main.js`
 - `styles.css`
 - `assets/frontcover.png`
+- `assets/mobilecover.png`
 
 ## Development
 

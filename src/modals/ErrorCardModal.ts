@@ -1,4 +1,4 @@
-import { Modal, Notice, Setting } from "obsidian";
+import { Modal, Notice, Platform, Setting } from "obsidian";
 import type { App } from "obsidian";
 import { XINGCE_MODULES } from "../constants";
 import type { ImageMask, Mastery, PracticeCollection, XingceModule } from "../types";
@@ -180,14 +180,18 @@ export class ErrorCardModal extends Modal {
     const section = contentEl.createDiv({ cls: "gongkao-image-input" });
     section.createEl("h3", { text: "题目图片" });
     section.createEl("p", {
-      text: `可选择、拖拽或粘贴图片。${getSupportedImageHint()} 点击预览图两次可创建矩形遮挡，用来盖住答案、解析或手写笔记。`,
+      text: Platform.isMobile
+        ? `可拍照或从相册选择图片。${getSupportedImageHint()} 手机端可先跳过遮挡，之后在桌面端补充。`
+        : `可选择、拖拽或粘贴图片。${getSupportedImageHint()} 点击预览图两次可创建矩形遮挡，用来盖住答案、解析或手写笔记。`,
       cls: "gongkao-empty-text",
     });
 
     const picker = section.createEl("input", {
+      cls: "gongkao-image-picker",
       attr: {
         type: "file",
         accept: ".jpg,.jpeg,.png,.webp,image/jpeg,image/png,image/webp",
+        ...(Platform.isMobile ? { capture: "environment" } : {}),
       },
     });
     picker.addEventListener("change", () => {
@@ -197,23 +201,25 @@ export class ErrorCardModal extends Modal {
       }
     });
 
-    const dropZone = section.createDiv({ cls: "gongkao-image-dropzone" });
-    dropZone.createEl("span", { text: "拖拽图片到这里，或直接粘贴截图" });
-    dropZone.addEventListener("dragover", (event) => {
-      event.preventDefault();
-      dropZone.addClass("gongkao-image-dropzone--active");
-    });
-    dropZone.addEventListener("dragleave", () => {
-      dropZone.removeClass("gongkao-image-dropzone--active");
-    });
-    dropZone.addEventListener("drop", (event) => {
-      event.preventDefault();
-      dropZone.removeClass("gongkao-image-dropzone--active");
-      const file = event.dataTransfer?.files[0];
-      if (file) {
-        this.selectImageFile(file);
-      }
-    });
+    if (!Platform.isMobile) {
+      const dropZone = section.createDiv({ cls: "gongkao-image-dropzone" });
+      dropZone.createEl("span", { text: "拖拽图片到这里，或直接粘贴截图" });
+      dropZone.addEventListener("dragover", (event) => {
+        event.preventDefault();
+        dropZone.addClass("gongkao-image-dropzone--active");
+      });
+      dropZone.addEventListener("dragleave", () => {
+        dropZone.removeClass("gongkao-image-dropzone--active");
+      });
+      dropZone.addEventListener("drop", (event) => {
+        event.preventDefault();
+        dropZone.removeClass("gongkao-image-dropzone--active");
+        const file = event.dataTransfer?.files[0];
+        if (file) {
+          this.selectImageFile(file);
+        }
+      });
+    }
 
     contentEl.addEventListener("paste", (event) => {
       const files = event.clipboardData?.files ? Array.from(event.clipboardData.files) : [];

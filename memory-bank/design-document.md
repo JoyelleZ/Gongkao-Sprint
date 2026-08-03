@@ -2,7 +2,7 @@
 
 ## 1. 设计目标
 
-`Gongkao Sprint` 第一版是一款桌面优先的 Obsidian 行测备考工作台插件。产品面向希望开箱即用的小红书公考用户，核心体验是：用户打开 Obsidian 后进入一个全屏感较强的备考工作台，直接看到今天该刷什么、错题该复习哪些、当前专题或套卷推进到什么状态。
+`Gongkao Sprint` 第一版是一款桌面优先、手机轻量可用的 Obsidian 行测备考工作台插件。产品面向希望开箱即用的小红书公考用户，核心体验是：用户在桌面端进入一个全屏感较强的备考工作台，直接看到今天该刷什么、错题该复习哪些、当前专题或套卷推进到什么状态；手机端优先满足拍照新增错题、记录刷题和开始复习。
 
 本设计文档基于前期产品讨论和 `spec.md`，并纳入以下确认结论：
 
@@ -57,6 +57,10 @@ Gongkao Sprint
     新增复盘
     考试倒计时
     图片遮挡
+  Mobile View
+    拍照新增错题
+    记录刷题
+    开始复习
 ```
 
 ## 3. 主区域工作台设计
@@ -406,10 +410,10 @@ updated: 2026-07-29T21:00:00+08:00
 - 从本地选择图片。
 - 拖拽图片到新增错题弹窗。
 - 从剪贴板粘贴截图或图片。
+- 手机端拍照或从相册选择图片。
 
 首版不支持：
 
-- 手机直拍同步。
 - PDF 内直接截图。
 - OCR。
 - AI 自动识别答案区。
@@ -696,11 +700,13 @@ MVP 可以每次打开工作台时扫描 `Gongkao Sprint` 目录并解析 frontm
 插件注册：
 
 - `Open Gongkao Dashboard`
-- `Create Practice Collection`
-- `Log Practice Session`
+- `Initialize Gongkao Data Directories`
 - `Create Error Card`
 - `Create Reflection Log`
-- `Start Review`
+- `Create Practice Log`
+- `Create Practice Collection`
+- `Manage Exam Countdowns`
+- `Start Error Card Review`
 - `Generate Daily Plan`
 - `Create Example Data`
 
@@ -795,7 +801,8 @@ MVP 完成时应满足：
 
 第一版不做：
 
-- 移动端适配承诺。
+- 手机端完整大屏统计工作台。
+- 手机端图片遮挡编辑。
 - AI 解析。
 - OCR。
 - 内置题库。

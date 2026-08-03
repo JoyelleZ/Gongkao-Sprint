@@ -107,3 +107,9 @@
 - Updated the top Dashboard action order to: 制定今日计划, 记录刷题, 新增错题, 新建复盘, 开始复习.
 - Removed "新建专题" from the top toolbar; the creation entry is now inside the 记录刷题 modal and the empty 专题进度 card.
 - Re-verified `npm run build`, `npm test`, and `npm run lint` all pass with 46 tests across 13 test files.
+- Added lightweight mobile support:
+  - Changed `manifest.json` to `"isDesktopOnly": false`.
+  - Dashboard now renders a mobile-specific entry page with 拍照新增错题, 记录刷题, and 开始复习.
+  - Added `assets/mobilecover.png` as the mobile dashboard banner.
+  - Mobile error-card image input now favors camera/photo-library selection and hides desktop drag-and-drop.
+  - Added touch-friendly mobile modal and card styles.

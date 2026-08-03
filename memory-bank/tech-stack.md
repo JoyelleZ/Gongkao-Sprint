@@ -2,7 +2,7 @@
 
 ## 1. 技术栈目标
 
-`Gongkao Sprint` 第一版是一款桌面优先的 Obsidian Community Plugin。技术选型需要服务以下目标：
+`Gongkao Sprint` 第一版是一款桌面优先、手机轻量可用的 Obsidian Community Plugin。技术选型需要服务以下目标：
 
 - 开箱即用，安装后不依赖额外插件。
 - 数据完全保存在 Markdown 文件和 YAML frontmatter 中。
@@ -449,7 +449,7 @@ Community Plugin 发布包包含：
   "minAppVersion": "1.5.0",
   "description": "A civil service exam study dashboard for question collections, error cards, and spaced review.",
   "author": "",
-  "isDesktopOnly": true
+  "isDesktopOnly": false
 }
 ```
 

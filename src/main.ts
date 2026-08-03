@@ -21,6 +21,7 @@ import { ExamCountdownModal } from "./modals/ExamCountdownModal";
 export default class GongkaoSprintPlugin extends Plugin {
   settings: GongkaoSprintSettings = DEFAULT_SETTINGS;
   private coverImageSrc = "";
+  private mobileCoverImageSrc = "";
   private vaultStore!: VaultStore;
   private dashboardService!: DashboardService;
   private collectionService!: PracticeCollectionService;
@@ -34,6 +35,7 @@ export default class GongkaoSprintPlugin extends Plugin {
   async onload(): Promise<void> {
     await this.loadSettings();
     this.coverImageSrc = await this.resolveCoverImageSrc();
+    this.mobileCoverImageSrc = await this.resolvePluginAssetSrc("assets/mobilecover.png", "Mobile banner");
     this.vaultStore = new VaultStore(this.app, () => this.settings);
     this.collectionService = new PracticeCollectionService(this.vaultStore);
     this.practiceLogService = new PracticeLogService(this.vaultStore);
@@ -55,7 +57,7 @@ export default class GongkaoSprintPlugin extends Plugin {
     this.registerView(
       VIEW_TYPE_GONGKAO_DASHBOARD,
       (leaf: WorkspaceLeaf) =>
-        new DashboardView(leaf, this.dashboardService, this.coverImageSrc, {
+        new DashboardView(leaf, this.dashboardService, this.coverImageSrc, this.mobileCoverImageSrc, {
           createErrorCard: () => {
             void this.openErrorCardModal();
           },
@@ -395,13 +397,17 @@ export default class GongkaoSprintPlugin extends Plugin {
   }
 
   private async resolveCoverImageSrc(): Promise<string> {
+    return this.resolvePluginAssetSrc("assets/frontcover.png", "Banner");
+  }
+
+  private async resolvePluginAssetSrc(assetPath: string, label: string): Promise<string> {
     const pluginDir = this.manifest.dir ?? "";
-    const bannerPath = normalizePath(`${pluginDir}/assets/frontcover.png`);
-    const exists = await this.app.vault.adapter.exists(bannerPath);
-    const resourcePath = this.app.vault.adapter.getResourcePath(bannerPath);
-    console.info("Banner resource:", resourcePath);
-    console.info("Banner path:", bannerPath);
-    console.info("exists:", exists);
+    const fullPath = normalizePath(`${pluginDir}/${assetPath}`);
+    const exists = await this.app.vault.adapter.exists(fullPath);
+    const resourcePath = this.app.vault.adapter.getResourcePath(fullPath);
+    console.info(`${label} resource:`, resourcePath);
+    console.info(`${label} path:`, fullPath);
+    console.info(`${label} exists:`, exists);
     return resourcePath;
   }
 }
