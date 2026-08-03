@@ -15,7 +15,6 @@ export interface CreatePracticeLogInput {
   wrong: number;
   durationMinutes?: number;
   round?: number;
-  source?: string;
   rangeLabel?: string;
 }
 
@@ -43,7 +42,6 @@ export class PracticeLogService {
       wrong: input.wrong,
       duration_minutes: input.durationMinutes,
       round: input.round ?? 1,
-      source: input.source,
       range_label: input.rangeLabel,
       created: todayString(),
     };

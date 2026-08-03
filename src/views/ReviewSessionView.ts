@@ -47,7 +47,7 @@ export class ReviewSessionView extends ItemView {
   }
 
   async loadQueue(): Promise<void> {
-    this.queue = await this.errorCardService.listDueCards();
+    this.queue = await this.errorCardService.listReviewCards();
     this.currentIndex = 0;
     this.showBack = false;
   }

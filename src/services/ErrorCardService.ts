@@ -11,7 +11,6 @@ export interface CreateErrorCardInput {
   collectionId?: string;
   collectionName?: string;
   collectionType?: PracticeCollectionType;
-  source?: string;
   rangeLabel?: string;
   round?: number;
   answer?: string;
@@ -50,7 +49,6 @@ export class ErrorCardService {
       collection_id: input.collectionId?.trim() || undefined,
       collection_name: input.collectionName?.trim() || undefined,
       collection_type: input.collectionType,
-      source: input.source?.trim() || undefined,
       range_label: input.rangeLabel?.trim() || undefined,
       round: input.round,
       answer: input.answer?.trim() || undefined,
@@ -95,6 +93,11 @@ export class ErrorCardService {
   async listDueCards(today = todayString()): Promise<Array<{ file: TFile; data: ErrorCard }>> {
     const cards = await this.listCards({ status: "active", dueOnOrBefore: today });
     return sortReviewQueue(cards, today);
+  }
+
+  async listReviewCards(today = todayString()): Promise<Array<{ file: TFile; data: ErrorCard }>> {
+    const cards = await this.listCards({ status: "active" });
+    return sortReviewQueue(filterReviewCandidates(cards, today), today);
   }
 
   async recordReview(file: TFile, card: ErrorCard, result: ReviewResult, now = new Date()): Promise<void> {
@@ -223,6 +226,13 @@ export function sortReviewQueue(
 
     return a.data.created.localeCompare(b.data.created);
   });
+}
+
+export function filterReviewCandidates(
+  cards: Array<{ file: TFile; data: ErrorCard }>,
+  today = todayString(),
+): Array<{ file: TFile; data: ErrorCard }> {
+  return cards.filter((entry) => entry.data.next_review <= today || (entry.data.created === today && entry.data.last_reviewed !== today));
 }
 
 function daysOverdue(card: ErrorCard, today: string): number {

@@ -136,9 +136,9 @@ export class ExampleDataService {
       plan_id: "dp-example-today",
       date: today,
       tasks: [
-        { text: "示例：复习到期错题 1 张", completed: false, source: "review" },
-        { text: `示例：推进主刷题集合：${collection.name}`, completed: false, source: "practice" },
-        { text: "示例：资料分析开算前先写下单位和时间", completed: false, source: "correction" },
+        { text: "示例：复习到期错题 1 张", completed: false, task_type: "review" },
+        { text: `示例：推进主刷题集合：${collection.name}`, completed: false, task_type: "practice" },
+        { text: "示例：资料分析开算前先写下单位和时间", completed: false, task_type: "correction" },
       ],
       created: today,
       updated: today,

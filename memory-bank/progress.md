@@ -31,7 +31,7 @@
 
 - Started Phase 6 error card implementation:
   - Added `src/services/ErrorCardService.ts` for creating text-first error cards, optional collection binding, stable `error_card_id`, initial `next_review`, due-card querying, and fixed Markdown body sections.
-  - Added `src/modals/ErrorCardModal.ts` using Obsidian native Modal and Setting APIs. It supports 行测 module, question type, optional collection binding, source, range, round, answer, wrong reason, initial mastery, and text body.
+  - Added `src/modals/ErrorCardModal.ts` using Obsidian native Modal and Setting APIs. It supports 行测 module, question type, optional collection binding, range, round, answer, wrong reason, initial mastery, and text body.
   - Added the `Create Error Card` command and connected the dashboard "新增错题" / empty-state "新增错题卡" actions to the modal.
   - Dashboard review panel now reads active error cards and shows due count, overdue count, today's new error cards, and due-card module distribution.
   - Image upload, clipboard paste, drag/drop, and rectangle masks are intentionally deferred to Phase 9.
@@ -94,7 +94,7 @@
 - Added a daily-plan path regression test; re-verified `npm test`, `npm run build`, and `npm run lint` all pass with 39 tests across 12 test files.
 - Added direct input workflows for remaining MVP creation actions:
   - Added `src/modals/PracticeCollectionModal.ts` for creating topic, paper, and book practice collections without editing frontmatter by hand.
-  - Added `src/modals/PracticeLogModal.ts` for recording practice date, collection, module, totals, wrong count, duration, round, source, and range.
+  - Added `src/modals/PracticeLogModal.ts` for recording practice date, collection, module, totals, wrong count, duration, round, and range.
   - Dashboard "新建专题" and empty collection actions now open the collection modal.
   - Dashboard "记录刷题" and the `Create Practice Log` command now open the practice-log modal instead of creating a placeholder Markdown template.
   - `PracticeCollectionService` and `PracticeLogService` now export their create input types for modal integration.
@@ -112,5 +112,6 @@
   - Dashboard now renders a mobile-specific entry page with 拍照新增错题, 记录刷题, and 开始复习.
   - Added `assets/mobilecover.png` as the mobile dashboard banner.
   - Mobile error-card image input now favors camera/photo-library selection and hides desktop drag-and-drop.
-  - Error-card image preview now supports lightweight left/right rotation and two-tap cropping before saving.
+  - Error-card image preview now supports lightweight left/right rotation, drag-preview dashed crop selection, two-tap crop fallback, contrast enhancement, and grayscale conversion before saving.
   - Added touch-friendly mobile modal and card styles.
+- Updated review sessions to include today's newly created, not-yet-reviewed error cards so users can immediately test front/back card flipping after capture.

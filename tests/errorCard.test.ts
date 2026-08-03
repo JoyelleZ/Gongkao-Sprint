@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { ErrorCardService, sortReviewQueue } from "../src/services/ErrorCardService";
+import { ErrorCardService, filterReviewCandidates, sortReviewQueue } from "../src/services/ErrorCardService";
 import type { ErrorCard } from "../src/types";
 
 describe("ErrorCardService", () => {
@@ -169,6 +169,56 @@ describe("ErrorCardService", () => {
     const queue = sortReviewQueue(cards, "2026-07-30");
 
     expect(queue.map((entry) => entry.data.error_card_id)).toEqual(["ec-overdue", "ec-older", "ec-newer"]);
+  });
+
+  it("includes today's new cards in the review session until they are reviewed", () => {
+    const entries = [
+      {
+        file: { path: "due.md" } as never,
+        data: {
+          type: "gongkao-error-card",
+          error_card_id: "ec-due",
+          subject: "行测",
+          module: "资料分析",
+          mastery: 1,
+          review_count: 0,
+          created: "2026-07-20",
+          next_review: "2026-07-30",
+          status: "active",
+        } satisfies ErrorCard,
+      },
+      {
+        file: { path: "new.md" } as never,
+        data: {
+          type: "gongkao-error-card",
+          error_card_id: "ec-new",
+          subject: "行测",
+          module: "判断推理",
+          mastery: 1,
+          review_count: 0,
+          created: "2026-07-30",
+          next_review: "2026-08-02",
+          status: "active",
+        } satisfies ErrorCard,
+      },
+      {
+        file: { path: "reviewed-new.md" } as never,
+        data: {
+          type: "gongkao-error-card",
+          error_card_id: "ec-reviewed-new",
+          subject: "行测",
+          module: "判断推理",
+          mastery: 1,
+          review_count: 1,
+          created: "2026-07-30",
+          last_reviewed: "2026-07-30",
+          next_review: "2026-08-02",
+          status: "active",
+        } satisfies ErrorCard,
+      },
+    ];
+
+    expect(filterReviewCandidates(entries, "2026-07-30").map((entry) => entry.data.error_card_id)).toEqual(["ec-due", "ec-new"]);
   });
 
   it("records review feedback and appends history", async () => {

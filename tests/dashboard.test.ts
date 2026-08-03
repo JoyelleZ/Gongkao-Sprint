@@ -124,8 +124,8 @@ describe("DashboardService", () => {
       updated: "2026-07-30",
     },
     tasks: [
-      { text: "复习错题", completed: true, source: "review" },
-      { text: "推进刷题", completed: false, source: "practice" },
+      { text: "复习错题", completed: true, task_type: "review" },
+      { text: "推进刷题", completed: false, task_type: "practice" },
     ] as DailyPlanTask[],
     completionRate: 50,
   };

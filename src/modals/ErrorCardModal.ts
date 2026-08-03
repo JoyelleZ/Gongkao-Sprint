@@ -6,6 +6,8 @@ import type { ErrorCardService } from "../services/ErrorCardService";
 import type { PracticeCollectionService } from "../services/PracticeCollectionService";
 import { getSupportedImageHint, isSupportedImageFile } from "../utils/imageFile";
 
+type ImageFilter = "contrast" | "grayscale";
+
 interface ErrorCardModalServices {
   errorCardService: ErrorCardService;
   collectionService: PracticeCollectionService;
@@ -15,7 +17,6 @@ export class ErrorCardModal extends Modal {
   private module: XingceModule = "判断推理";
   private questionType = "";
   private selectedCollectionId = "";
-  private source = "";
   private rangeLabel = "";
   private round = "1";
   private answer = "";
@@ -28,7 +29,10 @@ export class ErrorCardModal extends Modal {
   private masks: ImageMask[] = [];
   private pendingMaskStart?: { x: number; y: number };
   private pendingCropStart?: { x: number; y: number };
+  private cropDragStart?: { x: number; y: number };
+  private cropSelection?: { left: number; top: number; width: number; height: number };
   private cropMode = false;
+  private ignoreNextImageClick = false;
   private collections: Array<{ filePath: string; data: PracticeCollection }> = [];
 
   constructor(
@@ -82,12 +86,6 @@ export class ErrorCardModal extends Modal {
       }
       dropdown.setValue(this.selectedCollectionId).onChange((value) => {
         this.selectedCollectionId = value;
-      });
-    });
-
-    new Setting(contentEl).setName("来源").addText((text) => {
-      text.setPlaceholder("如 粉笔 5000 题").setValue(this.source).onChange((value) => {
-        this.source = value;
       });
     });
 
@@ -159,7 +157,6 @@ export class ErrorCardModal extends Modal {
         collectionId: collection?.collection_id,
         collectionName: collection?.name,
         collectionType: collection?.collection_type,
-        source: this.source,
         rangeLabel: this.rangeLabel,
         round,
         answer: this.answer,
@@ -261,6 +258,16 @@ export class ErrorCardModal extends Modal {
         new Notice(this.cropMode ? "裁剪模式：在图片上点两次确定裁剪区域。" : "已退出裁剪模式。");
         this.render();
       });
+    controls
+      .createEl("button", { text: "增强", cls: "gongkao-button" })
+      .addEventListener("click", () => {
+        void this.applyImageFilter("contrast");
+      });
+    controls
+      .createEl("button", { text: "黑白", cls: "gongkao-button" })
+      .addEventListener("click", () => {
+        void this.applyImageFilter("grayscale");
+      });
   }
 
   private renderImagePreview(parent: HTMLElement): void {
@@ -277,10 +284,43 @@ export class ErrorCardModal extends Modal {
     });
     image.addEventListener("click", (event) => {
       if (this.cropMode) {
+        if (this.ignoreNextImageClick) {
+          this.ignoreNextImageClick = false;
+          return;
+        }
         void this.handleCropClick(event, image);
         return;
       }
       this.handleMaskClick(event, image, preview);
+    });
+    preview.addEventListener("pointerdown", (event) => {
+      if (!this.cropMode || event.button !== 0) {
+        return;
+      }
+      event.preventDefault();
+      preview.setPointerCapture(event.pointerId);
+      this.cropDragStart = this.eventToNaturalPoint(event, image);
+      this.cropSelection = { left: 0, top: 0, width: 0, height: 0 };
+      this.renderCropSelection(preview, image);
+    });
+    preview.addEventListener("pointermove", (event) => {
+      if (!this.cropMode || !this.cropDragStart) {
+        return;
+      }
+      event.preventDefault();
+      this.cropSelection = this.naturalRectToDisplayRect(this.buildNaturalRect(this.cropDragStart, this.eventToNaturalPoint(event, image)), image);
+      this.renderCropSelection(preview, image);
+    });
+    preview.addEventListener("pointerup", (event) => {
+      if (!this.cropMode || !this.cropDragStart) {
+        return;
+      }
+      event.preventDefault();
+      const rect = this.buildNaturalRect(this.cropDragStart, this.eventToNaturalPoint(event, image));
+      this.cropDragStart = undefined;
+      this.cropSelection = undefined;
+      this.ignoreNextImageClick = true;
+      void this.cropImage(image, rect);
     });
 
     for (const [index, mask] of this.masks.entries()) {
@@ -293,6 +333,8 @@ export class ErrorCardModal extends Modal {
         this.render();
       });
     }
+
+    this.renderCropSelection(preview, image);
   }
 
   private selectImageFile(file: File): void {
@@ -310,6 +352,8 @@ export class ErrorCardModal extends Modal {
     this.masks = [];
     this.pendingMaskStart = undefined;
     this.pendingCropStart = undefined;
+    this.cropDragStart = undefined;
+    this.cropSelection = undefined;
     this.cropMode = false;
     this.render();
   }
@@ -344,6 +388,44 @@ export class ErrorCardModal extends Modal {
     }
   }
 
+  private async applyImageFilter(filter: ImageFilter): Promise<void> {
+    if (!this.imageObjectUrl) {
+      return;
+    }
+
+    try {
+      const image = await this.loadImage(this.imageObjectUrl);
+      const canvas = document.createElement("canvas");
+      canvas.width = image.naturalWidth;
+      canvas.height = image.naturalHeight;
+      const context = canvas.getContext("2d");
+      if (!context) {
+        throw new Error("无法创建图片编辑画布。");
+      }
+
+      context.drawImage(image, 0, 0);
+      const imageData = context.getImageData(0, 0, canvas.width, canvas.height);
+      const data = imageData.data;
+      for (let index = 0; index < data.length; index += 4) {
+        if (filter === "grayscale") {
+          const gray = Math.round(data[index] * 0.299 + data[index + 1] * 0.587 + data[index + 2] * 0.114);
+          data[index] = gray;
+          data[index + 1] = gray;
+          data[index + 2] = gray;
+        } else {
+          data[index] = this.applyContrast(data[index]);
+          data[index + 1] = this.applyContrast(data[index + 1]);
+          data[index + 2] = this.applyContrast(data[index + 2]);
+        }
+      }
+      context.putImageData(imageData, 0, 0);
+      await this.replaceImageFromCanvas(canvas, filter);
+      new Notice(filter === "grayscale" ? "图片已转为黑白。" : "图片对比度已增强。");
+    } catch (error) {
+      new Notice(error instanceof Error ? error.message : "图片处理失败。");
+    }
+  }
+
   private async handleCropClick(event: MouseEvent, image: HTMLImageElement): Promise<void> {
     if (!this.imageNaturalSize) {
       return;
@@ -353,6 +435,8 @@ export class ErrorCardModal extends Modal {
     if (!this.pendingCropStart) {
       this.pendingCropStart = point;
       new Notice("已记录裁剪起点，再点击一次确定右下角。");
+      this.cropSelection = this.naturalRectToDisplayRect({ x: point.x, y: point.y, width: 1, height: 1 }, image);
+      this.renderCropSelection(image.parentElement ?? image, image);
       return;
     }
 
@@ -369,17 +453,7 @@ export class ErrorCardModal extends Modal {
     }
 
     try {
-      const canvas = document.createElement("canvas");
-      canvas.width = width;
-      canvas.height = height;
-      const context = canvas.getContext("2d");
-      if (!context) {
-        throw new Error("无法创建图片编辑画布。");
-      }
-
-      context.drawImage(image, x, y, width, height, 0, 0, width, height);
-      await this.replaceImageFromCanvas(canvas, "crop");
-      new Notice("图片已裁剪。");
+      await this.cropImage(image, { x, y, width, height });
     } catch (error) {
       new Notice(error instanceof Error ? error.message : "图片裁剪失败。");
     }
@@ -406,6 +480,9 @@ export class ErrorCardModal extends Modal {
     this.masks = [];
     this.pendingMaskStart = undefined;
     this.pendingCropStart = undefined;
+    this.cropDragStart = undefined;
+    this.cropSelection = undefined;
+    this.ignoreNextImageClick = false;
     this.cropMode = false;
     this.render();
   }
@@ -445,6 +522,77 @@ export class ErrorCardModal extends Modal {
 
     this.masks.push({ x, y, width, height, label: "解析" });
     this.renderImagePreview(preview.parentElement ?? preview);
+  }
+
+  private async cropImage(image: HTMLImageElement, rect: { x: number; y: number; width: number; height: number }): Promise<void> {
+    const x = Math.max(0, Math.round(rect.x));
+    const y = Math.max(0, Math.round(rect.y));
+    const width = Math.min((this.imageNaturalSize?.width ?? image.naturalWidth) - x, Math.round(rect.width));
+    const height = Math.min((this.imageNaturalSize?.height ?? image.naturalHeight) - y, Math.round(rect.height));
+
+    if (width < 20 || height < 20) {
+      new Notice("裁剪区域太小，请重新选择。");
+      this.render();
+      return;
+    }
+
+    const canvas = document.createElement("canvas");
+    canvas.width = width;
+    canvas.height = height;
+    const context = canvas.getContext("2d");
+    if (!context) {
+      throw new Error("无法创建图片编辑画布。");
+    }
+
+    context.drawImage(image, x, y, width, height, 0, 0, width, height);
+    await this.replaceImageFromCanvas(canvas, "crop");
+    new Notice("图片已裁剪。");
+  }
+
+  private renderCropSelection(preview: HTMLElement, image: HTMLImageElement): void {
+    preview.find(".gongkao-image-crop-selection")?.remove();
+    if (!this.cropMode || !this.cropSelection) {
+      return;
+    }
+
+    const rect = this.cropSelection.width > 0 && this.cropSelection.height > 0
+      ? this.cropSelection
+      : this.pendingCropStart
+        ? this.naturalRectToDisplayRect({ x: this.pendingCropStart.x, y: this.pendingCropStart.y, width: 1, height: 1 }, image)
+        : undefined;
+    if (!rect) {
+      return;
+    }
+
+    preview.createDiv({
+      cls: "gongkao-image-crop-selection",
+      attr: { style: `left:${rect.left}%;top:${rect.top}%;width:${rect.width}%;height:${rect.height}%;` },
+    });
+  }
+
+  private buildNaturalRect(start: { x: number; y: number }, end: { x: number; y: number }): { x: number; y: number; width: number; height: number } {
+    return {
+      x: Math.min(start.x, end.x),
+      y: Math.min(start.y, end.y),
+      width: Math.abs(end.x - start.x),
+      height: Math.abs(end.y - start.y),
+    };
+  }
+
+  private naturalRectToDisplayRect(rect: { x: number; y: number; width: number; height: number }, image: HTMLImageElement): { left: number; top: number; width: number; height: number } {
+    const naturalWidth = (this.imageNaturalSize?.width ?? image.naturalWidth) || 1;
+    const naturalHeight = (this.imageNaturalSize?.height ?? image.naturalHeight) || 1;
+    return {
+      left: (rect.x / naturalWidth) * 100,
+      top: (rect.y / naturalHeight) * 100,
+      width: (rect.width / naturalWidth) * 100,
+      height: (rect.height / naturalHeight) * 100,
+    };
+  }
+
+  private applyContrast(value: number): number {
+    const factor = 1.28;
+    return Math.max(0, Math.min(255, Math.round((value - 128) * factor + 128)));
   }
 
   private eventToNaturalPoint(event: MouseEvent, image: HTMLImageElement): { x: number; y: number } {

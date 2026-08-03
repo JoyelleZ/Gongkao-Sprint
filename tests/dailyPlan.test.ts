@@ -43,7 +43,7 @@ describe("DailyPlanService", () => {
 
     const tasks = buildDailyPlanTasks(dueCards, collection, reflections);
 
-    expect(tasks.map((task) => task.source)).toEqual(["review", "practice", "correction"]);
+    expect(tasks.map((task) => task.task_type)).toEqual(["review", "practice", "correction"]);
     expect(tasks[2]?.text).toContain("资料分析先看单位");
   });
 

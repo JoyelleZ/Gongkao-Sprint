@@ -906,7 +906,7 @@
 
 .gongkao-image-editor {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-columns: repeat(5, minmax(0, 1fr));
   gap: 8px;
   margin-top: 10px;
 }
@@ -915,6 +915,17 @@
   min-width: 0;
   width: 100%;
   padding: 0 10px;
+}
+
+.gongkao-image-crop-selection {
+  position: absolute;
+  z-index: 2;
+  border: 2px dashed rgba(255, 255, 255, 0.96);
+  background: rgba(104, 139, 91, 0.18);
+  box-shadow:
+    0 0 0 9999px rgba(0, 0, 0, 0.26),
+    0 0 0 1px rgba(75, 121, 66, 0.9);
+  pointer-events: none;
 }
 
 .gongkao-mobile {
@@ -1425,6 +1436,10 @@
     bottom: 0;
     padding-top: 10px;
     background: var(--background-primary);
+  }
+
+  .gongkao-image-editor {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
   }
 
   .gongkao-dashboard__grid {

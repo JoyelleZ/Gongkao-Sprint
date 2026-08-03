@@ -98,7 +98,7 @@ export function buildDailyPlanTasks(
     tasks.push({
       text: `复习到期错题 ${dueCards.length} 张`,
       completed: false,
-      source: "review",
+      task_type: "review",
     });
   }
 
@@ -106,7 +106,7 @@ export function buildDailyPlanTasks(
     tasks.push({
       text: `推进主刷题集合：${defaultCollection.name}`,
       completed: false,
-      source: "practice",
+      task_type: "practice",
     });
   }
 
@@ -115,7 +115,7 @@ export function buildDailyPlanTasks(
     tasks.push({
       text: `纠偏提醒：${inertia.next_action ?? inertia.problem ?? "复盘最近的思维惯性"}`,
       completed: false,
-      source: "correction",
+      task_type: "correction",
     });
   }
 
@@ -123,7 +123,7 @@ export function buildDailyPlanTasks(
     tasks.push({
       text: "完成一组行测练习并记录结果",
       completed: false,
-      source: "practice",
+      task_type: "practice",
     });
   }
 
@@ -138,7 +138,7 @@ export function parsePlanTasks(markdown: string): DailyPlanTask[] {
     .map((match) => ({
       text: match[2],
       completed: match[1].toLowerCase() === "x",
-      source: "practice",
+      task_type: "practice",
     }));
 }
 

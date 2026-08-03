@@ -20,7 +20,6 @@ export class PracticeLogModal extends Modal {
   private wrong = "";
   private durationMinutes = "";
   private round = "1";
-  private source = "";
   private rangeLabel = "";
   private collections: PracticeCollection[] = [];
 
@@ -121,12 +120,6 @@ export class PracticeLogModal extends Modal {
       });
     });
 
-    new Setting(contentEl).setName("来源").addText((text) => {
-      text.setPlaceholder("如 粉笔 5000 题").setValue(this.source).onChange((value) => {
-        this.source = value;
-      });
-    });
-
     new Setting(contentEl).setName("范围说明").addText((text) => {
       text.setPlaceholder("如 第 2 轮 / 第 35-60 题").setValue(this.rangeLabel).onChange((value) => {
         this.rangeLabel = value;
@@ -157,7 +150,6 @@ export class PracticeLogModal extends Modal {
         wrong: Number(this.wrong),
         durationMinutes: this.durationMinutes.trim() ? Number(this.durationMinutes) : undefined,
         round: this.round.trim() ? Number(this.round) : undefined,
-        source: this.source.trim() || undefined,
         rangeLabel: this.rangeLabel.trim() || undefined,
       });
 

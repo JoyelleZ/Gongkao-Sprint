@@ -39,7 +39,6 @@ export interface PracticeLog {
   wrong: number;
   duration_minutes?: number;
   round: number;
-  source?: string;
   range_label?: string;
   created: string;
 }
@@ -67,7 +66,6 @@ export interface ErrorCard {
   collection_id?: string;
   collection_name?: string;
   collection_type?: PracticeCollectionType;
-  source?: string;
   range_label?: string;
   round?: number;
   answer?: string;
@@ -124,7 +122,7 @@ export interface DailyPlan {
 export interface DailyPlanTask {
   text: string;
   completed: boolean;
-  source: "review" | "practice" | "correction";
+  task_type: "review" | "practice" | "correction";
 }
 
 export interface EffortDay {
