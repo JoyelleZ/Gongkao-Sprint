@@ -17,6 +17,8 @@ import { PracticeCollectionModal } from "./modals/PracticeCollectionModal";
 import { PracticeLogModal } from "./modals/PracticeLogModal";
 import { ExamCountdownService } from "./services/ExamCountdownService";
 import { ExamCountdownModal } from "./modals/ExamCountdownModal";
+import frontCoverDataUrl from "../assets/frontcover.png";
+import mobileCoverDataUrl from "../assets/mobilecover.png";
 
 export default class GongkaoSprintPlugin extends Plugin {
   settings: GongkaoSprintSettings = DEFAULT_SETTINGS;
@@ -397,26 +399,35 @@ export default class GongkaoSprintPlugin extends Plugin {
   }
 
   private async resolveCoverImageSrc(): Promise<string> {
-    return this.resolvePluginAssetSrc("assets/frontcover.png", "Banner");
+    return this.resolvePluginAssetSrc("assets/frontcover.png", frontCoverDataUrl);
   }
 
   private async resolveMobileCoverImageSrc(): Promise<string> {
-    return this.resolvePluginAssetSrc("assets/mobilecover.png", "Mobile banner", "assets/frontcover.png");
+    return this.resolvePluginAssetSrc("assets/mobilecover.png", mobileCoverDataUrl, "assets/frontcover.png", frontCoverDataUrl);
   }
 
-  private async resolvePluginAssetSrc(assetPath: string, label: string, fallbackAssetPath?: string): Promise<string> {
+  private async resolvePluginAssetSrc(
+    assetPath: string,
+    embeddedDataUrl: string,
+    fallbackAssetPath?: string,
+    fallbackEmbeddedDataUrl?: string,
+  ): Promise<string> {
     const pluginDir = this.manifest.dir ?? "";
     const fullPath = normalizePath(`${pluginDir}/${assetPath}`);
     const exists = await this.app.vault.adapter.exists(fullPath);
-    const resourcePath = this.app.vault.adapter.getResourcePath(fullPath);
-    if (!exists && fallbackAssetPath) {
+    if (exists) {
+      return this.app.vault.adapter.getResourcePath(fullPath);
+    }
+
+    if (fallbackAssetPath && fallbackEmbeddedDataUrl) {
       const fallbackPath = normalizePath(`${pluginDir}/${fallbackAssetPath}`);
       const fallbackExists = await this.app.vault.adapter.exists(fallbackPath);
-      const fallbackResourcePath = this.app.vault.adapter.getResourcePath(fallbackPath);
       if (fallbackExists) {
-        return fallbackResourcePath;
+        return this.app.vault.adapter.getResourcePath(fallbackPath);
       }
+      return fallbackEmbeddedDataUrl;
     }
-    return resourcePath;
+
+    return embeddedDataUrl;
   }
 }

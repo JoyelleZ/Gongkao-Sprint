@@ -63,7 +63,9 @@ For an Obsidian Community Plugin release, upload:
 - `main.js`
 - `styles.css`
 
-Optional visual assets for manual/source installs:
+Dashboard banner images are embedded into `main.js` during the production build, so Community Plugin installs keep the PNG visual effect without shipping an `assets/` folder.
+
+Source images remain in the repository for replacement and manual/source installs:
 
 - `assets/frontcover.png`
 - `assets/mobilecover.png`
@@ -151,7 +153,9 @@ Obsidian Community Plugin release 需要上传：
 - `main.js`
 - `styles.css`
 
-手动安装或源码安装可额外包含视觉资源：
+工作台封面图会在生产构建时内联进 `main.js`，因此社区插件安装即使没有 `assets/` 目录，也能保持 PNG 图片效果。
+
+源码中仍保留图片文件，方便后续替换或手动安装：
 
 - `assets/frontcover.png`
 - `assets/mobilecover.png`

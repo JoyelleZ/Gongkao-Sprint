@@ -89,7 +89,7 @@
   - Added click-through behavior from Dashboard data cards to source Markdown files where available, preserving Dashboard as a statistics/analysis layer rather than a nested app.
   - Updated the default resource folder name to `08_资源库` and added settings migration from the previous default attachment locations.
   - Changed daily-plan creation and reading to use `Gongkao Sprint/01_今日计划/YYYY-MM-DD.md`.
-  - Added plugin-local `assets/apple-banner.svg` and changed the Dashboard banner to load it through the plugin resource path as a CSS background, avoiding broken relative image references.
+  - Replaced the early SVG banner direction with PNG banner assets and plugin resource-path loading for local/source installs.
   - Updated README, spec, architecture, frontend, implementation, tech-stack, and progress documents to reflect the Vault-native relationship.
 - Added a daily-plan path regression test; re-verified `npm test`, `npm run build`, and `npm run lint` all pass with 39 tests across 12 test files.
 - Added direct input workflows for remaining MVP creation actions:
@@ -115,4 +115,5 @@
   - Error-card image preview now supports right-rotate 90°, enlarged crop modal with dashed drag selection, instant contrast slider preview with release-to-apply behavior, and grayscale conversion before saving.
   - Mobile image input now separates camera capture from album/file selection.
   - Added touch-friendly mobile modal and card styles.
+- Embedded desktop and mobile PNG dashboard banners into `main.js` through esbuild data URL loading, while preserving local `assets/` images as preferred overrides for source/manual installs.
 - Updated review sessions to include today's newly created, not-yet-reviewed error cards so users can immediately test front/back card flipping after capture.

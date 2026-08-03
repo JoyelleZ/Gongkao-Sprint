@@ -433,6 +433,8 @@ Community Plugin 发布包包含：
 - `manifest.json`
 - `styles.css`
 
+`assets/frontcover.png` 和 `assets/mobilecover.png` 作为源码素材保留，并在生产构建中通过 esbuild data URL loader 内联到 `main.js`。社区安装不依赖 `assets/` 目录；手动或源码安装如果存在本地图片文件，则优先读取本地文件，缺失时回退到内置 data URL。
+
 版本规则：
 
 - `manifest.json` 中的 `version` 与 Git tag 保持一致。

@@ -28,6 +28,9 @@ const context = await esbuild.context({
   ],
   format: "cjs",
   target: "es2022",
+  loader: {
+    ".png": "dataurl",
+  },
   logLevel: "info",
   sourcemap: prod ? false : "inline",
   treeShaking: true,
