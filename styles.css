@@ -83,114 +83,11 @@
   font-weight: 600;
 }
 
-.gongkao-mini-calendar,
 .gongkao-sidebar-card {
   border: 1px solid rgba(104, 139, 91, 0.13);
   border-radius: 8px;
   background: color-mix(in srgb, var(--background-primary) 88%, rgb(248, 244, 235));
   box-shadow: 0 8px 24px rgba(31, 41, 30, 0.04);
-}
-
-.gongkao-mini-calendar {
-  margin-top: auto;
-  padding: 14px;
-}
-
-.gongkao-mini-calendar__header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: 12px;
-}
-
-.gongkao-mini-calendar__header strong {
-  font-size: 13px;
-  letter-spacing: 0;
-}
-
-.gongkao-mini-calendar__header div {
-  display: flex;
-  gap: 8px;
-  color: var(--text-muted);
-}
-
-.gongkao-mini-calendar__week,
-.gongkao-mini-calendar__grid {
-  display: grid;
-  grid-template-columns: repeat(7, minmax(0, 1fr));
-  gap: 7px;
-  text-align: center;
-}
-
-.gongkao-mini-calendar__week {
-  margin-bottom: 7px;
-  color: var(--text-muted);
-  font-size: 11px;
-}
-
-.gongkao-mini-calendar__day {
-  display: inline-flex;
-  min-width: 0;
-  aspect-ratio: 1;
-  align-items: center;
-  justify-content: center;
-  border-radius: 999px;
-  font-size: 11px;
-  line-height: 1;
-}
-
-.gongkao-mini-calendar__day--muted {
-  color: color-mix(in srgb, var(--text-muted) 45%, transparent);
-}
-
-.gongkao-mini-calendar__day--today {
-  background: rgb(101, 146, 86);
-  color: white;
-  font-weight: 700;
-}
-
-/* Calendar embedded in the dashboard time panel */
-.gongkao-calendar-panel .gongkao-mini-calendar__header {
-  margin-bottom: 14px;
-}
-
-.gongkao-calendar-panel .gongkao-mini-calendar__header strong {
-  font-size: 15px;
-  font-weight: 650;
-}
-
-.gongkao-calendar-panel .gongkao-mini-calendar__week {
-  margin-bottom: 8px;
-  color: var(--text-muted);
-  font-size: 12px;
-}
-
-.gongkao-calendar-panel .gongkao-mini-calendar__grid {
-  display: grid;
-  grid-template-columns: repeat(7, minmax(0, 1fr));
-  gap: 6px;
-  text-align: center;
-}
-
-.gongkao-calendar-panel .gongkao-mini-calendar__day {
-  display: inline-flex;
-  aspect-ratio: 1;
-  align-items: center;
-  justify-content: center;
-  border-radius: 999px;
-  font-size: 13px;
-  color: var(--text-normal);
-}
-
-.gongkao-calendar-panel .gongkao-mini-calendar__day--muted {
-  color: var(--text-muted);
-  opacity: 0.4;
-}
-
-.gongkao-calendar-panel .gongkao-mini-calendar__day--today {
-  background: var(--gongkao-green, #6d925a);
-  color: white;
-  font-weight: 700;
 }
 
 .gongkao-sidebar-card {
@@ -498,6 +395,170 @@
 
 .gongkao-task--done small {
   color: rgb(100, 148, 87);
+}
+
+.gongkao-plan-calendar {
+  margin-top: 14px;
+  padding: 12px;
+  border: 1px solid rgba(104, 139, 91, 0.12);
+  border-radius: 8px;
+  background: color-mix(in srgb, var(--background-primary) 92%, rgba(104, 139, 91, 0.08));
+}
+
+.gongkao-plan-calendar--compact {
+  padding: 10px;
+}
+
+.gongkao-plan-calendar__header {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+
+.gongkao-plan-calendar__header strong {
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.gongkao-plan-calendar__summary,
+.gongkao-plan-calendar__week {
+  color: var(--text-muted);
+  font-size: 11px;
+}
+
+.gongkao-plan-calendar__summary {
+  display: inline-flex;
+  gap: 8px;
+  white-space: nowrap;
+}
+
+.gongkao-plan-calendar__week,
+.gongkao-plan-calendar__grid {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  gap: 5px;
+}
+
+.gongkao-plan-calendar__week {
+  margin-bottom: 6px;
+  text-align: center;
+}
+
+.gongkao-plan-calendar__day {
+  display: flex;
+  min-width: 0;
+  min-height: 66px;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 4px;
+  padding: 6px 4px;
+  border: 1px solid rgba(104, 139, 91, 0.08);
+  border-radius: 7px;
+  background: rgba(255, 255, 255, 0.72);
+  color: var(--text-normal);
+  cursor: default;
+}
+
+.gongkao-plan-calendar__day--muted {
+  background: transparent;
+  border-color: transparent;
+}
+
+.gongkao-plan-calendar__day--planned {
+  border-color: rgba(104, 139, 91, 0.18);
+  cursor: pointer;
+}
+
+.gongkao-plan-calendar__day--complete {
+  background: rgba(104, 139, 91, 0.08);
+}
+
+.gongkao-plan-calendar__day--pending {
+  background: color-mix(in srgb, var(--background-primary) 82%, rgba(222, 134, 100, 0.1));
+}
+
+.gongkao-plan-calendar__day--planned:hover {
+  background: rgba(104, 139, 91, 0.08);
+}
+
+.gongkao-plan-calendar__day--today .gongkao-plan-calendar__date {
+  display: inline-flex;
+  width: 22px;
+  height: 22px;
+  align-items: center;
+  justify-content: center;
+  border-radius: 999px;
+  background: var(--gongkao-green, #6d925a);
+  color: white;
+  font-weight: 700;
+}
+
+.gongkao-plan-calendar__date {
+  font-size: 12px;
+  line-height: 1;
+}
+
+.gongkao-plan-calendar__tasks {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  font-size: 10px;
+  line-height: 1;
+}
+
+.gongkao-plan-calendar__task-list {
+  display: grid;
+  width: 100%;
+  gap: 3px;
+}
+
+.gongkao-plan-calendar__task {
+  overflow: hidden;
+  width: 100%;
+  padding: 2px 4px;
+  border-radius: 4px;
+  background: rgba(222, 134, 100, 0.14);
+  color: rgb(160, 83, 55);
+  font-size: 10px;
+  line-height: 1.2;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.gongkao-plan-calendar__task--done {
+  background: rgba(104, 139, 91, 0.16);
+  color: rgb(75, 119, 66);
+}
+
+.gongkao-plan-calendar__done,
+.gongkao-plan-calendar__pending {
+  min-width: 16px;
+  padding: 2px 4px;
+  border-radius: 999px;
+  text-align: center;
+}
+
+.gongkao-plan-calendar__done {
+  background: rgba(104, 139, 91, 0.18);
+  color: rgb(75, 119, 66);
+}
+
+.gongkao-plan-calendar__pending {
+  background: rgba(222, 134, 100, 0.16);
+  color: rgb(180, 94, 64);
+}
+
+.gongkao-plan-calendar--compact .gongkao-plan-calendar__day {
+  min-height: 36px;
+  justify-content: center;
+  padding: 5px 2px;
+}
+
+.gongkao-plan-calendar--compact .gongkao-plan-calendar__task-list {
+  display: none;
 }
 
 .gongkao-progress {
@@ -1271,55 +1332,92 @@
 }
 
 /* Calendar + Heatmap side by side */
-.gongkao-time-panel__body {
-  display: grid;
-  grid-template-columns: 280px minmax(0, 1fr);
-  gap: 32px;
-}
-
-.gongkao-time-panel__calendar,
-.gongkao-time-panel__heatmap,
-.gongkao-calendar-panel,
 .gongkao-heatmap-panel {
   min-width: 0;
 }
 
-.gongkao-time-panel__heatmap {
-  display: flex;
-  padding-left: 22px;
-  border-left: 1px solid rgba(104, 139, 91, 0.12);
-}
-
-.gongkao-calendar-panel,
 .gongkao-heatmap-panel {
   height: auto;
 }
 
-.gongkao-time-panel__heatmap .gongkao-heatmap-panel {
+.gongkao-time-panel .gongkao-heatmap-panel {
   display: flex;
   width: 100%;
   min-height: 100%;
   flex-direction: column;
 }
 
-.gongkao-time-panel__heatmap .gongkao-heatmap-legend {
-  margin-top: auto;
-}
-
-.gongkao-time-panel__heatmap .gongkao-heatmap-weekday,
-.gongkao-time-panel__heatmap .gongkao-heatmap-month {
-  font-size: 13px;
-}
-
-.gongkao-time-panel__heatmap .gongkao-heatmap-legend {
+.gongkao-time-panel .gongkao-heatmap-legend {
   gap: 6px;
   font-size: 12px;
 }
 
-.gongkao-time-panel__heatmap .gongkao-heatmap-legend .gongkao-heatmap__cell {
-  width: 14px;
-  min-width: 14px;
-  height: 14px;
+.gongkao-time-panel .gongkao-heatmap-legend .gongkao-heatmap__cell {
+  width: 12px;
+  min-width: 12px;
+  height: 12px;
+}
+
+.gongkao-plan-bars {
+  margin-top: 18px;
+  padding-top: 14px;
+  border-top: 1px solid rgba(104, 139, 91, 0.12);
+}
+
+.gongkao-plan-bars__header {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.gongkao-plan-bars__header strong {
+  font-size: 14px;
+}
+
+.gongkao-plan-bars__header span {
+  color: var(--text-muted);
+  font-size: 12px;
+}
+
+.gongkao-plan-bars__grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(10px, 1fr));
+  gap: 5px;
+  align-items: end;
+  min-height: 96px;
+}
+
+.gongkao-plan-bars__bar {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 6px;
+  color: var(--text-muted);
+  font-size: 10px;
+  cursor: pointer;
+}
+
+.gongkao-plan-bars__stack {
+  display: flex;
+  width: 100%;
+  max-width: 18px;
+  min-height: 12px;
+  flex-direction: column-reverse;
+  overflow: hidden;
+  border-radius: 6px 6px 3px 3px;
+  background: rgba(104, 139, 91, 0.08);
+}
+
+.gongkao-plan-bars__done {
+  background: rgba(104, 139, 91, 0.7);
+}
+
+.gongkao-plan-bars__pending {
+  background: rgba(222, 134, 100, 0.35);
 }
 
 .gongkao-heatmap-detail {
@@ -1544,23 +1642,6 @@
     grid-template-columns: 1fr;
   }
 
-  .gongkao-time-panel__body {
-    grid-template-columns: 1fr;
-    height: auto;
-  }
-
-  .gongkao-time-panel__calendar,
-  .gongkao-time-panel__heatmap {
-    overflow: visible;
-  }
-
-  .gongkao-time-panel__heatmap {
-    padding-top: 18px;
-    padding-left: 0;
-    border-top: 1px solid rgba(104, 139, 91, 0.12);
-    border-left: 0;
-  }
-
   .gongkao-weakness-list,
   .gongkao-reflection {
     grid-template-columns: 1fr;
@@ -1681,7 +1762,6 @@
   color: var(--gongkao-green-dark);
 }
 
-.gongkao-mini-calendar,
 .gongkao-sidebar-card,
 .gongkao-panel {
   border: 1px solid var(--gongkao-border);
@@ -1690,16 +1770,11 @@
   box-shadow: var(--gongkao-shadow);
 }
 
-.gongkao-sidebar-card__icon,
-.gongkao-card-empty__icon {
+.gongkao-sidebar-card__icon {
   border: 0;
   border-radius: 12px;
   background: var(--gongkao-green-soft);
   color: var(--gongkao-green);
-}
-
-.gongkao-mini-calendar__day--today {
-  background: var(--gongkao-green);
 }
 
 .gongkao-dashboard__main {
@@ -1826,19 +1901,6 @@
   align-items: flex-start;
   justify-content: center;
   gap: 10px;
-}
-
-.gongkao-card-empty__icon {
-  display: inline-flex;
-  width: 34px;
-  height: 34px;
-  align-items: center;
-  justify-content: center;
-}
-
-.gongkao-card-empty__icon svg {
-  width: 17px;
-  height: 17px;
 }
 
 .gongkao-card-empty strong {

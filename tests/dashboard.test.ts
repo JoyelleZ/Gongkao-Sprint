@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { buildDashboardModel } from "../src/services/DashboardService";
-import type { DailyPlanReadResult } from "../src/services/DailyPlanService";
+import type { DailyPlanMonthEntry, DailyPlanReadResult } from "../src/services/DailyPlanService";
 import type { DailyPlanTask, ErrorCard, PracticeCollection, PracticeLog, ReflectionLog } from "../src/types";
 
 interface DashboardTestOverrides {
@@ -9,6 +9,8 @@ interface DashboardTestOverrides {
   cards?: ErrorCard[];
   reflections?: ReflectionLog[];
   plan?: Parameters<typeof buildDashboardModel>[5];
+  monthPlans?: DailyPlanMonthEntry[];
+  recentPlans?: DailyPlanMonthEntry[];
 }
 
 describe("DashboardService", () => {
@@ -138,6 +140,10 @@ describe("DashboardService", () => {
       overrides.reflections ?? reflections,
       today,
       overrides.plan ?? null,
+      [],
+      overrides.monthPlans ?? [],
+      "2026-07",
+      overrides.recentPlans ?? overrides.monthPlans ?? [],
     );
 
   it("summarizes collections by stable collection id", () => {
@@ -174,10 +180,10 @@ describe("DashboardService", () => {
     expect(model.hasAnyData).toBe(true);
   });
 
-  it("includes a 90 day effort heatmap in the dashboard model", () => {
+  it("includes a 120 day effort heatmap in the dashboard model", () => {
     const model = buildModel("2026-07-30");
 
-    expect(model.heatmap).toHaveLength(90);
+    expect(model.heatmap).toHaveLength(120);
     expect(model.heatmap.at(-1)?.date).toBe("2026-07-30");
     expect(model.heatmap.some((day) => day.level > 0)).toBe(true);
   });
@@ -188,6 +194,27 @@ describe("DashboardService", () => {
     expect(model.plan.exists).toBe(true);
     expect(model.plan.completionRate).toBe(50);
     expect(model.plan.tasks[0]).toContain("已完成");
+  });
+
+  it("builds a daily plan calendar summary and feeds plan completion into heatmap", () => {
+    const monthPlans: DailyPlanMonthEntry[] = [
+      { ...plan, date: "2026-07-30" },
+      {
+        ...plan,
+        file: { path: "plan-0729.md" } as never,
+        data: { ...plan.data, plan_id: "dp-2", date: "2026-07-29" },
+        date: "2026-07-29",
+        tasks: [{ text: "补齐资料分析", completed: true, task_type: "practice" }],
+        completionRate: 100,
+      },
+    ];
+
+    const model = buildModel("2026-07-30", { monthPlans });
+
+    expect(model.planCalendar.entries).toHaveLength(2);
+    expect(model.planCalendar.entries[0]?.completedCount).toBe(1);
+    expect(model.planCalendar.entries[0]?.pendingCount).toBe(0);
+    expect(model.heatmap.find((day) => day.date === "2026-07-29")?.planCompletionRate).toBe(1);
   });
 
   it("builds recent weakness and correction reminders", () => {

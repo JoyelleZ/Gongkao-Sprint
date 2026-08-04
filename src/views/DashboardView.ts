@@ -1,6 +1,6 @@
 import { ItemView, Notice, Platform, setIcon, TFile, WorkspaceLeaf } from "obsidian";
 import { VIEW_TYPE_GONGKAO_DASHBOARD } from "../constants";
-import type { DashboardCollectionSummary, DashboardModel, DashboardService } from "../services/DashboardService";
+import type { DashboardCollectionSummary, DashboardModel, DashboardPlanCalendarEntry, DashboardService } from "../services/DashboardService";
 import { buildHeatmapLayout } from "../services/EffortService";
 
 interface DashboardActions {
@@ -47,6 +47,8 @@ export class DashboardView extends ItemView {
   }
 
   async onClose(): Promise<void> {
+    this.heatmapResizeObserver?.disconnect();
+    this.heatmapResizeObserver = null;
     this.contentEl.empty();
   }
 
@@ -137,6 +139,7 @@ export class DashboardView extends ItemView {
 
     if (!model.plan.exists || model.plan.tasks.length === 0) {
       this.renderActionButton(panel.createDiv({ cls: "gongkao-panel__actions" }), "制定今日计划", "calendar-plus", () => this.actions.generateDailyPlan());
+      this.renderPlanCalendar(panel, model, true);
       return;
     }
 
@@ -150,6 +153,7 @@ export class DashboardView extends ItemView {
       row.addEventListener("click", () => this.actions.openFile(model.plan.file));
     }
     this.renderProgress(panel, model.plan.completionRate);
+    this.renderPlanCalendar(panel, model, true);
   }
 
   private renderMobileReviewCard(parent: HTMLElement, model: DashboardModel): void {
@@ -266,6 +270,7 @@ export class DashboardView extends ItemView {
         "calendar-plus",
         () => this.actions.generateDailyPlan(),
       );
+      this.renderPlanCalendar(panel, model, false);
       return;
     }
 
@@ -293,6 +298,7 @@ export class DashboardView extends ItemView {
     }
 
     this.renderProgress(panel, model.plan.completionRate);
+    this.renderPlanCalendar(panel, model, false);
   }
 
   private renderReviewPanel(parent: HTMLElement, model: DashboardModel): void {
@@ -450,14 +456,8 @@ export class DashboardView extends ItemView {
 
   private renderTimePanel(parent: HTMLElement, model: DashboardModel): void {
     const panel = parent.createDiv({ cls: "gongkao-panel gongkao-panel--time gongkao-time-panel" });
-    this.renderPanelTitle(panel, "学习日历与备考热力图", "calendar-days", "近90天备考热力图");
-
-    const body = panel.createDiv({ cls: "gongkao-time-panel__body" });
-    const calendar = body.createDiv({ cls: "gongkao-time-panel__calendar" });
-    const heatmap = body.createDiv({ cls: "gongkao-time-panel__heatmap" });
-
-    this.renderCalendar(calendar, model);
-    this.renderHeatmap(heatmap, model);
+    this.renderPanelTitle(panel, "备考努力热力图", "calendar-days", "近4个月学习节奏");
+    this.renderHeatmap(panel, model);
   }
 
   private renderHeatmap(parent: HTMLElement, model: DashboardModel): void {
@@ -468,7 +468,7 @@ export class DashboardView extends ItemView {
     const hasEffort = days.some((day) => day.effortScore > 0);
     if (!hasEffort) {
       heatmap.createEl("p", {
-        text: "暂无学习记录。完成学习后，这里会生成你的 90 天备考热力图。",
+        text: "暂无学习记录。完成学习后，这里会生成你的 120 天备考热力图。",
         cls: "gongkao-heatmap-empty-text",
       });
     }
@@ -513,6 +513,7 @@ export class DashboardView extends ItemView {
     legend.createEl("span", { text: "数据来自 Vault Markdown", cls: "gongkao-heatmap-detail" });
 
     this.setupHeatmapResizeObserver(graph, layout.totalColumns);
+    this.renderPlanCompletionBars(heatmap, model.planCalendar.entries);
   }
 
   /** Dynamically set --heatmap-cell-size so the grid fits the panel without scrolling. */
@@ -522,8 +523,8 @@ export class DashboardView extends ItemView {
     }
 
     const GAP = 4; // matches CSS gap on .gongkao-heatmap-wrap
-    const MAX_CELL = 20;
-    const MIN_CELL = 10;
+    const MAX_CELL = 16;
+    const MIN_CELL = 7;
     let lastCellSize = 0;
 
     const updateSize = () => {
@@ -545,52 +546,97 @@ export class DashboardView extends ItemView {
     this.heatmapResizeObserver.observe(graph);
   }
 
-  private renderCalendar(parent: HTMLElement, model: DashboardModel): void {
-    const panel = parent.createDiv({ cls: "gongkao-calendar-panel" });
-    const today = new Date();
-    const year = today.getFullYear();
-    const month = today.getMonth(); // 0-based
-    const todayDate = today.getDate();
+  private renderPlanCalendar(parent: HTMLElement, model: DashboardModel, compact: boolean): void {
+    const calendar = parent.createDiv({ cls: compact ? "gongkao-plan-calendar gongkao-plan-calendar--compact" : "gongkao-plan-calendar" });
+    const [year, month] = model.planCalendar.month.split("-").map((part) => Number(part));
+    const monthCompleted = model.planCalendar.entries.reduce((total, entry) => total + entry.completedCount, 0);
+    const monthPending = model.planCalendar.entries.reduce((total, entry) => total + entry.pendingCount, 0);
+    const header = calendar.createDiv({ cls: "gongkao-plan-calendar__header" });
+    header.createEl("strong", { text: `${year}.${String(month).padStart(2, "0")}` });
+    const summary = header.createDiv({ cls: "gongkao-plan-calendar__summary" });
+    summary.createSpan({ text: `完成 ${monthCompleted}` });
+    summary.createSpan({ text: `待办 ${monthPending}` });
 
-    // Header
-    const header = panel.createDiv({ cls: "gongkao-mini-calendar__header" });
-    header.createEl("strong", { text: `${year}.${String(month + 1).padStart(2, "0")}` });
-
-    // Weekday labels
-    const weekRow = panel.createDiv({ cls: "gongkao-mini-calendar__week" });
+    const weekRow = calendar.createDiv({ cls: "gongkao-plan-calendar__week" });
     for (const day of ["一", "二", "三", "四", "五", "六", "日"]) {
       weekRow.createSpan({ text: day });
     }
 
-    // Day grid
-    const grid = panel.createDiv({ cls: "gongkao-mini-calendar__grid" });
+    const grid = calendar.createDiv({ cls: "gongkao-plan-calendar__grid" });
+    const entries = new Map(model.planCalendar.entries.map((entry) => [entry.date, entry]));
+    const firstDay = new Date(year, month - 1, 1).getDay();
+    const mondayOffset = firstDay === 0 ? 6 : firstDay - 1;
+    const daysInMonth = new Date(year, month, 0).getDate();
+    const today = new Date();
+    const todayKey = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, "0")}-${String(today.getDate()).padStart(2, "0")}`;
 
-    const firstDay = new Date(year, month, 1).getDay(); // 0=Sun
-    const mondayOffset = firstDay === 0 ? 6 : firstDay - 1; // days from Mon
-    const daysInMonth = new Date(year, month + 1, 0).getDate();
-
-    // Leading empty cells
-    for (let i = 0; i < mondayOffset; i++) {
-      grid.createDiv({ cls: "gongkao-mini-calendar__day gongkao-mini-calendar__day--muted" });
+    for (let index = 0; index < mondayOffset; index += 1) {
+      grid.createDiv({ cls: "gongkao-plan-calendar__day gongkao-plan-calendar__day--muted" });
     }
 
-    // Day cells
-    const hasPlanToday = model.plan.exists && model.plan.tasks.length > 0;
-    for (let d = 1; d <= daysInMonth; d++) {
-      const dayCell = grid.createDiv({ cls: "gongkao-mini-calendar__day" });
-      if (d === todayDate) {
-        dayCell.addClass("gongkao-mini-calendar__day--today");
+    for (let day = 1; day <= daysInMonth; day += 1) {
+      const date = `${year}-${String(month).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
+      const entry = entries.get(date);
+      const cell = grid.createDiv({ cls: "gongkao-plan-calendar__day" });
+      if (date === todayKey) {
+        cell.addClass("gongkao-plan-calendar__day--today");
       }
-      dayCell.createSpan({ text: String(d) });
+      if (entry) {
+        cell.addClass("gongkao-plan-calendar__day--planned");
+        if (entry.pendingCount > 0) {
+          cell.addClass("gongkao-plan-calendar__day--pending");
+        }
+        if (entry.pendingCount === 0 && entry.completedCount > 0) {
+          cell.addClass("gongkao-plan-calendar__day--complete");
+        }
+        cell.setAttr("title", `${date}｜已完成 ${entry.completedCount}｜未完成 ${entry.pendingCount}｜${entry.tasks.map((task) => task.text).join(" / ")}`);
+        cell.addEventListener("click", () => this.actions.openFile(entry.file));
+      }
+      cell.createSpan({ text: String(day), cls: "gongkao-plan-calendar__date" });
+      if (entry && entry.tasks.length > 0) {
+        const tasks = cell.createDiv({ cls: "gongkao-plan-calendar__tasks" });
+        tasks.createSpan({ text: String(entry.completedCount), cls: "gongkao-plan-calendar__done" });
+        tasks.createSpan({ text: String(entry.pendingCount), cls: "gongkao-plan-calendar__pending" });
+        if (!compact) {
+          const taskList = cell.createDiv({ cls: "gongkao-plan-calendar__task-list" });
+          for (const task of entry.tasks.slice(0, 2)) {
+            taskList.createSpan({
+              text: task.text,
+              cls: task.completed ? "gongkao-plan-calendar__task gongkao-plan-calendar__task--done" : "gongkao-plan-calendar__task",
+            });
+          }
+        }
+      }
+    }
+  }
 
-      // Plan indicator for today
-      if (d === todayDate && hasPlanToday) {
-        dayCell.setAttr("title", `今日 ${model.plan.tasks.length} 项任务`);
-        dayCell.style.position = "relative";
-        const dot = dayCell.createDiv();
-        dot.style.cssText =
-          "position:absolute;bottom:2px;left:50%;transform:translateX(-50%);width:4px;height:4px;border-radius:50%;background:var(--gongkao-green,#6d925a);";
-      }
+  private renderPlanCompletionBars(parent: HTMLElement, entries: DashboardPlanCalendarEntry[]): void {
+    const chart = parent.createDiv({ cls: "gongkao-plan-bars" });
+    const header = chart.createDiv({ cls: "gongkao-plan-bars__header" });
+    header.createEl("strong", { text: "每日完成任务统计" });
+    header.createEl("span", { text: "本月每日" });
+
+    if (entries.length === 0) {
+      chart.createEl("p", { text: "暂无计划任务。生成每日计划后，这里会显示已完成与未完成任务。", cls: "gongkao-empty-text" });
+      return;
+    }
+
+    const maxTasks = Math.max(1, ...entries.map((entry) => entry.completedCount + entry.pendingCount));
+    const bars = chart.createDiv({ cls: "gongkao-plan-bars__grid" });
+    for (const entry of entries) {
+      const total = entry.completedCount + entry.pendingCount;
+      const bar = bars.createDiv({
+        cls: "gongkao-plan-bars__bar",
+        attr: { title: `${entry.date}｜已完成 ${entry.completedCount}｜未完成 ${entry.pendingCount}` },
+      });
+      const stack = bar.createDiv({ cls: "gongkao-plan-bars__stack" });
+      stack.style.height = `${Math.max(12, Math.round((total / maxTasks) * 72))}px`;
+      const doneHeight = total > 0 ? (entry.completedCount / total) * 100 : 0;
+      const pendingHeight = total > 0 ? (entry.pendingCount / total) * 100 : 0;
+      stack.createDiv({ cls: "gongkao-plan-bars__done", attr: { style: `height:${doneHeight}%` } });
+      stack.createDiv({ cls: "gongkao-plan-bars__pending", attr: { style: `height:${pendingHeight}%` } });
+      bar.createSpan({ text: entry.date.slice(8, 10) });
+      bar.addEventListener("click", () => this.actions.openFile(entry.file));
     }
   }
 
@@ -603,8 +649,6 @@ export class DashboardView extends ItemView {
     onAction?: () => void,
   ): void {
     const empty = parent.createDiv({ cls: "gongkao-card-empty" });
-    const icon = empty.createSpan({ cls: "gongkao-card-empty__icon" });
-    setIcon(icon, "sparkles");
     empty.createEl("strong", { text: title });
     empty.createEl("p", { text: description });
 

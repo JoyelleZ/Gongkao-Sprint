@@ -18,6 +18,10 @@ export interface DailyPlanReadResult {
   completionRate: number;
 }
 
+export interface DailyPlanMonthEntry extends DailyPlanReadResult {
+  date: string;
+}
+
 export class DailyPlanService {
   constructor(private readonly store: VaultStore) {}
 
@@ -64,6 +68,39 @@ export class DailyPlanService {
     };
   }
 
+  async readMonthPlans(month: string): Promise<DailyPlanMonthEntry[]> {
+    const start = `${month}-01`;
+    const [year, monthNumber] = month.split("-").map((part) => Number(part));
+    const end = `${month}-${String(new Date(year, monthNumber, 0).getDate()).padStart(2, "0")}`;
+    return this.readPlansInRange(start, end);
+  }
+
+  async readPlansInRange(startDate: string, endDate: string): Promise<DailyPlanMonthEntry[]> {
+    const folder = this.store.getFolder(this.store.getSubdirectoryPath("01_今日计划"));
+    if (!folder) {
+      return [];
+    }
+
+    const entries: DailyPlanMonthEntry[] = [];
+    for (const child of folder.children) {
+      if (!this.isMarkdownPlanFile(child)) {
+        continue;
+      }
+
+      const date = child.basename;
+      if (date < startDate || date > endDate) {
+        continue;
+      }
+
+      const plan = await this.readPlan(date);
+      if (plan) {
+        entries.push({ ...plan, date: plan.data.date });
+      }
+    }
+
+    return entries.sort((a, b) => a.date.localeCompare(b.date));
+  }
+
   getPlanPath(date: string): string {
     return `${this.store.getSubdirectoryPath("01_今日计划")}/${date}.md`;
   }
@@ -84,6 +121,18 @@ export class DailyPlanService {
 
   private isDailyPlan(value: Partial<DailyPlan>): value is DailyPlan {
     return value.type === "gongkao-daily-plan" && typeof value.plan_id === "string" && typeof value.date === "string";
+  }
+
+  private isMarkdownPlanFile(value: unknown): value is TFile {
+    return (
+      typeof value === "object" &&
+      value !== null &&
+      "extension" in value &&
+      "basename" in value &&
+      (value as { extension?: unknown }).extension === "md" &&
+      typeof (value as { basename?: unknown }).basename === "string" &&
+      /^\d{4}-\d{2}-\d{2}$/u.test((value as { basename: string }).basename)
+    );
   }
 }
 

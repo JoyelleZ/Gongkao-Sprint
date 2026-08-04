@@ -3,6 +3,7 @@ import {
   buildEffortHeatmap,
   buildHeatmapLayout,
   calculateEffortScore,
+  generateLast120Days,
   generateLast90Days,
   toHeatmapLevel,
 } from "../src/services/EffortService";
@@ -71,6 +72,14 @@ describe("EffortService", () => {
     expect(calculateEffortScore(0, 0, 0, 1)).toBe(20);
   });
 
+  it("adds daily plan completion into heatmap effort", () => {
+    const heatmap = buildEffortHeatmap([], [], [], "2026-07-30", 1, [{ date: "2026-07-30", completionRate: 0.5 }]);
+
+    expect(heatmap[0]?.planCompletionRate).toBe(0.5);
+    expect(heatmap[0]?.effortScore).toBe(10);
+    expect(heatmap[0]?.tooltip).toContain("计划 50%");
+  });
+
   it("generates exactly 90 chronological days ending today", () => {
     const days = generateLast90Days("2026-07-30");
 
@@ -79,16 +88,24 @@ describe("EffortService", () => {
     expect(days.at(-1)).toEqual({ date: "2026-07-30", count: 0 });
   });
 
-  it("maps 90 real dates into weekday rows and fixed recent month labels", () => {
+  it("generates exactly 120 chronological days ending today", () => {
+    const days = generateLast120Days("2026-07-30");
+
+    expect(days).toHaveLength(120);
+    expect(days[0]).toEqual({ date: "2026-04-02", count: 0 });
+    expect(days.at(-1)).toEqual({ date: "2026-07-30", count: 0 });
+  });
+
+  it("maps 120 real dates into weekday rows and fixed recent month labels", () => {
     const heatmap = buildEffortHeatmap([], [], [], "2026-07-30");
     const layout = buildHeatmapLayout(heatmap);
 
-    expect(layout.cells).toHaveLength(90);
-    expect(layout.cells[0]?.day.date).toBe("2026-05-02");
-    expect(layout.cells[0]?.row).toBe(6);
+    expect(layout.cells).toHaveLength(120);
+    expect(layout.cells[0]?.day.date).toBe("2026-04-02");
+    expect(layout.cells[0]?.row).toBe(4);
     expect(layout.cells.at(-1)?.day.date).toBe("2026-07-30");
     expect(layout.cells.at(-1)?.row).toBe(4);
-    expect(layout.months.map((month) => month.label)).toEqual(["5月", "6月", "7月"]);
-    expect(layout.months.map((month) => month.column)).toEqual([1, 6, 10]);
+    expect(layout.months.map((month) => month.label)).toEqual(["4月", "5月", "6月", "7月"]);
+    expect(layout.months.map((month) => month.column)).toEqual([1, 5, 10, 14]);
   });
 });

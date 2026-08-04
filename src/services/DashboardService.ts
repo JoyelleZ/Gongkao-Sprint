@@ -6,7 +6,7 @@ import type { PracticeLogService } from "./PracticeLogService";
 import type { ErrorCardService } from "./ErrorCardService";
 import type { ReflectionLogService } from "./ReflectionLogService";
 import { buildEffortHeatmap, type HeatmapDay } from "./EffortService";
-import type { DailyPlanService, DailyPlanReadResult } from "./DailyPlanService";
+import type { DailyPlanMonthEntry, DailyPlanService, DailyPlanReadResult } from "./DailyPlanService";
 import type { CountdownSummary, ExamCountdownService } from "./ExamCountdownService";
 import { buildCountdownSummary } from "./ExamCountdownService";
 
@@ -39,6 +39,7 @@ export interface DashboardModel {
   reflections: DashboardReflectionSummary;
   heatmap: HeatmapDay[];
   plan: DashboardPlanSummary;
+  planCalendar: DashboardPlanCalendarSummary;
   countdown: CountdownSummary;
   weakness: DashboardWeaknessSummary;
   hasAnyData: boolean;
@@ -63,6 +64,25 @@ export interface DashboardPlanSummary {
   file?: TFile;
 }
 
+export interface DashboardPlanCalendarTask {
+  text: string;
+  completed: boolean;
+}
+
+export interface DashboardPlanCalendarEntry {
+  date: string;
+  file?: TFile;
+  tasks: DashboardPlanCalendarTask[];
+  completionRate: number;
+  completedCount: number;
+  pendingCount: number;
+}
+
+export interface DashboardPlanCalendarSummary {
+  month: string;
+  entries: DashboardPlanCalendarEntry[];
+}
+
 export interface DashboardWeaknessSummary {
   lines: string[];
 }
@@ -77,12 +97,14 @@ export class DashboardService {
     private readonly examCountdownService: ExamCountdownService,
   ) {}
 
-  async loadModel(today = todayString()): Promise<DashboardModel> {
+  async loadModel(today = todayString(), planMonth = today.slice(0, 7)): Promise<DashboardModel> {
     const collections = await this.collectionService.listCollections();
     const logs = await this.practiceLogService.listLogs();
     const cards = await this.errorCardService.listCards();
     const reflections = await this.reflectionLogService.listLogs();
     const plan = await this.dailyPlanService.readPlan(today);
+    const monthPlans = await this.dailyPlanService.readMonthPlans(planMonth);
+    const recentPlans = await this.dailyPlanService.readPlansInRange(daysBefore(today, 119), today);
     const countdowns = await this.examCountdownService.listCountdowns();
 
     return buildDashboardModel(
@@ -93,6 +115,9 @@ export class DashboardService {
       today,
       plan,
       countdowns.map((entry) => entry.data),
+      monthPlans,
+      planMonth,
+      recentPlans,
     );
   }
 }
@@ -105,6 +130,9 @@ export function buildDashboardModel(
   today: string,
   plan?: DailyPlanReadResult | null,
   countdowns: ExamCountdown[] = [],
+  monthPlans: DailyPlanMonthEntry[] = [],
+  planMonth = today.slice(0, 7),
+  recentPlans: DailyPlanMonthEntry[] = monthPlans,
 ): DashboardModel {
   const logEntries = normalizeEntries(logs);
   const cardEntries = normalizeEntries(cards);
@@ -144,16 +172,43 @@ export function buildDashboardModel(
         .slice(0, 3)
         .map((entry) => ({ file: entry.file, reflection: entry.data })),
     },
-    heatmap: buildEffortHeatmap(logData, cardData, reflectionData, today),
+    heatmap: buildEffortHeatmap(
+      logData,
+      cardData,
+      reflectionData,
+      today,
+      120,
+      recentPlans.map((entry) => ({ date: entry.date, completionRate: entry.completionRate / 100 })),
+    ),
     plan: {
       exists: Boolean(plan),
       tasks: plan?.tasks.map((task) => `${task.completed ? "已完成" : "待完成"}：${task.text}`) ?? [],
       completionRate: plan?.completionRate ?? 0,
       file: plan?.file,
     },
+    planCalendar: buildPlanCalendarSummary(monthPlans, planMonth),
     countdown: buildCountdownSummary(countdowns, today),
     weakness: buildWeaknessSummary(logData, cardData, reflectionData, today),
     hasAnyData: collections.length > 0 || logEntries.length > 0 || cardEntries.length > 0 || reflectionEntries.length > 0,
+  };
+}
+
+function buildPlanCalendarSummary(monthPlans: DailyPlanMonthEntry[], month: string): DashboardPlanCalendarSummary {
+  return {
+    month,
+    entries: [...monthPlans]
+      .sort((a, b) => a.date.localeCompare(b.date))
+      .map((entry) => ({
+        date: entry.date,
+        file: entry.file,
+        tasks: entry.tasks.map((task) => ({
+          text: task.text,
+          completed: task.completed,
+        })),
+        completionRate: entry.completionRate,
+        completedCount: entry.tasks.filter((task) => task.completed).length,
+        pendingCount: entry.tasks.filter((task) => !task.completed).length,
+      })),
   };
 }
 

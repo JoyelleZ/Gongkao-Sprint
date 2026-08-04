@@ -24,23 +24,30 @@ export interface HeatmapLayout {
   totalColumns: number;
 }
 
+export interface EffortPlanEntry {
+  date: string;
+  completionRate: number;
+}
+
 export function buildEffortHeatmap(
   logs: PracticeLog[],
   cards: ErrorCard[],
   reflections: ReflectionLog[],
   endDate: string,
-  days = 90,
+  days = 120,
+  plans: EffortPlanEntry[] = [],
 ): HeatmapDay[] {
   const dates = generateLastDays(endDate, days);
   const practiceByDate = groupPracticeByDate(logs);
   const reviewByDate = groupReviewsByDate(cards);
   const reflectionsByDate = groupReflectionsByDate(reflections);
+  const planRateByDate = groupPlanCompletionByDate(plans);
 
   return dates.map((date) => {
     const practiceTotal = practiceByDate.get(date) ?? 0;
     const reviewCount = reviewByDate.get(date) ?? 0;
     const reflectionCount = reflectionsByDate.get(date) ?? 0;
-    const planCompletionRate = 0;
+    const planCompletionRate = planRateByDate.get(date) ?? 0;
     const effortScore = calculateEffortScore(practiceTotal, reviewCount, reflectionCount, planCompletionRate);
     const count = practiceTotal + reviewCount + reflectionCount;
 
@@ -53,13 +60,17 @@ export function buildEffortHeatmap(
       planCompletionRate,
       effortScore,
       level: toHeatmapLevel(effortScore),
-      tooltip: `${date}｜刷题 ${practiceTotal}｜复习 ${reviewCount}｜复盘 ${reflectionCount}｜计划 0%`,
+      tooltip: `${date}｜刷题 ${practiceTotal}｜复习 ${reviewCount}｜复盘 ${reflectionCount}｜计划 ${Math.round(planCompletionRate * 100)}%`,
     };
   });
 }
 
 export function generateLast90Days(endDate: string): Array<{ date: string; count: number }> {
   return generateLastDays(endDate, 90).map((date) => ({ date, count: 0 }));
+}
+
+export function generateLast120Days(endDate: string): Array<{ date: string; count: number }> {
+  return generateLastDays(endDate, 120).map((date) => ({ date, count: 0 }));
 }
 
 export function buildHeatmapLayout(days: HeatmapDay[]): HeatmapLayout {
@@ -132,7 +143,7 @@ function buildFixedMonthLabels(days: HeatmapDay[], cells: HeatmapLayoutCell[]): 
     }
   }
 
-  return [...byMonth.values()].slice(-3);
+  return [...byMonth.values()].slice(-4);
 }
 
 function parseLocalDate(date: string): Date {
@@ -183,6 +194,16 @@ function groupReflectionsByDate(reflections: ReflectionLog[]): Map<string, numbe
 
   for (const reflection of reflections) {
     grouped.set(reflection.date, (grouped.get(reflection.date) ?? 0) + 1);
+  }
+
+  return grouped;
+}
+
+function groupPlanCompletionByDate(plans: EffortPlanEntry[]): Map<string, number> {
+  const grouped = new Map<string, number>();
+
+  for (const plan of plans) {
+    grouped.set(plan.date, Math.max(0, Math.min(1, plan.completionRate)));
   }
 
   return grouped;
