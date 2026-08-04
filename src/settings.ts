@@ -32,8 +32,6 @@ export class GongkaoSprintSettingTab extends PluginSettingTab {
     const { containerEl } = this;
     containerEl.empty();
 
-    new Setting(containerEl).setName("Gongkao Sprint 设置").setHeading();
-
     new Setting(containerEl)
       .setName("数据根目录")
       .setDesc("插件创建的 Markdown 数据会保存在该目录下。")

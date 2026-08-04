@@ -1,7 +1,7 @@
 {
   "id": "gongkao-sprint",
   "name": "Gongkao Sprint",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "minAppVersion": "1.5.0",
   "description": "A civil service exam study dashboard for practice collections, error cards, and spaced review.",
   "author": "JoyelleZ",
