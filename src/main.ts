@@ -33,6 +33,7 @@ export default class GongkaoSprintPlugin extends Plugin {
   private practiceLogService!: PracticeLogService;
   private examCountdownService!: ExamCountdownService;
   private exampleDataService!: ExampleDataService;
+  private readonly dailyPlanSyncTimeouts = new Map<string, number>();
 
   async onload(): Promise<void> {
     await this.loadSettings();
@@ -185,6 +186,14 @@ export default class GongkaoSprintPlugin extends Plugin {
     });
 
     this.addSettingTab(new GongkaoSprintSettingTab(this.app, this));
+    this.registerDailyPlanSync();
+  }
+
+  onunload(): void {
+    for (const timeout of this.dailyPlanSyncTimeouts.values()) {
+      window.clearTimeout(timeout);
+    }
+    this.dailyPlanSyncTimeouts.clear();
   }
 
   async loadSettings(): Promise<void> {
@@ -385,6 +394,40 @@ export default class GongkaoSprintPlugin extends Plugin {
       if (view instanceof DashboardView) {
         await view.render();
       }
+    }
+  }
+
+  private registerDailyPlanSync(): void {
+    this.registerEvent(
+      this.app.vault.on("modify", (file) => {
+        if (file instanceof TFile) {
+          this.scheduleDailyPlanSync(file);
+        }
+      }),
+    );
+  }
+
+  private scheduleDailyPlanSync(file: TFile): void {
+    const existingTimeout = this.dailyPlanSyncTimeouts.get(file.path);
+    if (existingTimeout !== undefined) {
+      window.clearTimeout(existingTimeout);
+    }
+
+    const timeout = window.setTimeout(() => {
+      this.dailyPlanSyncTimeouts.delete(file.path);
+      void this.syncDailyPlanTasks(file);
+    }, 300);
+    this.dailyPlanSyncTimeouts.set(file.path, timeout);
+  }
+
+  private async syncDailyPlanTasks(file: TFile): Promise<void> {
+    try {
+      const didUpdate = await this.dailyPlanService.syncPlanTasksFromMarkdown(file);
+      if (didUpdate) {
+        await this.refreshDashboards();
+      }
+    } catch {
+      return;
     }
   }
 

@@ -58,7 +58,8 @@ export class DailyPlanService {
     }
 
     const content = await this.store.readFile(file);
-    const tasks = parsePlanTasks(content);
+    const parsedSection = parseTodayTaskSection(content);
+    const tasks = parsedSection.hasSection ? parsedSection.tasks : normalizePlanTasks(data.tasks);
 
     return {
       file,
@@ -99,6 +100,31 @@ export class DailyPlanService {
     }
 
     return entries.sort((a, b) => a.date.localeCompare(b.date));
+  }
+
+  async syncPlanTasksFromMarkdown(file: TFile): Promise<boolean> {
+    const data = await this.store.readFrontmatter<DailyPlan>(file);
+    if (!this.isDailyPlan(data)) {
+      return false;
+    }
+
+    const content = await this.store.readFile(file);
+    const parsedSection = parseTodayTaskSection(content);
+    if (!parsedSection.hasSection) {
+      return false;
+    }
+
+    const currentTasks = normalizePlanTasks(data.tasks);
+    const nextTasks = mergeParsedTasks(parsedSection.tasks, currentTasks);
+    if (arePlanTasksEqual(currentTasks, nextTasks)) {
+      return false;
+    }
+
+    await this.store.updateFrontmatter(file, (frontmatter) => {
+      frontmatter.tasks = nextTasks;
+      frontmatter.updated = todayString();
+    });
+    return true;
   }
 
   getPlanPath(date: string): string {
@@ -182,7 +208,7 @@ export function buildDailyPlanTasks(
 export function parsePlanTasks(markdown: string): DailyPlanTask[] {
   return markdown
     .split("\n")
-    .map((line) => /^\s*-\s+\[([ xX])\]\s+(.+)$/u.exec(line))
+    .map((line) => /^\s*-\s+\[([ xX])\]\s(.*)$/u.exec(line))
     .filter((match): match is RegExpExecArray => Boolean(match))
     .map((match) => ({
       text: match[2],
@@ -191,10 +217,86 @@ export function parsePlanTasks(markdown: string): DailyPlanTask[] {
     }));
 }
 
+export function parseTodayTaskSection(markdown: string): { hasSection: boolean; tasks: DailyPlanTask[] } {
+  const lines = markdown.split("\n");
+  const headingIndex = lines.findIndex((line) => /^##\s+今日任务\s*$/u.test(line.trim()));
+  if (headingIndex === -1) {
+    return { hasSection: false, tasks: [] };
+  }
+
+  const sectionLines: string[] = [];
+  for (const line of lines.slice(headingIndex + 1)) {
+    if (/^#{1,2}\s+\S/u.test(line.trim())) {
+      break;
+    }
+    sectionLines.push(line);
+  }
+
+  return {
+    hasSection: true,
+    tasks: parsePlanTasks(sectionLines.join("\n")),
+  };
+}
+
 export function calculateCompletionRate(tasks: DailyPlanTask[]): number {
   if (tasks.length === 0) {
     return 0;
   }
 
   return Math.round((tasks.filter((task) => task.completed).length / tasks.length) * 100);
+}
+
+export function normalizePlanTasks(value: unknown): DailyPlanTask[] {
+  if (!Array.isArray(value)) {
+    return [];
+  }
+
+  return value.filter(isPlanTaskLike).map((task) => ({
+    text: task.text,
+    completed: task.completed,
+    task_type: isPlanTaskType(task.task_type) ? task.task_type : "practice",
+  }));
+}
+
+function mergeParsedTasks(parsedTasks: DailyPlanTask[], currentTasks: DailyPlanTask[]): DailyPlanTask[] {
+  const usedIndexes = new Set<number>();
+  return parsedTasks.map((task, index) => {
+    const sameIndex = currentTasks[index];
+    if (sameIndex && sameIndex.text === task.text) {
+      usedIndexes.add(index);
+      return { ...task, task_type: sameIndex.task_type };
+    }
+
+    const matchingIndex = currentTasks.findIndex((candidate, candidateIndex) => !usedIndexes.has(candidateIndex) && candidate.text === task.text);
+    if (matchingIndex !== -1) {
+      usedIndexes.add(matchingIndex);
+      return { ...task, task_type: currentTasks[matchingIndex]?.task_type ?? "practice" };
+    }
+
+    return task;
+  });
+}
+
+function arePlanTasksEqual(left: DailyPlanTask[], right: DailyPlanTask[]): boolean {
+  if (left.length !== right.length) {
+    return false;
+  }
+
+  return left.every((task, index) => {
+    const other = right[index];
+    return Boolean(other) && task.text === other.text && task.completed === other.completed && task.task_type === other.task_type;
+  });
+}
+
+function isPlanTaskLike(value: unknown): value is Pick<DailyPlanTask, "text" | "completed"> & Partial<Pick<DailyPlanTask, "task_type">> {
+  if (typeof value !== "object" || value === null) {
+    return false;
+  }
+
+  const task = value as Partial<DailyPlanTask>;
+  return typeof task.text === "string" && typeof task.completed === "boolean";
+}
+
+function isPlanTaskType(value: unknown): value is DailyPlanTask["task_type"] {
+  return value === "review" || value === "practice" || value === "correction";
 }
