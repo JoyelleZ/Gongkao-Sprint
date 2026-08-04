@@ -1326,12 +1326,24 @@
   min-width: 0;
 }
 
+.gongkao-panel--monthly-plan {
+  grid-column: 1 / -1;
+}
+
 /* Time panel fills its grid column, no shrink */
 .gongkao-dashboard__time-row .gongkao-panel--time {
   overflow: hidden;
 }
 
-/* Calendar + Heatmap side by side */
+.gongkao-time-panel__body {
+  display: grid;
+  grid-template-columns: minmax(0, 1.2fr) minmax(320px, 1fr);
+  gap: 32px;
+  align-items: stretch;
+}
+
+.gongkao-time-panel__heatmap,
+.gongkao-time-panel__tasks,
 .gongkao-heatmap-panel {
   min-width: 0;
 }
@@ -1340,7 +1352,7 @@
   height: auto;
 }
 
-.gongkao-time-panel .gongkao-heatmap-panel {
+.gongkao-time-panel__heatmap .gongkao-heatmap-panel {
   display: flex;
   width: 100%;
   min-height: 100%;
@@ -1359,9 +1371,7 @@
 }
 
 .gongkao-plan-bars {
-  margin-top: 18px;
-  padding-top: 14px;
-  border-top: 1px solid rgba(104, 139, 91, 0.12);
+  height: 100%;
 }
 
 .gongkao-plan-bars__header {
@@ -2140,6 +2150,10 @@
     grid-column: 1 / -1;
     width: 100%;
     min-width: 0;
+  }
+
+  .gongkao-time-panel__body {
+    grid-template-columns: 1fr;
   }
 }
 

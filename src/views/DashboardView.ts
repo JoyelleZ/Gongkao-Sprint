@@ -78,6 +78,7 @@ export class DashboardView extends ItemView {
     const timeRow = grid.createDiv({ cls: "gongkao-dashboard__time-row" });
     this.renderWeaknessPanel(timeRow, model);
     this.renderTimePanel(timeRow, model);
+    this.renderMonthlyPlanPanel(grid, model);
   }
 
   private renderMobileDashboard(parent: HTMLElement, model: DashboardModel): void {
@@ -270,7 +271,6 @@ export class DashboardView extends ItemView {
         "calendar-plus",
         () => this.actions.generateDailyPlan(),
       );
-      this.renderPlanCalendar(panel, model, false);
       return;
     }
 
@@ -298,7 +298,6 @@ export class DashboardView extends ItemView {
     }
 
     this.renderProgress(panel, model.plan.completionRate);
-    this.renderPlanCalendar(panel, model, false);
   }
 
   private renderReviewPanel(parent: HTMLElement, model: DashboardModel): void {
@@ -457,7 +456,11 @@ export class DashboardView extends ItemView {
   private renderTimePanel(parent: HTMLElement, model: DashboardModel): void {
     const panel = parent.createDiv({ cls: "gongkao-panel gongkao-panel--time gongkao-time-panel" });
     this.renderPanelTitle(panel, "备考努力热力图", "calendar-days", "近4个月学习节奏");
-    this.renderHeatmap(panel, model);
+    const body = panel.createDiv({ cls: "gongkao-time-panel__body" });
+    const heatmapColumn = body.createDiv({ cls: "gongkao-time-panel__heatmap" });
+    const tasksColumn = body.createDiv({ cls: "gongkao-time-panel__tasks" });
+    this.renderHeatmap(heatmapColumn, model);
+    this.renderPlanCompletionBars(tasksColumn, model.planCalendar.entries);
   }
 
   private renderHeatmap(parent: HTMLElement, model: DashboardModel): void {
@@ -513,7 +516,12 @@ export class DashboardView extends ItemView {
     legend.createEl("span", { text: "数据来自 Vault Markdown", cls: "gongkao-heatmap-detail" });
 
     this.setupHeatmapResizeObserver(graph, layout.totalColumns);
-    this.renderPlanCompletionBars(heatmap, model.planCalendar.entries);
+  }
+
+  private renderMonthlyPlanPanel(parent: HTMLElement, model: DashboardModel): void {
+    const panel = parent.createDiv({ cls: "gongkao-panel gongkao-panel--monthly-plan" });
+    this.renderPanelTitle(panel, "月度计划", "calendar-days");
+    this.renderPlanCalendar(panel, model, false);
   }
 
   /** Dynamically set --heatmap-cell-size so the grid fits the panel without scrolling. */
