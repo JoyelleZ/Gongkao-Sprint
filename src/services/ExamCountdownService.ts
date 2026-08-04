@@ -47,7 +47,7 @@ export class ExamCountdownService {
     };
 
     await this.store.updateFrontmatter(file, (frontmatter) => {
-      const current = normalizeCountdowns(frontmatter.exam_countdowns as ExamCountdown[] | undefined);
+      const current = normalizeCountdowns(frontmatter.exam_countdowns);
       frontmatter.exam_countdowns = sortCountdowns([...current, countdown]);
     });
 
@@ -58,7 +58,7 @@ export class ExamCountdownService {
     await this.store.ensureDataDirectories();
     const file = await this.store.ensureDashboardFile();
     await this.store.updateFrontmatter(file, (frontmatter) => {
-      const current = normalizeCountdowns(frontmatter.exam_countdowns as ExamCountdown[] | undefined);
+      const current = normalizeCountdowns(frontmatter.exam_countdowns);
       frontmatter.exam_countdowns = current.filter((countdown) => countdown.countdown_id !== countdownId);
     });
   }

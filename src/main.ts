@@ -17,8 +17,8 @@ import { PracticeCollectionModal } from "./modals/PracticeCollectionModal";
 import { PracticeLogModal } from "./modals/PracticeLogModal";
 import { ExamCountdownService } from "./services/ExamCountdownService";
 import { ExamCountdownModal } from "./modals/ExamCountdownModal";
-import frontCoverDataUrl from "../assets/frontcover.png";
-import mobileCoverDataUrl from "../assets/mobilecover.png";
+import frontCoverDataUrl from "../assets/embedded/frontcover.jpg";
+import mobileCoverDataUrl from "../assets/embedded/mobilecover.jpg";
 
 export default class GongkaoSprintPlugin extends Plugin {
   settings: GongkaoSprintSettings = DEFAULT_SETTINGS;
@@ -187,13 +187,9 @@ export default class GongkaoSprintPlugin extends Plugin {
     this.addSettingTab(new GongkaoSprintSettingTab(this.app, this));
   }
 
-  onunload(): void {
-    this.app.workspace.detachLeavesOfType(VIEW_TYPE_GONGKAO_DASHBOARD);
-    this.app.workspace.detachLeavesOfType(VIEW_TYPE_GONGKAO_REVIEW);
-  }
-
   async loadSettings(): Promise<void> {
-    this.settings = Object.assign({}, DEFAULT_SETTINGS, await this.loadData());
+    const loaded: unknown = await this.loadData();
+    this.settings = { ...DEFAULT_SETTINGS, ...parseSettings(loaded) };
     let migrated = false;
     if (this.settings.dataRoot === "Gongkao") {
       this.settings.dataRoot = DEFAULT_SETTINGS.dataRoot;
@@ -225,7 +221,7 @@ export default class GongkaoSprintPlugin extends Plugin {
       await leaf.setViewState({ type: VIEW_TYPE_GONGKAO_DASHBOARD, active: true });
     }
 
-    this.app.workspace.revealLeaf(leaf);
+    this.app.workspace.setActiveLeaf(leaf, { focus: true });
   }
 
   async ensureDataDirectories(): Promise<void> {
@@ -243,7 +239,7 @@ export default class GongkaoSprintPlugin extends Plugin {
       await leaf.setViewState({ type: VIEW_TYPE_GONGKAO_REVIEW, active: true });
     }
 
-    this.app.workspace.revealLeaf(leaf);
+    this.app.workspace.setActiveLeaf(leaf, { focus: true });
   }
 
   async openErrorCardModal(): Promise<void> {
@@ -379,7 +375,7 @@ export default class GongkaoSprintPlugin extends Plugin {
 
     const leaf = this.app.workspace.getLeaf("tab");
     await leaf.openFile(file);
-    this.app.workspace.revealLeaf(leaf);
+    this.app.workspace.setActiveLeaf(leaf, { focus: true });
   }
 
   private async refreshDashboards(): Promise<void> {
@@ -430,4 +426,23 @@ export default class GongkaoSprintPlugin extends Plugin {
 
     return embeddedDataUrl;
   }
+}
+
+function parseSettings(value: unknown): Partial<GongkaoSprintSettings> {
+  if (!isRecord(value)) {
+    return {};
+  }
+
+  const settings: Partial<GongkaoSprintSettings> = {};
+  if (typeof value.dataRoot === "string") settings.dataRoot = value.dataRoot;
+  if (typeof value.attachmentsDir === "string") settings.attachmentsDir = value.attachmentsDir;
+  if (typeof value.defaultCollectionId === "string") settings.defaultCollectionId = value.defaultCollectionId;
+  if (typeof value.enableImageMasks === "boolean") settings.enableImageMasks = value.enableImageMasks;
+  if (typeof value.showExampleDataEntry === "boolean") settings.showExampleDataEntry = value.showExampleDataEntry;
+  if (typeof value.examDate === "string") settings.examDate = value.examDate;
+  return settings;
+}
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === "object" && value !== null;
 }

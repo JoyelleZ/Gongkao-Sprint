@@ -70,6 +70,8 @@ Source images remain in the repository for replacement and manual/source install
 - `assets/frontcover.png`
 - `assets/mobilecover.png`
 
+Current review-fix release target: `0.1.1`.
+
 ## Development
 
 - `npm install`: install dependencies.
@@ -159,6 +161,8 @@ Obsidian Community Plugin release 需要上传：
 
 - `assets/frontcover.png`
 - `assets/mobilecover.png`
+
+当前复审修复目标版本：`0.1.1`。
 
 将这些文件放入 Vault 的 `.obsidian/plugins/gongkao-sprint/` 目录后，在 Obsidian 设置中启用插件。
 

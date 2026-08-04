@@ -356,7 +356,7 @@ export class ErrorCardModal extends Modal {
     for (const [index, mask] of this.masks.entries()) {
       const rect = this.maskToDisplayRect(mask, image);
       const maskEl = preview.createDiv({ cls: "gongkao-image-mask" });
-      maskEl.setAttr("style", `left:${rect.left}%;top:${rect.top}%;width:${rect.width}%;height:${rect.height}%;`);
+      this.setRectCssProps(maskEl, rect);
       maskEl.createEl("button", { text: "×", attr: { "aria-label": "删除遮挡" } }).addEventListener("click", (event) => {
         event.stopPropagation();
         this.masks.splice(index, 1);
@@ -397,7 +397,7 @@ export class ErrorCardModal extends Modal {
 
     try {
       const image = await this.loadImage(this.imageObjectUrl);
-      const canvas = document.createElement("canvas");
+      const canvas = createEl("canvas");
       canvas.width = image.naturalHeight;
       canvas.height = image.naturalWidth;
       const context = canvas.getContext("2d");
@@ -422,7 +422,7 @@ export class ErrorCardModal extends Modal {
 
     try {
       const image = await this.loadImage(this.imageObjectUrl);
-      const canvas = document.createElement("canvas");
+      const canvas = createEl("canvas");
       canvas.width = image.naturalWidth;
       canvas.height = image.naturalHeight;
       const context = canvas.getContext("2d");
@@ -565,7 +565,7 @@ export class ErrorCardModal extends Modal {
       return;
     }
 
-    const canvas = document.createElement("canvas");
+    const canvas = createEl("canvas");
     canvas.width = width;
     canvas.height = height;
     const context = canvas.getContext("2d");
@@ -593,10 +593,7 @@ export class ErrorCardModal extends Modal {
       return;
     }
 
-    preview.createDiv({
-      cls: "gongkao-image-crop-selection",
-      attr: { style: `left:${rect.left}%;top:${rect.top}%;width:${rect.width}%;height:${rect.height}%;` },
-    });
+    this.setRectCssProps(preview.createDiv({ cls: "gongkao-image-crop-selection" }), rect);
   }
 
   private buildNaturalRect(start: { x: number; y: number }, end: { x: number; y: number }): { x: number; y: number; width: number; height: number } {
@@ -646,7 +643,7 @@ export class ErrorCardModal extends Modal {
     }
 
     const factor = this.getContrastFactor(this.previewContrastLevel);
-    image.style.filter = factor === 1 ? "" : `contrast(${factor})`;
+    image.setCssStyles({ filter: factor === 1 ? "" : `contrast(${factor})` });
   }
 
   private rerenderPreservingScroll(): void {
@@ -693,6 +690,15 @@ export class ErrorCardModal extends Modal {
       width: (mask.width / naturalWidth) * 100,
       height: (mask.height / naturalHeight) * 100,
     };
+  }
+
+  private setRectCssProps(element: HTMLElement, rect: { left: number; top: number; width: number; height: number }): void {
+    element.setCssProps({
+      "--gongkao-rect-left": `${rect.left}%`,
+      "--gongkao-rect-top": `${rect.top}%`,
+      "--gongkao-rect-width": `${rect.width}%`,
+      "--gongkao-rect-height": `${rect.height}%`,
+    });
   }
 }
 
@@ -788,7 +794,7 @@ class ImageCropModal extends Modal {
       return;
     }
 
-    const canvas = document.createElement("canvas");
+    const canvas = createEl("canvas");
     canvas.width = width;
     canvas.height = height;
     const context = canvas.getContext("2d");
@@ -809,11 +815,11 @@ class ImageCropModal extends Modal {
       return;
     }
 
-    stage.createDiv({
-      cls: "gongkao-image-crop-selection",
-      attr: {
-        style: `left:${this.selection.left}%;top:${this.selection.top}%;width:${this.selection.width}%;height:${this.selection.height}%;`,
-      },
+    stage.createDiv({ cls: "gongkao-image-crop-selection" }).setCssProps({
+      "--gongkao-rect-left": `${this.selection.left}%`,
+      "--gongkao-rect-top": `${this.selection.top}%`,
+      "--gongkao-rect-width": `${this.selection.width}%`,
+      "--gongkao-rect-height": `${this.selection.height}%`,
     });
     image.addClass("gongkao-crop-stage__image--selecting");
   }

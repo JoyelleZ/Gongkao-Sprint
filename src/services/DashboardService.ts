@@ -276,12 +276,16 @@ function buildReviewSummary(cards: Array<{ file?: TFile; data: ErrorCard }>, tod
 
 function normalizeEntries<T>(items: Array<{ file?: TFile; data: T }> | T[]): Array<{ file?: TFile; data: T }> {
   return items.map((item) => {
-    if (typeof item === "object" && item !== null && "data" in item) {
-      return item as { file?: TFile; data: T };
+    if (isEntry(item)) {
+      return item;
     }
 
-    return { data: item as T };
+    return { data: item };
   });
+}
+
+function isEntry<T>(item: { file?: TFile; data: T } | T): item is { file?: TFile; data: T } {
+  return typeof item === "object" && item !== null && "data" in item;
 }
 
 function buildModuleSummaries(logs: PracticeLog[]): DashboardModuleSummary[] {

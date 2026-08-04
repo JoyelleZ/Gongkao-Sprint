@@ -506,17 +506,15 @@ export class DashboardView extends ItemView {
     }
 
     const graph = heatmap.createDiv({ cls: "gongkao-heatmap-wrap" });
-    graph.style.gridTemplateColumns = `24px repeat(${layout.totalColumns}, var(--heatmap-cell-size))`;
+    graph.setCssProps({ "--heatmap-columns": String(layout.totalColumns) });
     for (const month of layout.months) {
       const label = graph.createSpan({ cls: "gongkao-heatmap-month", text: month.label });
-      label.style.gridColumnStart = String(month.column + 1);
-      label.style.gridRowStart = "1";
+      label.setCssProps({ "--heatmap-column": String(month.column + 1), "--heatmap-row": "1" });
     }
 
     for (const [index, day] of ["一", "二", "三", "四", "五", "六", "日"].entries()) {
       const weekday = graph.createSpan({ cls: "gongkao-heatmap-weekday", text: day });
-      weekday.style.gridColumnStart = "1";
-      weekday.style.gridRowStart = String(index + 2);
+      weekday.setCssProps({ "--heatmap-column": "1", "--heatmap-row": String(index + 2) });
     }
 
     for (const cellModel of layout.cells) {
@@ -529,8 +527,7 @@ export class DashboardView extends ItemView {
           "aria-label": day.tooltip,
         },
       });
-      cell.style.gridRowStart = String(cellModel.row + 1);
-      cell.style.gridColumnStart = String(cellModel.column + 1);
+      cell.setCssProps({ "--heatmap-row": String(cellModel.row + 1), "--heatmap-column": String(cellModel.column + 1) });
       cell.addEventListener("click", () => {
         new Notice(`${day.date}：热力来自刷题与复盘 Markdown 数据。`);
       });
@@ -574,7 +571,7 @@ export class DashboardView extends ItemView {
 
       if (size !== lastCellSize) {
         lastCellSize = size;
-        graph.style.setProperty("--heatmap-cell-size", `${size}px`);
+        graph.setCssProps({ "--heatmap-cell-size": `${size}px` });
       }
     };
 
@@ -667,11 +664,15 @@ export class DashboardView extends ItemView {
         attr: { title: `${entry.date}｜已完成 ${entry.completedCount}｜未完成 ${entry.pendingCount}` },
       });
       const stack = bar.createDiv({ cls: "gongkao-plan-bars__stack" });
-      stack.style.height = `${Math.max(12, Math.round((total / maxTasks) * 72))}px`;
       const doneHeight = total > 0 ? (entry.completedCount / total) * 100 : 0;
       const pendingHeight = total > 0 ? (entry.pendingCount / total) * 100 : 0;
-      stack.createDiv({ cls: "gongkao-plan-bars__done", attr: { style: `height:${doneHeight}%` } });
-      stack.createDiv({ cls: "gongkao-plan-bars__pending", attr: { style: `height:${pendingHeight}%` } });
+      stack.setCssProps({
+        "--gongkao-plan-bar-height": `${Math.max(12, Math.round((total / maxTasks) * 72))}px`,
+        "--gongkao-plan-done-height": `${doneHeight}%`,
+        "--gongkao-plan-pending-height": `${pendingHeight}%`,
+      });
+      stack.createDiv({ cls: "gongkao-plan-bars__done" });
+      stack.createDiv({ cls: "gongkao-plan-bars__pending" });
       bar.createSpan({ text: entry.date.slice(8, 10) });
       bar.addEventListener("click", () => this.actions.openFile(entry.file));
     }
@@ -696,10 +697,7 @@ export class DashboardView extends ItemView {
 
   private renderProgress(parent: HTMLElement, value: number): void {
     const progress = parent.createDiv({ cls: "gongkao-progress" });
-    progress.createDiv({
-      cls: "gongkao-progress__bar",
-      attr: { style: `width: ${Math.min(Math.max(value, 0), 100)}%` },
-    });
+    progress.createDiv({ cls: "gongkao-progress__bar" }).setCssProps({ "--gongkao-progress-width": `${Math.min(Math.max(value, 0), 100)}%` });
     const label = parent.createDiv({ cls: "gongkao-progress__label" });
     label.createSpan({ text: "完成率" });
     label.createEl("strong", { text: `${value}%` });

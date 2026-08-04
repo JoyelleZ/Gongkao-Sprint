@@ -570,6 +570,7 @@
 }
 
 .gongkao-progress__bar {
+  width: var(--gongkao-progress-width, 0%);
   height: 100%;
   border-radius: inherit;
   background: rgb(100, 148, 87);
@@ -1030,6 +1031,10 @@
 
 .gongkao-image-crop-selection {
   position: absolute;
+  left: var(--gongkao-rect-left, 0);
+  top: var(--gongkao-rect-top, 0);
+  width: var(--gongkao-rect-width, 0);
+  height: var(--gongkao-rect-height, 0);
   z-index: 2;
   border: 2px dashed rgba(255, 255, 255, 0.96);
   background: rgba(104, 139, 91, 0.18);
@@ -1225,6 +1230,10 @@
 
 .gongkao-image-mask {
   position: absolute;
+  left: var(--gongkao-rect-left, 0);
+  top: var(--gongkao-rect-top, 0);
+  width: var(--gongkao-rect-width, 0);
+  height: var(--gongkao-rect-height, 0);
   border: 1px solid rgba(104, 139, 91, 0.9);
   background: rgba(104, 139, 91, 0.55);
 }
@@ -1272,9 +1281,11 @@
 }
 
 .gongkao-heatmap-wrap {
+  --heatmap-columns: 18;
   --heatmap-label-line: 16px;
   --heatmap-cell-size: 12px;
   display: grid;
+  grid-template-columns: 24px repeat(var(--heatmap-columns), var(--heatmap-cell-size));
   grid-template-rows: var(--heatmap-label-line) repeat(7, var(--heatmap-cell-size));
   gap: 4px;
   align-items: center;
@@ -1290,7 +1301,19 @@
 }
 
 .gongkao-heatmap-weekday {
+  grid-column-start: var(--heatmap-column);
+  grid-row-start: var(--heatmap-row);
   justify-self: center;
+}
+
+.gongkao-heatmap-month {
+  grid-column-start: var(--heatmap-column);
+  grid-row-start: var(--heatmap-row);
+}
+
+.gongkao-heatmap-panel .gongkao-heatmap__cell {
+  grid-column-start: var(--heatmap-column);
+  grid-row-start: var(--heatmap-row);
 }
 
 .gongkao-heatmap-legend {
@@ -1427,6 +1450,7 @@
   display: flex;
   width: 100%;
   max-width: 18px;
+  height: var(--gongkao-plan-bar-height, 12px);
   min-height: 12px;
   flex-direction: column-reverse;
   overflow: hidden;
@@ -1435,10 +1459,12 @@
 }
 
 .gongkao-plan-bars__done {
+  height: var(--gongkao-plan-done-height, 0%);
   background: rgba(104, 139, 91, 0.7);
 }
 
 .gongkao-plan-bars__pending {
+  height: var(--gongkao-plan-pending-height, 0%);
   background: rgba(222, 134, 100, 0.35);
 }
 
@@ -1512,6 +1538,10 @@
 
 .gongkao-review-mask {
   position: absolute;
+  left: var(--gongkao-rect-left, 0);
+  top: var(--gongkao-rect-top, 0);
+  width: var(--gongkao-rect-width, 0);
+  height: var(--gongkao-rect-height, 0);
   border: 1px solid rgba(104, 139, 91, 0.9);
   background: rgba(104, 139, 91, 0.72);
 }
@@ -2216,7 +2246,7 @@
   }
 
   .gongkao-dashboard__time-row {
-    display: contents;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
   }
 
   .gongkao-panel--reflection,
@@ -2326,9 +2356,9 @@
 }
 
 .gongkao-dashboard .banner-image {
-  position: static !important;
-  inset: auto !important;
-  z-index: auto !important;
+  position: static;
+  inset: auto;
+  z-index: auto;
   display: block;
   width: 100%;
   height: 100%;

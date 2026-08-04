@@ -105,9 +105,11 @@ export class ReviewSessionView extends ItemView {
           width: (mask.width / img.naturalWidth) * 100,
           height: (mask.height / img.naturalHeight) * 100,
         };
-        wrapper.createDiv({
-          cls: "gongkao-review-mask",
-          attr: { style: `left:${rect.left}%;top:${rect.top}%;width:${rect.width}%;height:${rect.height}%;` },
+        wrapper.createDiv({ cls: "gongkao-review-mask" }).setCssProps({
+          "--gongkao-rect-left": `${rect.left}%`,
+          "--gongkao-rect-top": `${rect.top}%`,
+          "--gongkao-rect-width": `${rect.width}%`,
+          "--gongkao-rect-height": `${rect.height}%`,
         });
       }
     });

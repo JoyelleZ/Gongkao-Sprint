@@ -32,7 +32,7 @@ export class GongkaoSprintSettingTab extends PluginSettingTab {
     const { containerEl } = this;
     containerEl.empty();
 
-    containerEl.createEl("h2", { text: "Gongkao Sprint 设置" });
+    new Setting(containerEl).setName("Gongkao Sprint 设置").setHeading();
 
     new Setting(containerEl)
       .setName("数据根目录")

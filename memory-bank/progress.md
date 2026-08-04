@@ -118,3 +118,4 @@
 - Embedded desktop and mobile PNG dashboard banners into `main.js` through esbuild data URL loading, while preserving local `assets/` images as preferred overrides for source/manual installs.
 - Updated review sessions to include today's newly created, not-yet-reviewed error cards so users can immediately test front/back card flipping after capture.
 - Added desktop/mobile daily-plan calendar inside the 今日计划 card, removed the separate mini calendar direction, expanded the effort heatmap to 120 days, and added a monthly daily-plan completion bar chart under the heatmap.
+- Prepared Obsidian Community Directory review fixes for `0.1.1`: removed leaf detachment on unload, replaced `revealLeaf` with `setActiveLeaf`, fixed settings heading usage, moved dynamic styles to CSS variables, reduced bundled image fallback size, removed `builtin-modules`, and kept `minAppVersion` at `1.5.0`.
