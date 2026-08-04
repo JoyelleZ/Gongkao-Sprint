@@ -74,10 +74,10 @@ export class DashboardView extends ItemView {
     this.renderReviewPanel(grid, model);
     this.renderCollectionPanel(grid, model.collections);
     this.renderWeekPanel(grid, model);
-    this.renderReflectionPanel(grid, model);
-    const timeRow = grid.createDiv({ cls: "gongkao-dashboard__time-row" });
-    this.renderWeaknessPanel(timeRow, model);
-    this.renderTimePanel(timeRow, model);
+    const reviewInsightRow = grid.createDiv({ cls: "gongkao-review-insight-row" });
+    this.renderReflectionPanel(reviewInsightRow, model);
+    this.renderWeaknessPanel(reviewInsightRow, model);
+    this.renderTimePanel(grid, model);
     this.renderMonthlyPlanPanel(grid, model);
   }
 
@@ -483,7 +483,7 @@ export class DashboardView extends ItemView {
   }
 
   private renderTimePanel(parent: HTMLElement, model: DashboardModel): void {
-    const panel = parent.createDiv({ cls: "gongkao-panel gongkao-panel--time gongkao-time-panel" });
+    const panel = parent.createDiv({ cls: "gongkao-panel gongkao-panel--time gongkao-time-panel gongkao-effort-panel" });
     this.renderPanelTitle(panel, "备考努力热力图", "calendar-days", "近4个月学习节奏");
     const body = panel.createDiv({ cls: "gongkao-time-panel__body" });
     const heatmapColumn = body.createDiv({ cls: "gongkao-time-panel__heatmap" });

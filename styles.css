@@ -279,6 +279,27 @@
   height: auto;
 }
 
+.gongkao-review-insight-row {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 20px;
+  grid-column: 1 / -1;
+  width: 100%;
+  align-items: stretch;
+}
+
+.gongkao-review-insight-row .gongkao-panel--reflection,
+.gongkao-review-insight-row .gongkao-panel--weakness {
+  grid-column: auto;
+  min-width: 0;
+  height: 100%;
+}
+
+.gongkao-effort-panel {
+  grid-column: 1 / -1;
+  width: 100%;
+}
+
 .gongkao-panel h2 {
   display: flex;
   min-width: 0;
@@ -1702,6 +1723,12 @@
   .gongkao-weakness {
     border-right: 0;
     border-bottom: 1px solid rgba(104, 139, 91, 0.12);
+  }
+}
+
+@media (max-width: 700px) {
+  .gongkao-review-insight-row {
+    grid-template-columns: 1fr;
   }
 }
 
