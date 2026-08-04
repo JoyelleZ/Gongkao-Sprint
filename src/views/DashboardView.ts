@@ -161,30 +161,58 @@ export class DashboardView extends ItemView {
     const panel = parent.createDiv({ cls: "gongkao-panel gongkao-mobile-card" });
     this.renderPanelTitle(panel, "复习队列", "calendar-clock");
 
-    const due = panel.createDiv({ cls: "gongkao-due gongkao-due--mobile" });
+    const content = panel.createDiv({ cls: "gongkao-mobile-card__content" });
+    const due = content.createDiv({ cls: "gongkao-due gongkao-due--mobile" });
     const dueCopy = due.createDiv();
     dueCopy.createEl("span", { text: "到期错题" });
     dueCopy.createEl("strong", { text: String(model.review.dueCount) });
     dueCopy.createEl("small", { text: model.review.overdueCount > 0 ? `逾期 ${model.review.overdueCount} 张` : "按掌握度动态排期" });
 
-    this.renderActionButton(panel.createDiv({ cls: "gongkao-panel__actions" }), "开始复习", "play", () => this.actions.startReview(), true);
+    this.renderActionButton(
+      panel.createDiv({ cls: "gongkao-panel__actions gongkao-mobile-card__action" }),
+      "开始复习",
+      "play",
+      () => this.actions.startReview(),
+      true,
+      "gongkao-mobile-card__action-button",
+    );
   }
 
   private renderMobileCollectionCard(parent: HTMLElement, model: DashboardModel): void {
     const panel = parent.createDiv({ cls: "gongkao-panel gongkao-mobile-card" });
     this.renderPanelTitle(panel, "刷题进度", "folder-check");
 
+    const content = panel.createDiv({ cls: "gongkao-mobile-card__content" });
     const active = model.collections.find((summary) => summary.collection.status === "active") ?? model.collections[0];
     if (!active) {
-      this.renderEmptyBlock(panel, "暂无刷题集合", "记录刷题时可以先创建专题、套卷或题集。", "记录刷题", "file-pen-line", () => this.actions.createPracticeLog());
+      const empty = content.createDiv({ cls: "gongkao-card-empty" });
+      empty.createEl("strong", { text: "暂无刷题集合" });
+      empty.createEl("p", { text: "记录刷题时可以先创建专题、套卷或题集。" });
+      this.renderActionButton(
+        panel.createDiv({ cls: "gongkao-panel__actions gongkao-mobile-card__action" }),
+        "记录刷题",
+        "file-pen-line",
+        () => this.actions.createPracticeLog(),
+        false,
+        "gongkao-mobile-card__action-button",
+      );
       return;
     }
 
-    const item = panel.createDiv({ cls: "gongkao-collection" });
+    const item = content.createDiv({ cls: "gongkao-collection" });
     item.createEl("strong", { text: active.collection.name });
     item.createEl("p", { text: `第 ${active.collection.current_round} 轮｜累计刷题 ${active.total}｜错题 ${active.wrong}` });
     item.createEl("small", { text: `最近刷题：${active.lastPracticeDate ?? "暂无记录"}` });
     item.addEventListener("click", () => this.actions.openFile(active.file));
+
+    this.renderActionButton(
+      panel.createDiv({ cls: "gongkao-panel__actions gongkao-mobile-card__action" }),
+      "记录刷题",
+      "file-pen-line",
+      () => this.actions.createPracticeLog(),
+      false,
+      "gongkao-mobile-card__action-button",
+    );
   }
 
   private renderTopbar(parent: HTMLElement): void {
@@ -212,9 +240,10 @@ export class DashboardView extends ItemView {
     icon: string,
     onClick: () => void,
     primary = false,
+    extraClass = "",
   ): void {
     const button = parent.createEl("button", {
-      cls: primary ? "gongkao-button gongkao-button--primary" : "gongkao-button",
+      cls: [primary ? "gongkao-button gongkao-button--primary" : "gongkao-button", extraClass].filter(Boolean).join(" "),
       attr: { "aria-label": label },
     });
     const iconEl = button.createSpan({ cls: "gongkao-button__icon" });

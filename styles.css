@@ -1175,7 +1175,19 @@
 }
 
 .gongkao-mobile-card {
+  display: flex;
+  flex-direction: column;
   min-height: auto;
+}
+
+.gongkao-mobile-card__content {
+  flex: 1;
+  min-width: 0;
+}
+
+.gongkao-mobile-card__action {
+  margin-top: auto;
+  padding-top: 14px;
 }
 
 .gongkao-image-dropzone {
@@ -1935,18 +1947,60 @@
   width: 100%;
 }
 
-/* Pin action buttons to the bottom of review & collection panels */
+/* Light green action buttons for the top three dashboard cards */
+.gongkao-panel--plan .gongkao-panel__actions .gongkao-button,
+.gongkao-panel--review .gongkao-panel__actions .gongkao-button,
+.gongkao-panel--collections .gongkao-panel__actions .gongkao-button,
+.gongkao-panel--plan .gongkao-card-empty__actions .gongkao-button,
+.gongkao-panel--review .gongkao-card-empty__actions .gongkao-button,
+.gongkao-panel--collections .gongkao-card-empty__actions .gongkao-button {
+  border-color: #D5E5CB;
+  background: #E8F1DF;
+  color: #355E2D;
+  box-shadow: none;
+}
+
+.gongkao-panel--plan .gongkao-panel__actions .gongkao-button:hover,
+.gongkao-panel--review .gongkao-panel__actions .gongkao-button:hover,
+.gongkao-panel--collections .gongkao-panel__actions .gongkao-button:hover,
+.gongkao-panel--plan .gongkao-card-empty__actions .gongkao-button:hover,
+.gongkao-panel--review .gongkao-card-empty__actions .gongkao-button:hover,
+.gongkao-panel--collections .gongkao-card-empty__actions .gongkao-button:hover,
+.gongkao-panel--plan .gongkao-panel__actions .gongkao-button:focus-visible,
+.gongkao-panel--review .gongkao-panel__actions .gongkao-button:focus-visible,
+.gongkao-panel--collections .gongkao-panel__actions .gongkao-button:focus-visible,
+.gongkao-panel--plan .gongkao-card-empty__actions .gongkao-button:focus-visible,
+.gongkao-panel--review .gongkao-card-empty__actions .gongkao-button:focus-visible,
+.gongkao-panel--collections .gongkao-card-empty__actions .gongkao-button:focus-visible {
+  border-color: #D5E5CB;
+  background: #DDEBD3;
+  color: #355E2D;
+}
+
+.gongkao-panel--plan .gongkao-panel__actions .gongkao-button:active,
+.gongkao-panel--review .gongkao-panel__actions .gongkao-button:active,
+.gongkao-panel--collections .gongkao-panel__actions .gongkao-button:active,
+.gongkao-panel--plan .gongkao-card-empty__actions .gongkao-button:active,
+.gongkao-panel--review .gongkao-card-empty__actions .gongkao-button:active,
+.gongkao-panel--collections .gongkao-card-empty__actions .gongkao-button:active {
+  transform: translateY(1px);
+}
+
+/* Pin action buttons to the bottom of the top three dashboard cards */
+.gongkao-panel--plan,
 .gongkao-panel--review,
 .gongkao-panel--collections {
   display: flex;
   flex-direction: column;
 }
 
+.gongkao-panel--plan .gongkao-panel__actions,
 .gongkao-panel--review .gongkao-panel__actions,
 .gongkao-panel--collections .gongkao-panel__actions {
   margin-top: auto;
 }
 
+.gongkao-panel--plan .gongkao-card-empty,
 .gongkao-panel--review .gongkao-card-empty,
 .gongkao-panel--collections .gongkao-card-empty {
   flex: 1;
@@ -1955,9 +2009,33 @@
   justify-content: center;
 }
 
+.gongkao-panel--plan .gongkao-card-empty__actions,
 .gongkao-panel--review .gongkao-card-empty__actions,
 .gongkao-panel--collections .gongkao-card-empty__actions {
   margin-top: auto;
+}
+
+.gongkao-mobile-card__action-button,
+.gongkao-mobile-card__action-button.gongkao-button--primary {
+  width: 100%;
+  height: auto;
+  min-height: 48px;
+  gap: 8px;
+  border-color: #cfe0c5;
+  border-radius: 12px;
+  background: #e8f1df;
+  color: #355e2d;
+  box-shadow: none;
+}
+
+.gongkao-mobile-card__action-button:hover,
+.gongkao-mobile-card__action-button:focus-visible,
+.gongkao-mobile-card__action-button.gongkao-button--primary:hover,
+.gongkao-mobile-card__action-button.gongkao-button--primary:focus-visible {
+  border-color: #cfe0c5;
+  background: #ddebd3;
+  color: #355e2d;
+  box-shadow: none;
 }
 
 .gongkao-progress {
